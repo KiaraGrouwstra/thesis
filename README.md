@@ -7,6 +7,7 @@ type-driven development with hole-type-supervised NSPS / AlphaNPI? AlphaNSPS?
 sent by Emile:
 - DeepProbLog: Neural Probabilistic Logic Programming (2018, https://arxiv.org/pdf/1805.10872.pdf) @ KU Leuven: differentiable ProbLog (https://dtai.cs.kuleuven.be/problog/). Emile: less relevant cuz untyped? tests on add/sort/algebra on pics/list/text. induction, no ops.
 - Learning Explanatory Rules from Noisy Data (2018, https://arxiv.org/pdf/1711.04574.pdf, https://github.com/ai-systems/DILP-Core) @ DeepMind: Differentiable Inductive LogicProgramming (∂ILP) = ILP (data efficient) + NNs' ability to handle ambiguity. trained on various symbolic tasks. uses given template so just handles induction. check if this can do types? see pic on p.31. tests on 20 symbolic tasks (arithmetic, lists, family tree, graphs). task-dependent ops.
+
 mine (brought up):
 - Neural Programmer-Interpreter (NPI) @ DeepMind. tests on add/sort / canonicalizing 3d models. ops reset/bubble/rshift/lshift/compswap/ptr1l/ptr1r/ptr2l/ptr2r/swap/stop.
 - Learning Compositional Neural Programs with Recursive Tree Search and Planning (https://www.instadeep.com/research-article/towards-compositionality-in-deep-reinforcement-learning/, https://arxiv.org/pdf/1905.12941.pdf): Neural Programmer-Interpreter (NPI) + AlphaZero = AlphaNPI ❤️. tests on sorting/hanoi tasks. ops as NPI.

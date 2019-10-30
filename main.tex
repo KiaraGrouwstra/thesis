@@ -22,7 +22,7 @@ be it a formal specification, a natural language description, or input-output ex
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
 % challenges
-% While considered a holy grail of computer science, program synthesis is a challenging task however, characterized by large search spaces, e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
+While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces, e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
 
 % approaches
 Program synthesis was traditionally studied as a computer science problem, but has recently been explored using machine learning approaches under the name of neural program synthesis~\citep{nps}.
@@ -31,16 +31,15 @@ However, there has not yet been much work combining these two approaches.
 % CS vs ML
 Whereas the traditional approaches in program synthesis focused on constraining the large discrete search space, neural program synthesis instead tends to incrementally generate programs, using continuous representations of the state space to predict the next token, be it in a sequential fashion~\citep{alphanpi}, or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
 
-% While the typically incremental approach of neural program synthesis breaks down the problem by considering one part of the program at a time, the original challenge remains.
+While the typically incremental approach of neural program synthesis breaks down the problem by considering one part of the program at a time, the original challenge remains.
 
 Whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar, there is typically no guarantee that such partial program constructions will qualify as a full executable program adherent to the grammar.
-% As a result, neural synthesizers will have little intermediary feedback to go by.
-% , limiting their effectiveness.
+As a result, neural synthesizers will have little intermediary feedback to go by, limiting their effectiveness.
 
-% But if only complete programs can be evaluated for validity and behavior, then 
-% % for the duration of much of the incremental synthesis, the synthesizer has little feedback to go by.
-% it is much harder to provide synthesizers with an accurate understanding of incomplete programs.
-% % CONJECTURE, CITATION NEEDED?
+But if only complete programs can be evaluated for validity and behavior, then 
+% for the duration of much of the incremental synthesis, the synthesizer has little feedback to go by.
+it is much harder to provide synthesizers with an accurate understanding of incomplete programs.
+% TODO: CONJECTURE, CITATION NEEDED?
 
 We hypothesize that the effectiveness of neural program synthesis may be improved by 
 % supervising incremental predictions offering additional features 
@@ -71,27 +70,27 @@ The present work aims to be the first experiment to:
 
 \section{Experiment}
 
-% % PBE
-% User intent in program synthesis can be expressed in various forms, including logical specification, examples, traces, natural language, partial programs, or even related programs.~\citep{gulwani2017program}
-% % Program specifications in program synthesis may include formal program specifications, natural language descriptions of the program, as well as input-output examples, aka programming by example.
-% For our purposes here, we will focus on programming by example (PBE), as having known input-output types will help provide us the needed type information we would like to use.
+% PBE
+User intent in program synthesis can be expressed in various forms, including logical specification, examples, traces, natural language, partial programs, or even related programs.~\citep{gulwani2017program}
+Program specifications in program synthesis may include formal program specifications, natural language descriptions of the program, as well as input-output examples, aka programming by example (PBE).
+For our purposes here, we will focus on PBE, as having known input-output types will help provide us the needed type information we would like to use.
 
 % structure
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
 
-% Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
-% Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained, that is, permits arbitrary type-safe combinations of subexpressions. In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
+Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
+Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained, that is, permits arbitrary type-safe combinations of subexpressions. In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
 
-% % holes
-% Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed}, as used in Agda~\footnote{\url{https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html}}, Idris~\footnote{\url{http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html\#holes}}, and Haskell~\footnote{\url{https://wiki.haskell.org/GHC/Typed_holes}}. Typed holes allow one to write an incomplete functional program template, enabling type inference for any such holes, in turn enabling suggested completions to the user. Such interactive program synthesis has been labeled as the solver-aided programming method \emph{sketching}~\citep{gulwani2017program} or type-driven development.~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
+% holes
+Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed}, as used in Agda~\footnote{\url{https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html}}, Idris~\footnote{\url{http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html\#holes}}, and Haskell~\footnote{\url{https://wiki.haskell.org/GHC/Typed_holes}}. Typed holes allow one to write an incomplete functional program template, enabling type inference for any such holes, in turn enabling suggested completions to the user. Such interactive program synthesis has been labeled as the solver-aided programming method \emph{sketching}~\citep{gulwani2017program} or type-driven development.~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
 
-% % types
-% To get the most out of our types, we will want to provide them for:
-% \begin{itemize}
-%     \item inputs
-%     \item outputs
-%     \item abstract syntax trees (ASTs)
-% \end{itemize}
+% types
+To get the most out of our types, we will want to provide them for:
+\begin{itemize}
+    \item inputs
+    \item outputs
+    \item abstract syntax trees (ASTs)
+\end{itemize}
 
 The basic idea here is simple: our program should return the desired type, while taking the desired input types.
 % BNFs
@@ -103,25 +102,25 @@ What makes the use of types more powerful in restricting the search space is the
 ~\footnote{Left out of scope here are \emph{refinement types}, which further aid synthesis based on conditions.}
 As such, its type signature may be made \emph{generic} such as to have its return type reflect the types of the parameters used. Having such information available at the type level may add additional information over what is used in the simpler case above.
 
-% It should be noted however that not all programs benefit from this, but only those for which potential building blocks include statically typed functions with parametric return types.
+It should be noted however that not all programs benefit from this, but only those for which potential building blocks include statically typed functions with parametric return types.
 
-% % decouple synthesis/target languages
-% As a result, this restriction limits our method from being used for direct synthesis of programming languages that are dynamically typed, e.g. Ruby language, as well as to those lacking parametric polymorphism, e.g. C language.
-% However, this only partly hinders those wishing to synthesize programs in such languages: rather than synthesizing in such languages directly, we would suggest synthesizing from the language that best constrains the search space, then using source-to-source translation methods (e.g. neural machine translation~\citep{kalchbrenner2013recurrent})
-% using the synthesized program as input to obtain a program translated into the target language.
-% % TODO: make into experiment hypothesis?
+% decouple synthesis/target languages
+As a result, this restriction limits our method from being used for direct synthesis of programming languages that are dynamically typed, e.g. Ruby language, as well as to those lacking parametric polymorphism, e.g. C language.
+However, this only partly hinders those wishing to synthesize programs in such languages: rather than synthesizing in such languages directly, we would suggest synthesizing from the language that best constrains the search space, then using source-to-source translation methods (e.g. neural machine translation~\citep{kalchbrenner2013recurrent})
+using the synthesized program as input to obtain a program translated into the target language.
+% TODO: make into experiment hypothesis?
 
-% % haskell
-% In other words, languages with stronger type systems are preferable for program synthesis.
-% This is well-known in the traditional program synthesis community, where various researchers
-% % TODO: CITE
-% have been making use of the Haskell language, a statically typed, purely functional programming language with type inference and lazy evaluation.~\footnote{\url{https://www.haskell.org/}}
-% % https://en.wikipedia.org/wiki/Haskell_\%28programming_language\%29
-% % TODO: mention ML-like alternatives e.g. OCaml
+% haskell
+In other words, languages with stronger type systems are preferable for program synthesis.
+This is well-known in the traditional program synthesis community, where various researchers
+% TODO: CITE
+have been making use of the Haskell language, a statically typed, purely functional programming language with type inference and lazy evaluation.~\footnote{\url{https://www.haskell.org/}}
+% https://en.wikipedia.org/wiki/Haskell_\%28programming_language\%29
+% TODO: mention ML-like alternatives e.g. OCaml
 
-% The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm, unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
+The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm, unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
 
-% benchmark algorithm
+% TODO: benchmark algorithm
 % - NSPS is closed due to IP issues -_-
 % - NPI variants are sequence-based rather than AST-based
 % - Batch Bayesian Optimization via Multi-objective Acquisition Ensemble for Automated Analog Circuit Design (http://proceedings.mlr.press/v80/lyu18a/lyu18a.pdf)
@@ -143,6 +142,7 @@ As a benchmark algorithm we will use \cite{nsps}, a top-down incremental neural 
 % - Polymorphic Succinct Types
 % - Scythe
 % - L2, traditional but 145 cites. uses ocaml. ML was a typed lisp so this seems fine!
+
 As a benchmark task we will use \cite{feser2015synthesizing}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
 As their synthesis language \cite{feser2015synthesizing} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
 
