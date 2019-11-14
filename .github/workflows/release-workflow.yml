@@ -14,7 +14,7 @@ jobs:
     - uses: majkrzak/create-release@master
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        name: My lovely release
+        name: pdf
         code: latest
         prerelease: true
         assets: >
