@@ -11,7 +11,6 @@ jobs:
       with:
         root_file: main.tex
         working_directory: .
-    - uses: ncipollo/release-action@master
+    - uses: ncipollo/release-action@v1
       with:
         bodyFile: './main.pdf'
-
