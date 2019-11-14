@@ -1,0 +1,24 @@
+name: release-pdf-on-push
+
+on:
+  push:
+    tags:
+    - master
+
+jobs:
+  build:
+    name: Build and upload pdf
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build PDF
+      uses: vinay0410/tectonic-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tex_path: './main.tex'
+    - uses: ncipollo/release-action@v1
+      with:
+        bodyFile: './main.pdf'
+        token: ${{ secrets.GITHUB_TOKEN }}
+
