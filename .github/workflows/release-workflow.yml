@@ -6,10 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: MaineK00n/latex-actions@v0.0.1
+    - uses: actions/checkout@v1
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@master
+        with:
+          root_file: main.tex
+          working_directory: .
+    - uses: ncipollo/release-action@v1
       with:
-        root: .
-        token: ${{ secrets.GITHUB_TOKEN }}
-        repository: tycho01/thesis
-        pdf_name: thesis
+        bodyFile: './main.pdf'
 
