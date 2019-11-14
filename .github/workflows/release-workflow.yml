@@ -11,6 +11,11 @@ jobs:
       with:
         root_file: main.tex
         working_directory: .
-    - uses: ncipollo/release-action@v1
+    - uses: majkrzak/create-release@master
       with:
-        bodyFile: './main.pdf'
+        token: ${{ secrets.GITHUB_TOKEN }}
+        name: My lovely release
+        code: latest
+        prerelease: true
+        assets: >
+          main.pdf:thesis.pdf:application/pdf
