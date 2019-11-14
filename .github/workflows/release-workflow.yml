@@ -1,9 +1,6 @@
 name: release-pdf-on-push
 
-on:
-  push:
-    tags:
-    - master
+on: push
 
 jobs:
   build:
@@ -11,8 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Build PDF
-      uses: vinay0410/tectonic-action@master
+    - uses: vinay0410/tectonic-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
