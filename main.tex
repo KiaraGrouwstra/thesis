@@ -46,6 +46,8 @@ it is much harder to provide synthesizers with an accurate understanding of inco
 We hypothesize that the effectiveness of neural program synthesis may be improved by 
 % supervising incremental predictions offering additional features 
 adding type information as additional features during training.
+% why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
+% how to supervise with these? representation?
 
 % supervising using top-level type by inference through parametric return types (parametric polymorphism)? check parametrically typeable task ops e.g. from DILP?
 % sequential monadic shit from DeepMind papers is useless...
@@ -54,6 +56,7 @@ adding type information as additional features during training.
 
 \emph{Research question: can neural program synthesis methods benefit from using types as additional features?}
 % We hypothesize that the effectiveness of neural program synthesis may be improved by adding type information as additional features during training.
+% TODO: add second question + research?
 
 \section{Expected Contribution}
 
@@ -79,12 +82,14 @@ For our purposes here, we will focus on PBE, as having known input-output types 
 
 % structure
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
+% why?
 
 Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
 Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained, that is, permits arbitrary type-safe combinations of subexpressions. In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
 
 % holes
 Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed}, as used in Agda~\footnote{\url{https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html}}, Idris~\footnote{\url{http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html\#holes}}, and Haskell~\footnote{\url{https://wiki.haskell.org/GHC/Typed_holes}}. Typed holes allow one to write an incomplete functional program template, enabling type inference for any such holes, in turn enabling suggested completions to the user. Such interactive program synthesis has been labeled as the solver-aided programming method \emph{sketching}~\citep{gulwani2017program} or type-driven development.~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
+As such, one of our goals is to improve suggested hole completions in such languages to facilitate this interactive programming style.
 
 % types
 To get the most out of our types, we will want to provide them for:
