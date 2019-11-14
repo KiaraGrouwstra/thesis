@@ -6,13 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-      - name: Compile LaTeX document
-        uses: xu-cheng/latex-action@master
-        with:
-          root_file: main.tex
-          working_directory: .
-    - uses: ncipollo/release-action@v1
+    - uses: actions/checkout@master
+    - uses: xu-cheng/latex-action@master
+      with:
+        root_file: main.tex
+        working_directory: .
+    - uses: ncipollo/release-action@master
       with:
         bodyFile: './main.pdf'
 
