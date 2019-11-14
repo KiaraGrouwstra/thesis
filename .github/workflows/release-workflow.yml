@@ -8,11 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: vinay0410/tectonic-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tex_path: './main.tex'
+    - runs:
+      using: docker
+      image: vinay0410/tectonic-image:latest
+      args:
+      - './main.tex'
+      # - ${{ inputs.tex_path }}
+      # with:
+      #   tex_path: './main.tex'
+      # env:
+      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: ncipollo/release-action@v1
       with:
         bodyFile: './main.pdf'
