@@ -21,7 +21,20 @@ Program synthesis is the task to automatically construct a program that satisfie
 be it a formal specification, a natural language description, or input-output examples.
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
-% TODO: explain difference with program induction
+This differs from program induction, commonly known as 'supervised learning',
+% TODO: SOURCE DEFINITIONS
+in that fitting the model into the discrete form of a given grammar
+forces one to instantiate such a model from probabilistic data interpretations,
+whereas in traditional supervised learning,
+such probabilistic interpretations of the data may be taken at prediction time.
+% 
+This means that in program synthesis, we are able to distill our modeled function
+to a simplified discrete form that may well be intelligible to humans as well,
+opening up opportunities for human-machine cooperation in writing software.
+% 
+And in fact, in a novel functional programming paradigm called
+\emph{type-driven development}~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
+based on typed holes, this is already happening.
 
 % challenges
 While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces, e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
@@ -89,7 +102,16 @@ Type-based approaches to synthesis are based on \emph{deductive search}, a top-d
 Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained, that is, permits arbitrary type-safe combinations of subexpressions. In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
 
 % holes
-Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed}, as used in Agda~\footnote{\url{https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html}}, Idris~\footnote{\url{http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html\#holes}}, and Haskell~\footnote{\url{https://wiki.haskell.org/GHC/Typed_holes}}. Typed holes allow one to write an incomplete functional program template, enabling type inference for any such holes, in turn enabling suggested completions to the user. Such interactive program synthesis has been labeled as the solver-aided programming method \emph{sketching}~\citep{gulwani2017program} or type-driven development.~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
+Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed},
+as used in Agda~\footnote{\url{https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html}},
+Idris~\footnote{\url{http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html\#holes}},
+and Haskell~\footnote{\url{https://wiki.haskell.org/GHC/Typed_holes}}.
+Typed holes allow one to write an incomplete functional program template,
+enabling type inference for any such holes, in turn enabling suggested completions to the user.
+Such interactive program synthesis has been labeled as the solver-aided
+programming method \emph{sketching}~\citep{gulwani2017program} or
+\emph{type-driven development}.
+% ~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
 As such, one of our goals is to improve suggested hole completions in such languages to facilitate this interactive programming style.
 
 % types
