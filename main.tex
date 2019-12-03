@@ -146,7 +146,7 @@ This is well-known in the traditional program synthesis community, where various
 % TODO: CITE
 have been making use of the Haskell language, a statically typed, purely functional programming language with type inference and lazy evaluation.~\footnote{\url{https://www.haskell.org/}}
 % https://en.wikipedia.org/wiki/Haskell_\%28programming_language\%29
-% TODO: mention ML-like alternatives e.g. OCaml
+% TODO: mention ML-like (= typed lisp) alternatives e.g. OCaml.
 
 The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm, unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
 
@@ -161,18 +161,24 @@ The advantages of Haskell as a synthesis language over the above-mentioned ML li
 As a benchmark algorithm we will use \cite{nsps}, a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
 % TODO: swap, no code available
 
-% benchmark task
-% - NPI/AlphaNPI task is sequential :(
+% benchmark task:
+% 🙆:
+% - typed MIL: Prolog/Python. types: poly list, mono int/char.
+% - Myth: Haskell/OCaml. types: poly list/tree, mono bool/nat.
+% - λ^2: OCaml/Python. types: poly list/tree, mono bool/num.
+% I'd lean toward a language with ML framework as the source language (Python/Haskell/OCaml?), and a target language with holes (Haskell/Idris/Agda) and proper type-checks (any but Python/Prolog). none of these used any of those. this intersection means a shared source/target language implies Haskell is the only option and I need to throw out existing implementations anyway. in terms of respectable benchmark, λ^2 seems to actually have been used by others before.
+% 🙅:
+% - NPI/AlphaNPI: task is sequential :(
 % - NSPS: flashfill so few parametric types :(
-% - DILP? - paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare
-% - DeepCoder
-% - typed MIL
-% - Myth
-% - Tamandu
-% - Suggesting Valid Hole Fits
-% - Polymorphic Succinct Types
-% - Scythe
-% - L2, traditional but 145 cites. uses ocaml. ML was a typed lisp so this seems fine!
+% - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare. just rules, no trees or types. :(
+% - DeepCoder: dataset (/code) not published? :(
+% - Tamandu: no code? :(
+% - Suggesting Valid Hole Fits: based on types, not examples. :(
+% - Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples. :(
+% - Scythe: no code?, based on refinement types instead of i/o examples. :(
+% - Scout: no code? :(
+% - Idris: based on types, not examples. :(
+% - Houdini: tasks mostly involve neural networks so suck to evaluate. :(
 
 As a benchmark task we will use \cite{feser2015synthesizing}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
 As their synthesis language \cite{feser2015synthesizing} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
