@@ -97,7 +97,7 @@ For our purposes here, we will focus on PBE, as having known input-output types 
 % structure
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
 % why?
-
+1
 Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
 Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained, that is, permits arbitrary type-safe combinations of subexpressions. In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
 
@@ -180,10 +180,10 @@ As a benchmark algorithm we will use \cite{nsps}, a top-down incremental neural 
 % - Idris: based on types, not examples. :(
 % - Houdini: tasks mostly involve neural networks so suck to evaluate. :(
 
-As a benchmark task we will use \cite{feser2015synthesizing}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
-As their synthesis language \cite{feser2015synthesizing} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
+As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
+As their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
 
-While \cite{feser2015synthesizing} did not use neural methods, benchmark tasks within Neural Program Synthesis have often remained somewhat simpler in nature, rendering them less fit for our purposes --- either being imperative in nature, such as sorting tasks~\citep{reed2015neural}, or otherwise not including building blocks with parametric return types~\citep{nsps}.
+While \cite{lambda2} did not use neural methods, benchmark tasks within Neural Program Synthesis have often remained somewhat simpler in nature, rendering them less fit for our purposes --- either being imperative in nature, such as sorting tasks~\citep{npi}, or otherwise not including building blocks with parametric return types~\citep{nsps}.
 
 % TODO: fix benchmark task based on algo?
 
