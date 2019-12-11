@@ -37,18 +37,25 @@ And in fact, in a novel functional programming paradigm called
 based on typed holes, this is already happening.
 
 % challenges
-While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces, e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
+While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces,
+e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
 
 % approaches
-Program synthesis was traditionally studied as a computer science problem, but has recently been explored using machine learning approaches under the name of neural program synthesis~\citep{nps}.
+Program synthesis was traditionally studied as a computer science problem,
+but has recently been explored using machine learning approaches under the name of neural program synthesis~\citep{nps}.
 However, there has not yet been much work combining these two approaches.
 
 % CS vs ML
-Whereas the traditional approaches in program synthesis focused on constraining the large discrete search space, neural program synthesis instead tends to incrementally generate programs, using continuous representations of the state space to predict the next token, be it in a sequential fashion~\citep{alphanpi}, or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
+Whereas the traditional approaches in program synthesis focused on constraining the large discrete search space,
+neural program synthesis instead tends to incrementally generate programs,
+using continuous representations of the state space to predict the next token,
+be it in a sequential fashion~\citep{alphanpi},
+or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
 
 While the typically incremental approach of neural program synthesis breaks down the problem by considering one part of the program at a time, the original challenge remains.
 
-Whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar, there is typically no guarantee that such partial program constructions will qualify as a full executable program adherent to the grammar.
+Whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar,
+there is typically no guarantee that such partial program constructions will qualify as a full executable program adherent to the grammar.
 As a result, neural synthesizers will have little intermediary feedback to go by, limiting their effectiveness.
 
 But if only complete programs can be evaluated for validity and behavior, then 
@@ -90,16 +97,23 @@ The present work aims to be the first experiment to:
 \section{Experiment}
 
 % PBE
-User intent in program synthesis can be expressed in various forms, including logical specification, examples, traces, natural language, partial programs, or even related programs.~\citep{gulwani2017program}
-Program specifications in program synthesis may include formal program specifications, natural language descriptions of the program, as well as input-output examples, aka programming by example (PBE).
-For our purposes here, we will focus on PBE, as having known input-output types will help provide us the needed type information we would like to use.
+User intent in program synthesis can be expressed in various forms, including logical specification~\citep{temporalstreamlogic},
+examples, traces, natural language, partial programs, or even related programs.~\citep{gulwani2017program}
+%Program specifications in program synthesis may include formal program specifications, natural language descriptions of the program, as well as input-output examples, aka programming by example (PBE).
+Such logical specifications might also include types of inputs and outputs,
+and this branch of program synthesis has commonly focused on using functional programming languages as the synthesis language.%
+~\citep{synquid}~\citep{eguchi2018automated}~\citep{scythe}~\citep{scout}~\citep{gissurarson2018suggesting}~\citep{idris}
+For our purposes here, we will focus on synthesis based on input-output examples, aka programming by example (PBE),
+as having known input-output types will help provide us the needed type information we would like to use.
 
 % structure
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
 % why?
-1
+1  % TODO check where this line came from.
 Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
-Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained, that is, permits arbitrary type-safe combinations of subexpressions. In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
+Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained,
+that is, permits arbitrary type-safe combinations of subexpressions.
+In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
 
 % holes
 Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed},
@@ -125,18 +139,25 @@ To get the most out of our types, we will want to provide them for:
 The basic idea here is simple: our program should return the desired type, while taking the desired input types.
 % BNFs
 
-However, in the simple case, the implications of this info do not require much computation: one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar.
+However, in the simple case, the implications of this info do not require much computation:
+one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar.
 
 % generics
-What makes the use of types more powerful in restricting the search space is the use of \emph{parametric polymorphism}: a function $append$ may work using either lists of numbers or lists of strings.
+What makes the use of types more powerful in restricting the search space is the use of \emph{parametric polymorphism}:
+a function $append$ may work using either lists of numbers or lists of strings.
 ~\footnote{Left out of scope here are \emph{refinement types}, which further aid synthesis based on conditions.}
-As such, its type signature may be made \emph{generic} such as to have its return type reflect the types of the parameters used. Having such information available at the type level may add additional information over what is used in the simpler case above.
+As such, its type signature may be made \emph{generic} such as to have its return type reflect the types of the parameters used.
+Having such information available at the type level may add additional information over what is used in the simpler case above.
 
-It should be noted however that not all programs benefit from this, but only those for which potential building blocks include statically typed functions with parametric return types.
+It should be noted however that not all programs benefit from this,
+but only those for which potential building blocks include statically typed functions with parametric return types.
 
 % decouple synthesis/target languages
-As a result, this restriction limits our method from being used for direct synthesis of programming languages that are dynamically typed, e.g. Ruby language, as well as to those lacking parametric polymorphism, e.g. C language.
-However, this only partly hinders those wishing to synthesize programs in such languages: rather than synthesizing in such languages directly, we would suggest synthesizing from the language that best constrains the search space, then using source-to-source translation methods (e.g. neural machine translation~\citep{kalchbrenner2013recurrent})
+As a result, this restriction limits our method from being used for direct synthesis of programming languages that are dynamically typed,
+e.g. Ruby language, as well as to those lacking parametric polymorphism, e.g. C language.
+However, this only partly hinders those wishing to synthesize programs in such languages:
+rather than synthesizing in such languages directly, we would suggest synthesizing from the language that best constrains the search space,
+then using source-to-source translation methods (e.g. neural machine translation~\citep{kalchbrenner2013recurrent})
 using the synthesized program as input to obtain a program translated into the target language.
 % TODO: make into experiment hypothesis?
 
@@ -148,7 +169,8 @@ have been making use of the Haskell language, a statically typed, purely functio
 % https://en.wikipedia.org/wiki/Haskell_\%28programming_language\%29
 % TODO: mention ML-like (= typed lisp) alternatives e.g. OCaml.
 
-The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm, unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
+The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm,
+unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
 
 % TODO: benchmark algorithm
 % - NSPS is closed due to IP issues -_-
@@ -163,36 +185,95 @@ As a benchmark algorithm we will use \cite{nsps}, a top-down incremental neural 
 
 % benchmark task:
 % 🙆:
-% - typed MIL: Prolog/Python. types: poly list, mono int/char.
-% - Myth: Haskell/OCaml. types: poly list/tree, mono bool/nat.
-% - λ^2: OCaml/Python. types: poly list/tree, mono bool/num.
+% - [x] typed MIL: Prolog/Python. types: poly list, mono int/char.
+% - [x] Myth: Haskell/OCaml. types: poly list/tree, mono bool/nat.
+% - [x] λ^2: OCaml/Python. types: poly list/tree, mono bool/num.
 % I'd lean toward a language with ML framework as the source language (Python/Haskell/OCaml?), and a target language with holes (Haskell/Idris/Agda) and proper type-checks (any but Python/Prolog). none of these used any of those. this intersection means a shared source/target language implies Haskell is the only option and I need to throw out existing implementations anyway. in terms of respectable benchmark, λ^2 seems to actually have been used by others before.
 % 🙅:
-% - NPI/AlphaNPI: task is sequential :(
-% - NSPS: flashfill so few parametric types :(
+% - [x] NPI/AlphaNPI: task is sequential :(
+% - [x] NSPS: flashfill so few parametric types :(
 % - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare. just rules, no trees or types. :(
-% - DeepCoder: dataset (/code) not published? :(
-% - Tamandu: no code? :(
-% - Suggesting Valid Hole Fits: based on types, not examples. :(
-% - Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples. :(
-% - Scythe: no code?, based on refinement types instead of i/o examples. :(
-% - Scout: no code? :(
-% - Idris: based on types, not examples. :(
-% - Houdini: tasks mostly involve neural networks so suck to evaluate. :(
+% - [x] DeepCoder: dataset (/code) not published? :(
+% - [x] Tamandu: no code? :(
+% - [x] Suggesting Valid Hole Fits: based on types, not examples. :(
+% - [x] Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples. :(
+% - [x] Scythe: no code?, based on refinement types instead of i/o examples. :(
+% - [x] Scout: no code? :(
+% - [x] Idris: based on types, not examples. :(
+% - [x] Houdini: tasks mostly involve neural networks so suck to evaluate. :(
 
-As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
-As their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
+% As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
+% As their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
 
-While \cite{lambda2} did not use neural methods, benchmark tasks within Neural Program Synthesis have often remained somewhat simpler in nature, rendering them less fit for our purposes --- either being imperative in nature, such as sorting tasks~\citep{npi}, or otherwise not including building blocks with parametric return types~\citep{nsps}.
+We had trouble finding suitable benchmark task in the literature.
 
-% TODO: fix benchmark task based on algo?
+On the one hand, benchmark tasks within non-neural program synthesis methods have usually consisted of only a limited number of tasks%
+~\citep{myth}~\citep{lambda2}~\citep{typedmil}~\citep{houdini}~\citep{tamandu}~\citep{dilp},
+as such non-neural methods do not require an equivalent to the training set typically used in machine learning setups.
+
+% While \cite{lambda2} did not use neural methods,
+On the other hand, benchmark tasks within Neural Program Synthesis have often remained somewhat simpler in nature,
+rendering them less fit for our purposes --- either being imperative in nature (and as such being less amenable to types),
+such as sorting tasks~\citep{npi}~\citep{alphanpi},
+or otherwise focusing on a simple set of types --- such as strings~\citep{nsps} ---%
+or differently put, not including building blocks with parametric return types.
+
+As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps}~\citep{deepcoder}~\citep{tamandu}.
+
+As a result, it looks like we would need to create a benchmark task, or if anything a training dataset compatible with one of the existing benchmark tasks, ourselves.
+% TODO: argue whether to make this compatible with an existing benchmark task.
+
+We will do this by taking a library of basic operations, and generating any possible functions using combinations thereof within a given complexity threshold.
+Whereas modern programming languages might have a broad plethora of grammatical constructs available, for the purpose of our proof-of-concept we will opt to hide much of this.
+We will do this by
+% TODO: don't reuse wording
+taking a queue from the lambda calculus,
+% TODO: explain, provide reference
+which opts to view constructs as functions, both so as to provide a unified view of various operations, as well as to enable \emph{currying} of functions.
+% TODO: provide reference
+A curried version of a function is not unlike its original form, yet allowing arguments to the function to be applied to it one at a time.
+The way this works is that, when an argument is applied to a curried form of a function taking two parameters,
+the result is a function that still takes one parameter, before yielding the actual result of the original function.
+As such, viewing traditional operators such as addition as curried functions can both simplify the way we view things, while also increasing expressiveness.
+And in fact, this is indeed what happens in various functional languages,
+% TODO: list examples, provide reference
+where traditional operators such as `+`
+% TODO: fix latex
+are viewed simply as infix operator forms of curried functions.
+% TODO: fix latex
+In Haskell language, for example, `+` may be used to refer to the addition operator in infix notation, whereas `(+)` may be used to refer to its form as a traditional function.
+
+% TODO: specify library of basic functions
+As such, we might express as curried functions not only basic mathematical operators, but by wrapping them as library functions, also traditional grammatical constructs as (functional) conditionals and function composition operators.
+Grammar-wise, this should leave us with few options: referencing variables (whether from our library or parameters), and creating lambda functions.
+% TODO: consider if I can drop lambda functions
+
+% TODO: explain why I don't feel I need imperative statements or variable definitions
+The reason we consider programs of a tree-based form, rather than as a list of imperative statements such as variable definitions,
+is that the view of programs as function compositions guarantees us that any complete program will yield us output of the desired type.
+% TODO: explain pure functions
+This guarantees us that, rather than just branching out, our search will focus on finding acceptable solutions.
+% TODO: explain incomplete programs, how types enable evaluation of these, and why this means we should perform program synthesis based on types
+
+% TODO: explain generation
+The generation process is as follows:
+\begin{itemize}
+    \item we take our function, containing a number of parameters, a return type, and a body consisting of a hole;
+    \item we enumerate the variables we have that could (if applicable, after function application) return a type compatible with our desired return type, to create versions of the function with said hole plugged with these variables (which in the case of functions, may, in turn, contain holes);
+    % TODO: queue or whatever, any data structure really
+    % TODO: distinguish unfilled currying slot vs unfilled holes
+    \item we filter these potential programs given their number of remaining holes based on our complexity threshold;
+    % TODO: specify complexity threshold
+    \item we add the remaining programs to a queue of complete or incomplete programs, depending on whether they still contain holes.
+\end{itemize}
 
 % TODO: EXPERIMENT
 % TODO: elaborate how to supervise existing methods with type info
 
 \section{Result}
 
-Having added our type-level supervision during training, we expect synthesis success rates to rise and required evaluations to drop compared to the baseline algorithm. This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
+Having added our type-level supervision during training, we expect synthesis success rates to rise and required evaluations to drop compared to the baseline algorithm.
+This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
 % TODO: RESULT
 
