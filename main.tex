@@ -141,6 +141,13 @@ Methods used in program synthesis include evolutionary algorithms, reinforcement
 User intent in program synthesis can be expressed in various forms, including logical specification~\citep{temporalstreamlogic},
 examples, traces, natural language~\citep{abstractsyntaxnetworks}, partial programs, or even related programs.~\citep{gulwani2017program}
 %Program specifications in program synthesis may include formal program specifications, natural language descriptions of the program, as well as input-output examples, aka programming by example (PBE).
+A synthesizer may be passed additional information in various ways:
+\begin{itemize}
+    \item further examples;
+    \item more descriptive types~\citep{synquid};
+    \item additional features describing properties of the function~\citep{odena2020learning}.
+\end{itemize}
+
 Such logical specifications might also include types of inputs and outputs,
 and this branch of program synthesis has commonly focused on using functional programming languages as the synthesis language.%
 ~\citep{synquid,eguchi2018automated,scythe,scout,gissurarson2018suggesting,idris,lenses}
@@ -283,11 +290,38 @@ referencing variables (whether from our library or parameters),
 and applying arguments to functions.
 For the sake of simplicity,
 we will attempt to leave out certain common language features such as defining variables and creating lambda functions.
+% ^ TODO: update statement on lambda functions
 Hopefully, our idea can be demonstrated without this additional complexity.
 
 To simplify the problem, we would disallow the use of any constant values such as free-style strings.
 % TODO: evaluate the viability of this, and how to hack around availability of e.g. constant booleans.
 % TODO: a proper solution here probably involves using e.g. https://hackage.haskell.org/package/ad to fix constants by backprop.
+
+As a result, our Haskell-based grammar ends up looking as follows:
+\begin{tabular}{ccccc}
+    type & constructor & Type Parameters & example & note \\
+    Exp & App & Exp Exp & exp exp & \\
+    Exp & ExpTypeSig & Exp Type & exp \textbf{::} type & \\
+    Exp & Paren & Exp & \textbf{(}exp\textbf{)} & \\
+    Exp & Var & QName & qname & \\
+    Type & TyApp & Type Type & Type Type & \\
+    Type & TyCon & QName & QName & \\
+    Type & TyFun & Type Type & Type \textbf{->} Type & \\
+    Type & TyVar & Name & name & \\
+    QName & UnQual & Name & name & redundant \\
+    QName & Special & SpecialCon & specialCon & redundant \\
+    Name & Ident & & ident & \\
+    SpecialCon & ExprHole & & \textbf{_} & \\
+    SpecialCon & ListCon & & \textbf{[]} & \\
+    Exp & Lambda & [Pat] Exp & \textbf{\\} patt1 patt2 ... \textbf{->} exp & lambdas \\
+    Pat & PVar & Name & name & lambdas, redundant \\
+    Exp & Let & Binds Exp & \textbf{let} binds \textbf{in} exp & lambdas typed without ScopedTypeVariables \\
+    Binds & BDecls & [Decl] & decl1\textbf{;} decl2\textbf{;} ... & lambdas typed without ScopedTypeVariables \\
+    Decl & PatBind & Pat Rhs (Maybe Binds) & pat \textbf{=} rhs & lambdas typed without ScopedTypeVariables \\
+    Rhs & UnGuardedRhs & Exp & exp & lambdas typed without ScopedTypeVariables, redundant \\
+\end{tabular}
+% TODO: use BNF?
+% TODO: make this not specific to haskell by simplifying out the haskell-specific bits redundant here in my simple version
 
 \section{Experiment}
 
@@ -309,20 +343,18 @@ As a benchmark algorithm we will use~\cite{nsps}, a top-down incremental neural 
 % - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors.
 % - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num.
 % - [x] NPI/AlphaNPI: task is sequential :(
-% - [x] NSPS: flashfill so few parametric types :(
+% - [x] NSPS: flashfill so few parametric types :(, also tasks not publicized
 % - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare -- just rules, no trees or types :(
 % - [x] DeepCoder: dataset (/code) not published :(
-% - [x] Tamandu: no code :(
 % - [x] Suggesting Valid Hole Fits: based on types, not examples :(
 % - [x] Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples :(
-% - [x] Scythe: no code :(, uses types + i/o examples
-% - [x] Scout: no code :(
+% - [x] Scythe: no code :(, uses types + i/o examples. no (own) task! :(
+% - [x] Scout: no code, and only extended abstract available, with no info on task :(
 % - [x] Idris: based on types, not examples :(
 % - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
-% - [x] Terpret: 12 tasks (table 2) :(
-
-% As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
-% As their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
+% - [x] Terpret: 12 tasks (table 2), also very binary so not very type-ey :(
+% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions
+% https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
 
 We had trouble finding suitable benchmark task in the literature.
 
@@ -339,14 +371,22 @@ or differently put, not including building blocks with parametric return types.
 
 As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder,tamandu}.
 
+% As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
+% As their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
+
 As a result, it looks like we would need to create a benchmark task, or if anything a training dataset compatible with one of the existing benchmark tasks, ourselves.
-% TODO: make this compatible with an existing benchmark task.
 
-We will do this by taking a library of basic operations, and generating any possible functions using combinations thereof within a given complexity threshold.
+Now, for compatibility we may simply ensure our test sets contain the benchmark tasks of existing papers.
+To achieve this, we may increasingly add types, such as to support, in order of complexity:
+\begin{itemize}
+    \item list, bool~\citep{terpret}
+    \item int~\citep{tamandu}
+    \item char~\citep{typedmil}
+    \item nat, tree~\citep{myth,lambda2}
+\end{itemize}
 
-% TODO: specify library of basic functions
+We will do this by taking libraries of basic operations in accordance with these papers, then, in order to create a training set, generating any possible functions using combinations thereof within a given complexity threshold.
 
-% TODO: explain generation
 The generation process is as follows:
 \begin{itemize}
     \item we take our function, containing a number of parameters, a return type, and a body consisting of a hole;
