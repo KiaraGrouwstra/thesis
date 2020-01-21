@@ -387,9 +387,10 @@ To achieve this, we may increasingly add types, such as to support, in order of 
 
 We will do this by taking libraries of basic operations in accordance with these papers, then, in order to create a training set, generating any possible functions using combinations thereof within a given complexity threshold.
 
-The generation process is as follows:
+The hole filling is as follows:
 \begin{itemize}
-    \item we take our function, containing a number of parameters, a return type, and a body consisting of a hole;
+    % TODO: handle parameters ensuring their use
+    \item we take our function, containing a number of parameters, a return type, and a body that contains holes;
     \item we enumerate the variables we have that could (if applicable, after function application) return a type compatible with our desired return type, to create versions of the function with said hole plugged with these variables (which in the case of functions, may, in turn, contain holes);
     % TODO: queue or whatever, any data structure really
     % TODO: distinguish unfilled currying slot vs unfilled holes
@@ -401,6 +402,22 @@ The generation process is as follows:
     \item finally, we generate sample inputs for each program, and calculate their corresponding outputs.
     % TODO: consider a depth-first alternative for lower memory complexity
     % TODO: compare to approach used in https://github.com/minori5214/programming-by-example/blob/master/generate.py
+\end{itemize}
+
+The process for generating task functions to traub our synthesizer on is as follows:
+\begin{itemize}
+    \item we start using a body consisting of a hole, typed with a wildcard;
+    \item we use hole-filling to generate potential complete programs within a certain complexity threshold.
+    % TODO: compare to approach used in https://github.com/minori5214/programming-by-example/blob/master/generate.py
+\end{itemize}
+
+The synthesis process itself is as follows:
+\begin{itemize}
+    \item we take the type of our function, along with a body consisting of a hole;
+    \item we use hole-filling to generate potential complete programs;
+    \item we generate sample inputs for each program, and calculate their corresponding outputs;
+    \item we evaluate the complete programs by the input-output examples, to filter down to those matching our behavioral criteria;
+    % TODO: consider a depth-first alternative for lower memory complexity
 \end{itemize}
 
 % TODO: EXPERIMENT
