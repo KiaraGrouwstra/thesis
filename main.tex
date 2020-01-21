@@ -404,11 +404,22 @@ The hole filling is as follows:
     % TODO: compare to approach used in https://github.com/minori5214/programming-by-example/blob/master/generate.py
 \end{itemize}
 
-The process for generating task functions to traub our synthesizer on is as follows:
+The process for generating task functions to train our synthesizer on is as follows:
 \begin{itemize}
     \item we start using a body consisting of a hole, typed with a wildcard;
     \item we use hole-filling to generate potential complete programs within a certain complexity threshold.
     % TODO: compare to approach used in https://github.com/minori5214/programming-by-example/blob/master/generate.py
+\end{itemize}
+
+We additionally considered alternative methods of generating task functions:
+\begin{itemize}
+    \item generating a function based on a type signature;
+    \item generating a function based on an input parameter type; % , then filling holes, only afterwards seeing what return type ends up coming out.    
+\end{itemize}
+There are two reasons we decided against using these type-first approaches:
+\begin{itemize}
+    \item as they impose constraints on the functions generated, they will end up generating less functions given the same amount of compute;
+    \item if we wanted to allow generating more general versions of the desired function, then pre-fixing the types such as not to allow more generic implementations feels counter-productive, if not anti-thetical to the spirit of functional programming.
 \end{itemize}
 
 The synthesis process itself is as follows:
