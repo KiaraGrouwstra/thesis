@@ -339,9 +339,9 @@ As a benchmark algorithm we will use~\cite{nsps}, a top-down incremental neural 
 % TODO: swap, no code available
 
 % benchmark task:
-% - [x] typed MIL: Prolog/Python, types: poly list, mono int/char.
-% - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors.
-% - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num.
+% - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
+% - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors. partial official code. allows recursion. components not listed in the paper~\citep{tamandu}.
+% - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num. permissive grammar involving pattern matching, recursion, and a flexible set of primitive operators and constants.
 % - [x] NPI/AlphaNPI: task is sequential :(
 % - [x] NSPS: flashfill so few parametric types :(, also tasks not publicized
 % - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare -- just rules, no trees or types :(
@@ -352,8 +352,8 @@ As a benchmark algorithm we will use~\cite{nsps}, a top-down incremental neural 
 % - [x] Scout: no code, and only extended abstract available, with no info on task :(
 % - [x] Idris: based on types, not examples :(
 % - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
-% - [x] Terpret: 12 tasks (table 2), also very binary so not very type-ey :(
-% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions
+% - [x] Terpret: 12 tasks (table 2), complex grammar (figure 3) incl constants on probabilistic language, so seems kinda different, plus quite binary so not very type-ey :(
+% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
 % https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
 
 We had trouble finding suitable benchmark task in the literature.
@@ -369,21 +369,27 @@ such as sorting tasks~\citep{npi,alphanpi},
 or otherwise focusing on a simple set of types --- such as strings~\citep{nsps} ---%
 or differently put, not including building blocks with parametric return types.
 
-As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder,tamandu}.
+As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder}.
 
 % As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
-% As their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
+% Their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
 
 As a result, it looks like we would need to create a benchmark task, or if anything a training dataset compatible with one of the existing benchmark tasks, ourselves.
 
 Now, for compatibility we may simply ensure our test sets contain the benchmark tasks of existing papers.
-To achieve this, we may increasingly add types, such as to support, in order of complexity:
-\begin{itemize}
-    \item list, bool~\citep{terpret}
-    \item int~\citep{tamandu}
-    \item char~\citep{typedmil}
-    \item nat, tree~\citep{myth,lambda2}
-\end{itemize}
+% To achieve this, we may increasingly add types, such as to support, in order of complexity:
+% \begin{itemize}
+%     \item list, bool~\citep{terpret}
+%     \item int~\citep{tamandu}
+%     \item char~\citep{typedmil}
+%     \item nat, tree~\citep{myth,lambda2}
+% \end{itemize}
+
+To constrain the engineering scope of our experiment, it would seem reasonable to use a benchmark paper similarly limited in grammar, so as to reduce complexity not required for the experiment where possible.
+
+% By this reasoning, we would like to benchmark against \citet{tamandu}, which "[focuses] on the synthesis of purely functional programs without any lambda expressions, explicit recursion or conditionals (i.e., only function application is allowed)".
+
+% Other papers considered as potential benchmarks often featured more comprehensive grammars, typically incorporating function recursion~\citep{typedmil,myth}, if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2}.
 
 We will do this by taking libraries of basic operations in accordance with these papers, then, in order to create a training set, generating any possible functions using combinations thereof within a given complexity threshold.
 
