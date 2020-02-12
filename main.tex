@@ -56,6 +56,13 @@ Program synthesis was traditionally studied as a computer science problem,
 but has recently been explored using machine learning approaches under the name of neural program synthesis~\citep{nps}.
 However, there has not yet been much work combining these two approaches.
 
+% Quote: Though there are still some firm purists in both, the symbolic and connectionist AI camps, the consensus is that neither approach is likely to solve program synthesis in isolation. What is important is that the two paradigms have \textbf{complementary} strengths and weaknesses in their abilities to \emph{represent} and \emph{learn} knowledge. Thus, it is natural to believe that a \textbf{hybrid system} is the most promising path forward.
+
+% My main take-away from this paper now is that most other neural techniques, on the basis of their sequence-to-sequence approach, lack an inherent incremental state and as such have to do a bunch of learning tasks just to get a sense of how to construct and update a (memorized) state so as to ultimately obtain a correct program.
+% The way I see it NSPS just completely side-steps all these extra learning tasks, significantly simplifying the learning problem.
+
+% TODO: summarize non-neural program induction/synthesis techniques
+
 % CS vs ML
 Whereas the traditional approaches in program synthesis focused on constraining the large discrete search space,
 neural program synthesis instead tends to incrementally generate programs,
