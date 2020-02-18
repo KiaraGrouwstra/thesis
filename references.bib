@@ -22,6 +22,7 @@
   number={1-2},
   pages={1--119},
   year={2017},
+  url={https://sci-hub.tw/10.1561/2500000010},
   publisher={Now Publishers, Inc.}
 }
 
@@ -146,6 +147,7 @@
   year={2018}
 }
 
+# #neural-guided-deductive-search
 @article{deepcoder,
   title={Deepcoder: Learning to write programs},
   author={Balog, Matej and
@@ -158,6 +160,7 @@
   year={2016}
 }
 
+# #neural-guided-deductive-search
 @article{kalyan2018neural,
   title={Neural-guided deductive search for real-time program synthesis from examples},
   author={Kalyan, Ashwin and
@@ -544,7 +547,7 @@
     bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-% the paper is typed-based, not by itself using examples.
+% the paper is type-based, not by itself using examples.
 % source={https://github.com/hazelgrove/hazelnut-dynamics-agda},
 @article{omar2019live,
   title={Live functional programming with typed holes},
@@ -591,3 +594,94 @@
   url={https://www.cs.vu.nl/das/das2016.pdf},
   publisher={IEEE}
 }
+
+@article{deville1994logic,
+  title={Logic program synthesis},
+  author={Deville, Yves and Lau, Kung-Kiu},
+  journal={The Journal of Logic Programming},
+  volume={19},
+  pages={321--350},
+  year={1994},
+  publisher={North-Holland}
+}
+
+@misc{bodik2013algorithmic,
+  title={Algorithmic program synthesis: introduction},
+  author={Bod{\'\i}k, Rastislav and Jobstmann, Barbara},
+  year={2013},
+  publisher={Springer}
+}
+
+% neural tree transducer (NTT): tree-to-tree learning by top-down depth-first context-sensitive tree decoder paired with recursive neural encoders.
+@article{sedoc2018neural,
+  title={Neural Tree Transducers for Tree to Tree Learning},
+  author={Sedoc, Jo{\~a}o and Foster, Dean and Ungar, Lyle},
+  year={2018}
+}
+
+# #neural-guided-deductive-search
+@article{camacho2019towards,
+  title={Towards Neural-Guided Program Synthesis for Linear Temporal Logic Specifications},
+  author={Camacho, Alberto and McIlraith, Sheila A},
+  journal={arXiv preprint arXiv:1912.13430},
+  year={2019}
+}
+# LTL by RL. synthesize a strategy that reacts to a potentially adversarial environment while ensuring that all executions satisfy a Linear Temporal Logic (LTL) specification.
+
+@article{fan2019adaptive,
+  title={Adaptive Correlated Monte Carlo for Contextual Categorical Sequence Generation},
+  author={Fan, Xinjie and Zhang, Yizhe and Wang, Zhendong and Zhou, Mingyuan},
+  journal={arXiv preprint arXiv:1912.13151},
+  year={2019}
+}
+% adapt to contextual generation of categorical sequences a policy gradient estimator
+
+@article{yin2017syntactic,
+  title={A syntactic neural model for general-purpose code generation},
+  author={Yin, Pengcheng and Neubig, Graham},
+  journal={arXiv preprint arXiv:1704.01696},
+  year={2017}
+}
+% a novel neural architecture powered by a grammar model to explicitly capture the target syntax as prior knowledge for program synthesis from natural-language input
+
+@article{xu2019neural,
+  title={Neural Program Synthesis By Self-Learning},
+  author={Xu, Yifan and Dai, Lu and Singh, Udaikaran and Zhang, Kening and Tu, Zhuowen},
+  journal={arXiv preprint arXiv:1910.05865},
+  year={2019}
+}
+% neural program synthesis algorithm learned via self-learning RL that explores the large code space efficiently.
+
+@article{young2019learning,
+  title={Learning neurosymbolic generative models via program synthesis},
+  author={Young, Halley and Bastani, Osbert and Naik, Mayur},
+  journal={arXiv preprint arXiv:1901.08565},
+  year={2019}
+}
+% incorporate programs representing global structure into the generative model
+
+@inproceedings{chen2019neural,
+  title={Neural Symbolic Reader: Scalable Integration of Distributed and Symbolic Representations for Reading Comprehension},
+  author={Chen, Xinyun and Liang, Chen and Yu, Adams Wei and Zhou, Denny and Song, Dawn and Le, Quoc V},
+  booktitle={International Conference on Learning Representations},
+  url={https://openreview.net/forum?id=ryxjnREFwH&noteId=ryxjnREFwH}
+  year={2019}
+}
+% Neural Symbolic Reader (NeRd): reader (e.g., BERT) to encode the passage/question + programmer (e.g., LSTM) to generate a program to produce the answer.
+
+@article{chen2017towards,
+  title={Towards synthesizing complex programs from input-output examples},
+  author={Chen, Xinyun and Liu, Chang and Song, Dawn},
+  journal={arXiv preprint arXiv:1706.01284},
+  year={2017}
+}
+% new task: learn parser from input + parse trees. tackle by: (1) use non-differentiable machine to restrict search space; (2) recursion; (3) RL to operate the machine.
+
+@inproceedings{shin2019program,
+  title={Program synthesis and semantic parsing with learned code idioms},
+  author={Shin, Eui Chul and Allamanis, Miltiadis and Brockschmidt, Marc and Polozov, Alex},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={10824--10834},
+  year={2019}
+}
+% Patois: let a neural program synthesizer interleave high-/low-level reasoning by automatically mining common code idioms from a given corpus.

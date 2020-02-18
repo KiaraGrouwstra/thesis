@@ -28,12 +28,13 @@ be it a formal specification, a natural language description, or input-output ex
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
 This differs from program induction, commonly known as 'supervised learning',
-% TODO: SOURCE DEFINITIONS
 in that fitting the model into the discrete form of a given grammar
 forces one to instantiate such a model from probabilistic data interpretations,
 whereas in traditional supervised learning,
 such probabilistic interpretations of the data may be taken at prediction time.
-% TODO: clarify relation to program induction
+% relation to program induction
+As such, program synthesis explicitly returns a program, whereas program induction learns to \emph{mimic} it rather than explicitly return it.~\citep{nps}
+% TODO: find less ambiguous terminology
 % TODO: clarify relation to supervised learning
 % TODO: clarify relation to https://en.wikipedia.org/wiki/Constraint_programming incl SAT/SMT which seemed used a bunch
 % TODO: clarify relation to https://en.wikipedia.org/wiki/Combinatorial_optimization
@@ -56,7 +57,26 @@ Program synthesis was traditionally studied as a computer science problem,
 but has recently been explored using machine learning approaches under the name of neural program synthesis~\citep{nps}.
 However, there has not yet been much work combining these two approaches.
 
-% Quote: Though there are still some firm purists in both, the symbolic and connectionist AI camps, the consensus is that neither approach is likely to solve program synthesis in isolation. What is important is that the two paradigms have \textbf{complementary} strengths and weaknesses in their abilities to \emph{represent} and \emph{learn} knowledge. Thus, it is natural to believe that a \textbf{hybrid system} is the most promising path forward.
+% PBE + types is still only a partial spec so by the following definition I guess this is all part of inductive program synthesis:
+% ~\citep{deville1994logic}: There are three main approaches to logic program synthesis by formal methods:
+% \item In the constructive approach, a conjecture based on the specification is constructively proved, and from this proof, the specified program is extracted. We call this approach constructive synthesis.
+% \item A more direct approach is to deduce clauses for the specified program directly from the specification. We shall call this approach deductive synthesis. Another approach can induce a program from a partial specification of the program.
+% \item The program is a generalization of the partial specification. We shall call this approach inductive synthesis.
+
+% out of trace-/model-based I guess NPS is model-based while e.g. Osera's approach seemed more trace-based:
+% ~\citep{deville1994logic}: Within the methods for inductive program synthesis, one can distinguish between the trace-based approach and the model-based approach. In the trace-based approach, example traces are first generated. A trace is a sequence of instructions executed by an unknown program on some given input data. Then the traces are generalized into a program. This program may be obtained by folding, matching, and generalizing the traces. Generalization is required since traces are related to some specific inputs; folding is required in order to form loops and recursion. In the model-based approach, synthesis aims at constructing a finite axiomatization of a model of the examples. It thus makes an intensional representation of a relation (i.e., a program) from the given (incomplete) extensional representation (i.e., the examples). The model-based approach to inductive synthesis of logic program is better known as Inductive Logic Programming (ILP).
+% 6.2. Schema-Guided Program Construction: template-based
+% basically every node-picking step I do is an instance of this.
+
+% ~\citep{bodik2013algorithmic}: We divide the field into reactive synthesis, which is concerned with automata-theoretic techniques for controllers that handle an infinite stream of requests, and functional synthesis, which produces programs consuming finite input.
+% axiomatic synthesizers (improve basic program incrementally by axioms, no partial programs) vs. syntactically derived synthesizers (gradually fill parameterizable template program using a grammar), origins in inductive inference of functions and formal languages from examples.
+% Inductive programming Synthesis of programs from incomplete specifications presented as positive and negative examples [55] has been developed for functional programs [92] and logic programs [54,138].
+% generate-and-test
+% mashup of web services: Planning and synthesis techniques have been successfully used to compose web services, e.g., in [10,37].
+% RL by synthesis: The programming language aLisp (agent Lisp) by Andre et al. [4,130] was designed for expressing prior knowledge in hierarchical reinforcement learning of agent policies.
+% Huynh et al. [82] developed an algorithm that synthesizes [a web scraping] extraction program from user demonstration. 
+
+% Quote:~citep{nps} Though there are still some firm purists in both, the symbolic and connectionist AI camps, the consensus is that neither approach is likely to solve program synthesis in isolation. What is important is that the two paradigms have \textbf{complementary} strengths and weaknesses in their abilities to \emph{represent} and \emph{learn} knowledge. Thus, it is natural to believe that a \textbf{hybrid system} is the most promising path forward.
 
 % 5.2 Future Research Recommendations
 % 6. Building more complete solutions will no doubt require greater \textbf{automation in learning}. Current methods rely heavily on hand-crafted curricula to incrementally challenge a model and improve generalization.
@@ -88,7 +108,8 @@ Our key observation here is thus that input-output examples and types are quite 
 whereas input-output examples are relatively expressive, they may only help us to evaluate the quality of complete progress;
 types, on the other hand, are by themselves not usually descriptive enough of our task,
 but fortunately, due to typed holes,
-may help us to evaluate and inform further synthesis even of incomplete functions still containing holes.
+% TODO: rewrite stuff on typed holes since I'm technically not even using those yet atm...?
+may help us to evaluate and inform further incremental synthesis steps even of incomplete functions still containing holes.
 
 We therefore hypothesize that program synthesizers may thus capitalize on this synergy by utilizing both types of information,
 rather than settling for only one of the two, as existing methods have done.%
@@ -137,6 +158,22 @@ The present work aims to be the first experiment to:
 \section{Existing work}\label{sec:existing-work}
 
 % TODO: give overview based on e.g. gulwani2017program / https://alexpolozov.com/blog/program-synthesis-2018/
+
+% ~\citep{gulwani2017program}
+% approaches: deductive (theorem provers, full specification) vs. grammar-based e.g. based on examples
+% challenges: program space (full enumeration won't terminate), user intent (full specification unrealistic)
+% dimensions: kind of constraints (user intent), search space of programs, search technique
+% - user intent: logical specification (tricky to write), examples (potentially by property or iteratively), traces (step-by-step behavior on given input, e.g. intermediate states UI), natural language, partial programs, related programs (optimization, deobfuscation, inverses)
+% - search space: expressiveness vs efficiency, imperative/functional, DSLs, control structure (e.g. partial program with holes)
+% search technique: enumerative search (enumerate/order/check, unscalable, breadth-first, bottom-up i.e. small first), deduction (divide-and-conquer top-down search, depth-first, recursively reduce to sub-problems, propagating constraints), constraint solving (constraint generation (invariant-based (full proof), input-based (proof it works for certain inputs, typically paired with counter-example guided inductive synthesis (CEGIS) strategy), path-based (in-between, works for inputs following some paths)), constraint resolution (SAT/SMT)), statistical (ML of probabilistic grammars, genetic programming, MCMC sampling, probabilistic inference), combination (augment enumerative search or deduction by providing choices' likelihood)
+% general principles:
+% - Second-Order Problem Reduction: reduce to first-order search problem using templates so we can use SMT/SAT solvers. sketches have holes fixed to e.g. integer, templates have holes for arbitrary expressions.
+% - Oracle-Guided Synthesis: picking templates non-trivial, instead verify validity of candidate solutions.
+%   - counterexample-guided inductive synthesis (CEGIS): either the candidate turns out valid, or we find a counter-example.
+%   - oracle-guided inductive synthesis (OGIS) first uses simplified spec.
+%   - Distinguishing Inputs: use loopless programs, check program distinguishability on concrete inputs.
+%   - End-user confidence: e.g. find distinguishing input, ask user which program handles it correctly (if any).
+%   - Syntactic Bias
 
 % TODO: incorporate existing references
 
