@@ -2,6 +2,14 @@
 
 type-driven development with hole-type-supervised NSPS / AlphaNPI? AlphaNSPS?
 
+TODO (March 01):
+- [x] research question
+- [ ] literature review
+- [ ] methodology
+- [x] updated title
+- [~] updated planning
+- [/] any new information
+
 ### papers
 
 sent by Emile:
