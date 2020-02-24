@@ -3,7 +3,8 @@
 \usepackage{graphicx, color}
 \usepackage[a4paper,margin=2cm]{geometry}
 \usepackage{hyperref}
-\usepackage[numbers]{natbib}
+\usepackage{natbib}
+% \usepackage[numbers]{natbib}
 \usepackage{subfiles}
 \usepackage{refcheck}
 
@@ -15,7 +16,20 @@
 
 \subfile{title-page-ai.tex}
 
-\section{Research Direction}
+\section{Planning} % \label{sec:planning}
+
+\begin{itemize}
+    \item [~] December: finish literature review
+    \item [x] January/February: implement dataset generation
+    \item [ ] March: implement baseline
+    \item [~] April: finish experiment design
+    \item [ ] May: perform experiment, gather results
+    \item [ ] June: finalize write-up
+    \item [ ] August: uitloop
+    \item [ ] Nov: defense
+\end{itemize}
+
+\section{Research Direction} % \label{sec:research-direction}
 
 If artificial intelligence is software 2.0~\citep{software20}
 then \emph{program synthesis} is software 2.0 applied to the field of software development.
@@ -70,11 +84,11 @@ However, there has not yet been much work combining these two approaches.
 
 % ~\citep{bodik2013algorithmic}: We divide the field into reactive synthesis, which is concerned with automata-theoretic techniques for controllers that handle an infinite stream of requests, and functional synthesis, which produces programs consuming finite input.
 % axiomatic synthesizers (improve basic program incrementally by axioms, no partial programs) vs. syntactically derived synthesizers (gradually fill parameterizable template program using a grammar), origins in inductive inference of functions and formal languages from examples.
-% Inductive programming Synthesis of programs from incomplete specifications presented as positive and negative examples [55] has been developed for functional programs [92] and logic programs [54,138].
+% Inductive programming Synthesis of programs from incomplete specifications presented as positive and negative examples has been developed for functional programs [92] and logic programs.
 % generate-and-test
 % mashup of web services: Planning and synthesis techniques have been successfully used to compose web services, e.g., in [10,37].
 % RL by synthesis: The programming language aLisp (agent Lisp) by Andre et al. [4,130] was designed for expressing prior knowledge in hierarchical reinforcement learning of agent policies.
-% Huynh et al. [82] developed an algorithm that synthesizes [a web scraping] extraction program from user demonstration. 
+% Huynh et al. [82] developed an algorithm that synthesizes [a web scraping] extraction program from user demonstration.
 
 % Quote:~citep{nps} Though there are still some firm purists in both, the symbolic and connectionist AI camps, the consensus is that neither approach is likely to solve program synthesis in isolation. What is important is that the two paradigms have \textbf{complementary} strengths and weaknesses in their abilities to \emph{represent} and \emph{learn} knowledge. Thus, it is natural to believe that a \textbf{hybrid system} is the most promising path forward.
 
@@ -146,7 +160,7 @@ languages featuring typed holes may help us to pre-compile even incomplete progr
 % TODO: how can we apply a more generalized program synthesis model to a specific problem? take inspiration from neural network pruning?
 % TODO: investigate propagation of input-output examples to the smallest tree containing all holes, such as to map the encodings to the most precies space. this should mean inversely applying any pruned super-functions to the output examples. for lossless functions like map this should yield propagated output examples; for lossy functions such as filter this would instead yield type constraints (we know the elements that satisfied the condition, but around and between those there could be any number of elements that did not satisfy the constraint). I should check out to what extent such methods have been applied in type/example based program synthesis and theorem provers. caveat though, I dunno to what extent such type constraints could still be faster than fully calculating the input-output for various synthesized programs...
 
-\section{Expected Contribution}\label{sec:expected-contribution}
+\section{Expected Contribution} % \label{sec:expected-contribution}
 
 The present work aims to be the first experiment to:
 \begin{itemize}
@@ -155,7 +169,7 @@ The present work aims to be the first experiment to:
     \item use this type info to better constrain the search space, improving the effectiveness of (neural) program synthesis methods. 
 \end{itemize}
 
-\section{Existing work}\label{sec:existing-work}
+\section{Existing work} % \label{sec:existing-work}
 
 % TODO: give overview based on e.g. gulwani2017program / https://alexpolozov.com/blog/program-synthesis-2018/
 
@@ -165,7 +179,17 @@ The present work aims to be the first experiment to:
 % dimensions: kind of constraints (user intent), search space of programs, search technique
 % - user intent: logical specification (tricky to write), examples (potentially by property or iteratively), traces (step-by-step behavior on given input, e.g. intermediate states UI), natural language, partial programs, related programs (optimization, deobfuscation, inverses)
 % - search space: expressiveness vs efficiency, imperative/functional, DSLs, control structure (e.g. partial program with holes)
-% search technique: enumerative search (enumerate/order/check, unscalable, breadth-first, bottom-up i.e. small first), deduction (divide-and-conquer top-down search, depth-first, recursively reduce to sub-problems, propagating constraints), constraint solving (constraint generation (invariant-based (full proof), input-based (proof it works for certain inputs, typically paired with counter-example guided inductive synthesis (CEGIS) strategy), path-based (in-between, works for inputs following some paths)), constraint resolution (SAT/SMT)), statistical (ML of probabilistic grammars, genetic programming, MCMC sampling, probabilistic inference), combination (augment enumerative search or deduction by providing choices' likelihood)
+% - search technique:
+%   - enumerative search: enumerate/order/check, unscalable, breadth-first, bottom-up i.e. small first
+%   - deduction: divide-and-conquer top-down search, depth-first, recursively reduce to sub-problems, propagating constraints
+%   - constraint solving:
+%     - constraint generation:
+%       - invariant-based: full proof
+%       - input-based: proof it works for certain inputs, typically paired with counter-example guided inductive synthesis (CEGIS) strategy
+%       - path-based: in-between, works for inputs following some paths
+%     - constraint resolution: SAT/SMT
+%   - statistical: ML of probabilistic grammars, genetic programming, MCMC sampling, probabilistic inference
+%   - combination: augment enumerative search or deduction by providing choices' likelihood
 % general principles:
 % - Second-Order Problem Reduction: reduce to first-order search problem using templates so we can use SMT/SAT solvers. sketches have holes fixed to e.g. integer, templates have holes for arbitrary expressions.
 % - Oracle-Guided Synthesis: picking templates non-trivial, instead verify validity of candidate solutions.
@@ -173,7 +197,62 @@ The present work aims to be the first experiment to:
 %   - oracle-guided inductive synthesis (OGIS) first uses simplified spec.
 %   - Distinguishing Inputs: use loopless programs, check program distinguishability on concrete inputs.
 %   - End-user confidence: e.g. find distinguishing input, ask user which program handles it correctly (if any).
-%   - Syntactic Bias
+%   - Syntactic Bias: restrict programs
+%     - Sketching: int holes
+%     - Syntax-Guided Synthesis (SyGuS): logical spec + syntactic template to constrain space. find candidates in grammar G satisfying spec φ in theory (language) T. competition SyGuS-Comp.
+%     - DSL Design: factors:
+%       - Balanced Expressivity
+%       - Choice of Operators
+%       - Naturalness
+%       - Efficiency
+%     - Optimization:
+%       - Metrics: Program speed, Robustness, Naturalness/legibility
+%       - Ranking:
+%         - MCMC (smart hill climber)
+%         - version space algebra (VSA)s: rankable repesentation of program space
+%         - ml
+%         - metasketches: ordered family of partial programs w/ cost function + gradient
+% - Enumerative Search
+%   - Enumerative Search
+%     - Top-down Tree Search: like what I do for program generation
+%     - Bottom-up Tree Search: dedupe bottom-up to prune search space (e.g. x+y vs y+x)
+%   - Bidirectional Enumerative Search: forward search from inputs + backward from outputs.
+%   - Offline Exhaustive Enumeration and Composition: hash programs by i/o.
+% - Constraint Solving: encoding spec + syntactic restrictions in one formula.
+%   - Component-based synthesis: use each component once.
+%     - End-to-end SMT Encoding: ensure program:
+%       - well-formed: syntax, deduped, acyclical
+%       - component usage: respect types?
+%       - specification: i/o correct
+%     - Sketch generation and completion: less restrictive
+%   - Solver-Aided Programming: extend language with SAT/SMT-powered constructs
+%   - Inductive Logic Programming: synthesizing first-order rules/relations, not functional expressions.
+% - Stochastic Search: learn a distribution over the space of programs in the hypothesis space conditioned on the specification, then sample
+%   - Metropolis-Hastings Algorithm for Sampling Expressions: probability based on meeting specification
+%   - Genetic Programming: natural selection/variation
+%   - Machine Learning: learn a probability distribution over the space of programs conditioned by the specification
+%   - Neural Program Synthesis: induction vs synthesis (e.g. NSPS)
+% - Programming by Example
+%   - Problem Definition: use inputs + output examples/constraints. characterized by ease of use and ambiguity. find just the few good programs that match intent and generalize.
+%   - Version Space Algebra: constraining DSL by picking only a few examples for each grammar production.
+%   - Deduction-Based Techniques: push examples thru grammar top-down. aka divide-and-conquer search, top-down search, and backpropagation-based search. done by (a) inverse operator semantics, or (b) type-theoretic.
+%     - Inverse Semantics: mitigating non-trivial inverse:
+%       - witness function: pick only likely (reverse) inputs
+%       - constraints: property of output
+%       - Case split: Per-parameter decomposition of inverse semantics.
+%     - Type-Based Perspective: propagate type refinements.
+%   - Ambiguity Resolution: getting user intent harder with few samples in a rich DSL.
+%     - Ranking: learning-to-rank any correct program on top.
+%     - Active Learning: ask feedback by distinguishing inputs.
+% - Future Work: Debuggability, Multi-modal input, Adaptivity, Statistical techniques, Scaling, Knowledge transfer, Industrialization
+% [79] SmartSynth: synthesizing smartphone automation scripts from natural language
+
+% ~\citep{polozov}: Program Synthesis in 2017-18
+% Neural-guided search
+% Sketch generation
+% Graph neural networks
+% Datasets
+% Notable mentions: differentiable FlashFill, Conflict-Driven Learning, Programmatically Interpretable RL
 
 % TODO: incorporate existing references
 
@@ -198,13 +277,26 @@ A synthesizer may be passed additional information in various ways:
 Such logical specifications might also include types of inputs and outputs,
 and this branch of program synthesis has commonly focused on using functional programming languages as the synthesis language.%
 ~\citep{synquid,eguchi2018automated,scythe,scout,gissurarson2018suggesting,idris,lenses}
+
+% Synthesis language
+Note that other work in this area have used differentiable programming languages
+as the synthesis language such as to enable optimization based on
+stochastic gradient descent (SGD)~\citep{forth,terpret}.
+However, such purely SGD-based methods proved less effective than traditional or mixed methods~\citep{terpret}.
+% More unfortunately for our purposes, such languages have generally been relatively imperative in nature,
+% rendering them less amenable to type-driven synthesis.
+Outside of neural methods, programming languages designed for program synthesis also include solver-aided languages~\citep{rosette},
+aimed at generating satisfiability conditions for satisfactory programs based on failing input-output examples such as to synthesize program repairs.
+
+\section{Methodology} % \label{sec:methodology}
+
 For our purposes here, we will focus on synthesis based on input-output examples, aka programming by example (PBE),
 as having known input-output types will help provide us the needed type information we would like to use.
 
 % structure
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
 % why?
-1  % TODO check where this line came from.
+
 Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
 Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained,
 that is, permits arbitrary type-safe combinations of subexpressions.
@@ -266,16 +358,6 @@ have been making use of the Haskell language,
 a statically typed, purely functional programming language with type inference and lazy evaluation.~\footnote{\url{https://www.haskell.org/}}
 % TODO: mention ML-like (= typed lisp) alternatives e.g. OCaml.
 
-% TODO: move to related work
-Note that other work in this area have used differentiable programming languages
-as the synthesis language such as to enable optimization based on
-stochastic gradient descent (SGD)~\citep{forth,terpret}.
-However, such purely SGD-based methods proved less effective than traditional or mixed methods~\citep{terpret}.
-More unfortunately for our purposes, such languages have generally been relatively imperative in nature,
-rendering them less amenable to type-driven synthesis.
-Outside of neural methods, programming languages designed for program synthesis also include solver-aided languages~\citep{rosette},
-aimed at generating satisfiability conditions for satisfactory programs based on failing input-output examples such as to synthesize program repairs.
-
 The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm,
 unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
 
@@ -287,20 +369,10 @@ While Idris language offers these benefits as well, Haskell's lazy evaluation se
 % TODO: explain why I don't feel I need imperative statements or variable definitions
 The reason we consider programs of a tree-based form, rather than as a list of imperative statements such as variable definitions,
 is that the view of programs as function compositions guarantees us that any complete program will yield us output of the desired type.
-This means we view our programs as \emp{pure functions}~\citep{fortran95},
+This means we view our programs as \emph{pure functions}~\citep{fortran95},
 i.e. returning a deterministic output for any given inputs, without performing any additional side effects.
 This guarantees that, rather than just branching out, our search will focus on finding acceptable solutions.
-This is to be contrasted with \emp{imperative} programs, a coding style characterized by variable mutation,
-historically popularized for the purpose of performance optimization from the earlier languages such as assembly.
-% TODO: explain incomplete programs, how types enable evaluation of these, and why this means we should perform program synthesis based on types
-
-% TODO: explain why I don't feel I need imperative statements or variable definitions
-The reason we consider programs of a tree-based form, rather than as a list of imperative statements such as variable definitions,
-is that the view of programs as function compositions guarantees us that any complete program will yield us output of the desired type.
-This means we view our programs as \emp{pure functions}~\citep{fortran95},
-i.e. returning a deterministic output for any given inputs, without performing any additional side effects.
-This guarantees that, rather than just branching out, our search will focus on finding acceptable solutions.
-This is to be contrasted with \emp{imperative} programs, a coding style characterized by variable mutation,
+This is to be contrasted with \emph{imperative} programs, a coding style characterized by variable mutation,
 historically popularized for the purpose of performance optimization from the earlier languages such as assembly.
 Synthesis for such languages exists as well~\citep{shi2019frangel}, but is generally harder as it cannot make as much use of types.
 % TODO: explain incomplete programs, how types enable evaluation of these, and why this means we should perform program synthesis based on types
@@ -310,7 +382,7 @@ for the purpose of our proof-of-concept we will opt to hide much of this.
 To achieve this, we will take inspiration from the lambda calculus~\citep{lambdacalculus},
 which opts to view constructs as functions,
 both so as to provide a unified view of various operations, as well as to enable \emph{currying} of functions.
-A \emp{curried}~\citep{currying} version of a function is not unlike its original form,
+A \emph{curried}~\citep{currying} version of a function is not unlike its original form,
 yet allowing arguments to the function to be applied to it one at a time.
 The way this works is that, when an argument is applied to a curried form of a function taking two parameters,
 the result is a function that still takes one parameter, before yielding the actual result of the original function.
@@ -333,16 +405,16 @@ Instead, a synthesized program might then be converted so as to use a more legib
 For the purpose of this thesis, we will not focus on reader-friendly syntax, however.
 
 Grammar-wise, this should leave us with few options:
-referencing variables (whether from our library or parameters),
+% referencing variables (whether from our library or parameters),
+referencing variables from our library,
 and applying arguments to functions.
 For the sake of simplicity,
 we will attempt to leave out certain common language features such as defining variables and creating lambda functions.
 % ^ TODO: update statement on lambda functions
 Hopefully, our idea can be demonstrated without this additional complexity.
 
-To simplify the problem, we would disallow the use of any constant values such as free-style strings.
-% TODO: evaluate the viability of this, and how to hack around availability of e.g. constant booleans.
-% TODO: a proper solution here probably involves using e.g. https://hackage.haskell.org/package/ad to fix constants by backprop.
+To simplify the problem, we would furthermore disallow the use of arbitrary values such as free-style strings.
+% Note: a proper solution here probably involves using e.g. https://hackage.haskell.org/package/ad to fix constants by backprop.
 
 As a result, our Haskell-based grammar ends up looking as follows:
 \begin{tabular}{ccccc}
@@ -358,9 +430,9 @@ As a result, our Haskell-based grammar ends up looking as follows:
     QName & UnQual & Name & name & redundant \\
     QName & Special & SpecialCon & specialCon & redundant \\
     Name & Ident & & ident & \\
-    SpecialCon & ExprHole & & \textbf{_} & \\
+    SpecialCon & ExprHole & & \textbf{\_} & \\
     SpecialCon & ListCon & & \textbf{[]} & \\
-    Exp & Lambda & [Pat] Exp & \textbf{\\} patt1 patt2 ... \textbf{->} exp & lambdas \\
+    Exp & Lambda & [Pat] Exp & \textbf{\textbackslash} patt1 patt2 ... \textbf{->} exp & lambdas \\
     Pat & PVar & Name & name & lambdas, redundant \\
     Exp & Let & Binds Exp & \textbf{let} binds \textbf{in} exp & lambdas typed without ScopedTypeVariables \\
     Binds & BDecls & [Decl] & decl1\textbf{;} decl2\textbf{;} ... & lambdas typed without ScopedTypeVariables \\
@@ -370,7 +442,17 @@ As a result, our Haskell-based grammar ends up looking as follows:
 % TODO: use BNF?
 % TODO: make this not specific to haskell by simplifying out the haskell-specific bits redundant here in my simple version
 
-\section{Experiment}
+Our programs are structured as follows:
+
+\begin{verbatim}
+    let
+        foo = expr
+        bar = expr
+        ...
+    in body
+\end{verbatim}
+
+\section{Experiment} % \label{sec:experiment}
 
 \subsection{Benchmark task}
 
@@ -487,14 +569,14 @@ The synthesis process itself is as follows:
 % TODO: EXPERIMENT
 % TODO: elaborate how to supervise existing methods with type info
 
-\section{Result}
+\section{Result} % \label{sec:result}
 
 Having added our type-level supervision during training, we expect synthesis success rates to rise and required evaluations to drop compared to the baseline algorithm.
 This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
 % TODO: RESULT
 
-\section{Discussion}
+\section{Discussion} % \label{sec:discussion}
 
 One question we aim to answer here is whether our approach can meaningfully scale to program sizes not explicitly train on.
 % TODO: check what claims NSPS made on this.
