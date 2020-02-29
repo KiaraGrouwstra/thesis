@@ -72,31 +72,9 @@ but has recently been explored using machine learning approaches under the name 
 However, there has not yet been much work combining these two approaches.
 
 % PBE + types is still only a partial spec so by the following definition I guess this is all part of inductive program synthesis:
-% ~\citep{deville1994logic}: There are three main approaches to logic program synthesis by formal methods:
-% \item In the constructive approach, a conjecture based on the specification is constructively proved, and from this proof, the specified program is extracted. We call this approach constructive synthesis.
-% \item A more direct approach is to deduce clauses for the specified program directly from the specification. We shall call this approach deductive synthesis. Another approach can induce a program from a partial specification of the program.
-% \item The program is a generalization of the partial specification. We shall call this approach inductive synthesis.
-
-% out of trace-/model-based I guess NPS is model-based while e.g. Osera's approach seemed more trace-based:
-% ~\citep{deville1994logic}: Within the methods for inductive program synthesis, one can distinguish between the trace-based approach and the model-based approach. In the trace-based approach, example traces are first generated. A trace is a sequence of instructions executed by an unknown program on some given input data. Then the traces are generalized into a program. This program may be obtained by folding, matching, and generalizing the traces. Generalization is required since traces are related to some specific inputs; folding is required in order to form loops and recursion. In the model-based approach, synthesis aims at constructing a finite axiomatization of a model of the examples. It thus makes an intensional representation of a relation (i.e., a program) from the given (incomplete) extensional representation (i.e., the examples). The model-based approach to inductive synthesis of logic program is better known as Inductive Logic Programming (ILP).
-% 6.2. Schema-Guided Program Construction: template-based
-% basically every node-picking step I do is an instance of this.
-
-% ~\citep{bodik2013algorithmic}: We divide the field into reactive synthesis, which is concerned with automata-theoretic techniques for controllers that handle an infinite stream of requests, and functional synthesis, which produces programs consuming finite input.
-% axiomatic synthesizers (improve basic program incrementally by axioms, no partial programs) vs. syntactically derived synthesizers (gradually fill parameterizable template program using a grammar), origins in inductive inference of functions and formal languages from examples.
-% Inductive programming Synthesis of programs from incomplete specifications presented as positive and negative examples has been developed for functional programs [92] and logic programs.
-% generate-and-test
-% mashup of web services: Planning and synthesis techniques have been successfully used to compose web services, e.g., in [10,37].
-% RL by synthesis: The programming language aLisp (agent Lisp) by Andre et al. [4,130] was designed for expressing prior knowledge in hierarchical reinforcement learning of agent policies.
-% Huynh et al. [82] developed an algorithm that synthesizes [a web scraping] extraction program from user demonstration.
-
-% Quote:~citep{nps} Though there are still some firm purists in both, the symbolic and connectionist AI camps, the consensus is that neither approach is likely to solve program synthesis in isolation. What is important is that the two paradigms have \textbf{complementary} strengths and weaknesses in their abilities to \emph{represent} and \emph{learn} knowledge. Thus, it is natural to believe that a \textbf{hybrid system} is the most promising path forward.
-
-% 5.2 Future Research Recommendations
-% 6. Building more complete solutions will no doubt require greater \textbf{automation in learning}. Current methods rely heavily on hand-crafted curricula to incrementally challenge a model and improve generalization.
-
-% My main take-away from this paper now is that most other neural techniques, on the basis of their sequence-to-sequence approach, lack an inherent incremental state and as such have to do a bunch of learning tasks just to get a sense of how to construct and update a (memorized) state so as to ultimately obtain a correct program.
-% The way I see it NSPS just completely side-steps all these extra learning tasks, significantly simplifying the learning problem.
+% ~\citep{deville1994logic}
+% ~\citep{bodik2013algorithmic}
+% ~citep{nps}
 
 % TODO: summarize non-neural program induction/synthesis techniques
 
@@ -171,89 +149,9 @@ The present work aims to be the first experiment to:
 
 \section{Existing work} % \label{sec:existing-work}
 
-% TODO: give overview based on e.g. gulwani2017program / https://alexpolozov.com/blog/program-synthesis-2018/
-
+% TODO: give overview based on e.g.:
 % ~\citep{gulwani2017program}
-% approaches: deductive (theorem provers, full specification) vs. grammar-based e.g. based on examples
-% challenges: program space (full enumeration won't terminate), user intent (full specification unrealistic)
-% dimensions: kind of constraints (user intent), search space of programs, search technique
-% - user intent: logical specification (tricky to write), examples (potentially by property or iteratively), traces (step-by-step behavior on given input, e.g. intermediate states UI), natural language, partial programs, related programs (optimization, deobfuscation, inverses)
-% - search space: expressiveness vs efficiency, imperative/functional, DSLs, control structure (e.g. partial program with holes)
-% - search technique:
-%   - enumerative search: enumerate/order/check, unscalable, breadth-first, bottom-up i.e. small first
-%   - deduction: divide-and-conquer top-down search, depth-first, recursively reduce to sub-problems, propagating constraints
-%   - constraint solving:
-%     - constraint generation:
-%       - invariant-based: full proof
-%       - input-based: proof it works for certain inputs, typically paired with counter-example guided inductive synthesis (CEGIS) strategy
-%       - path-based: in-between, works for inputs following some paths
-%     - constraint resolution: SAT/SMT
-%   - statistical: ML of probabilistic grammars, genetic programming, MCMC sampling, probabilistic inference
-%   - combination: augment enumerative search or deduction by providing choices' likelihood
-% general principles:
-% - Second-Order Problem Reduction: reduce to first-order search problem using templates so we can use SMT/SAT solvers. sketches have holes fixed to e.g. integer, templates have holes for arbitrary expressions.
-% - Oracle-Guided Synthesis: picking templates non-trivial, instead verify validity of candidate solutions.
-%   - counterexample-guided inductive synthesis (CEGIS): either the candidate turns out valid, or we find a counter-example.
-%   - oracle-guided inductive synthesis (OGIS) first uses simplified spec.
-%   - Distinguishing Inputs: use loopless programs, check program distinguishability on concrete inputs.
-%   - End-user confidence: e.g. find distinguishing input, ask user which program handles it correctly (if any).
-%   - Syntactic Bias: restrict programs
-%     - Sketching: int holes
-%     - Syntax-Guided Synthesis (SyGuS): logical spec + syntactic template to constrain space. find candidates in grammar G satisfying spec φ in theory (language) T. competition SyGuS-Comp.
-%     - DSL Design: factors:
-%       - Balanced Expressivity
-%       - Choice of Operators
-%       - Naturalness
-%       - Efficiency
-%     - Optimization:
-%       - Metrics: Program speed, Robustness, Naturalness/legibility
-%       - Ranking:
-%         - MCMC (smart hill climber)
-%         - version space algebra (VSA)s: rankable repesentation of program space
-%         - ml
-%         - metasketches: ordered family of partial programs w/ cost function + gradient
-% - Enumerative Search
-%   - Enumerative Search
-%     - Top-down Tree Search: like what I do for program generation
-%     - Bottom-up Tree Search: dedupe bottom-up to prune search space (e.g. x+y vs y+x)
-%   - Bidirectional Enumerative Search: forward search from inputs + backward from outputs.
-%   - Offline Exhaustive Enumeration and Composition: hash programs by i/o.
-% - Constraint Solving: encoding spec + syntactic restrictions in one formula.
-%   - Component-based synthesis: use each component once.
-%     - End-to-end SMT Encoding: ensure program:
-%       - well-formed: syntax, deduped, acyclical
-%       - component usage: respect types?
-%       - specification: i/o correct
-%     - Sketch generation and completion: less restrictive
-%   - Solver-Aided Programming: extend language with SAT/SMT-powered constructs
-%   - Inductive Logic Programming: synthesizing first-order rules/relations, not functional expressions.
-% - Stochastic Search: learn a distribution over the space of programs in the hypothesis space conditioned on the specification, then sample
-%   - Metropolis-Hastings Algorithm for Sampling Expressions: probability based on meeting specification
-%   - Genetic Programming: natural selection/variation
-%   - Machine Learning: learn a probability distribution over the space of programs conditioned by the specification
-%   - Neural Program Synthesis: induction vs synthesis (e.g. NSPS)
-% - Programming by Example
-%   - Problem Definition: use inputs + output examples/constraints. characterized by ease of use and ambiguity. find just the few good programs that match intent and generalize.
-%   - Version Space Algebra: constraining DSL by picking only a few examples for each grammar production.
-%   - Deduction-Based Techniques: push examples thru grammar top-down. aka divide-and-conquer search, top-down search, and backpropagation-based search. done by (a) inverse operator semantics, or (b) type-theoretic.
-%     - Inverse Semantics: mitigating non-trivial inverse:
-%       - witness function: pick only likely (reverse) inputs
-%       - constraints: property of output
-%       - Case split: Per-parameter decomposition of inverse semantics.
-%     - Type-Based Perspective: propagate type refinements.
-%   - Ambiguity Resolution: getting user intent harder with few samples in a rich DSL.
-%     - Ranking: learning-to-rank any correct program on top.
-%     - Active Learning: ask feedback by distinguishing inputs.
-% - Future Work: Debuggability, Multi-modal input, Adaptivity, Statistical techniques, Scaling, Knowledge transfer, Industrialization
-% [79] SmartSynth: synthesizing smartphone automation scripts from natural language
-
-% ~\citep{polozov}: Program Synthesis in 2017-18
-% Neural-guided search
-% Sketch generation
-% Graph neural networks
-% Datasets
-% Notable mentions: differentiable FlashFill, Conflict-Driven Learning, Programmatically Interpretable RL
-
+% ~\citep{polozov}
 % TODO: incorporate existing references
 
 % TODO: add references
@@ -465,7 +363,6 @@ Our programs are structured as follows:
 % - Program Synthesis using Conflict-Driven Learning (https://arxiv.org/pdf/1711.08029v1.pdf)
 
 As a benchmark algorithm we will use~\cite{nsps}, a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
-% TODO: swap, no code available
 
 % benchmark task:
 % - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
@@ -499,9 +396,6 @@ or otherwise focusing on a simple set of types --- such as strings~\citep{nsps} 
 or differently put, not including building blocks with parametric return types.
 
 As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder}.
-
-% As a benchmark task we will use \cite{lambda2}'s corpus of over 40 data structure manipulation tasks involving lists, trees, and nested data structures such as lists of lists or trees of lists.
-% Their synthesis language \cite{lambda2} used the OCaml language~\footnote{\url{https://ocaml.org/}}, an industrial-strength programming language supporting functional, imperative and object-oriented styles.
 
 As a result, it looks like we would need to create a benchmark task, or if anything a training dataset compatible with one of the existing benchmark tasks, ourselves.
 

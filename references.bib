@@ -28,6 +28,78 @@
   year={2017},
   url={https://sci-hub.tw/10.1561/2500000010}
 }
+% approaches: deductive (theorem provers, full specification) vs. grammar-based e.g. based on examples
+% challenges: program space (full enumeration won't terminate), user intent (full specification unrealistic)
+% dimensions: kind of constraints (user intent), search space of programs, search technique
+% - user intent: logical specification (tricky to write), examples (potentially by property or iteratively), traces (step-by-step behavior on given input, e.g. intermediate states UI), natural language, partial programs, related programs (optimization, deobfuscation, inverses)
+% - search space: expressiveness vs efficiency, imperative/functional, DSLs, control structure (e.g. partial program with holes)
+% - search technique:
+%   - enumerative search: enumerate/order/check, unscalable, breadth-first, bottom-up i.e. small first
+%   - deduction: divide-and-conquer top-down search, depth-first, recursively reduce to sub-problems, propagating constraints
+%   - constraint solving:
+%     - constraint generation:
+%       - invariant-based: full proof
+%       - input-based: proof it works for certain inputs, typically paired with counter-example guided inductive synthesis (CEGIS) strategy
+%       - path-based: in-between, works for inputs following some paths
+%     - constraint resolution: SAT/SMT
+%   - statistical: ML of probabilistic grammars, genetic programming, MCMC sampling, probabilistic inference
+%   - combination: augment enumerative search or deduction by providing choices' likelihood
+% general principles:
+% - Second-Order Problem Reduction: reduce to first-order search problem using templates so we can use SMT/SAT solvers. sketches have holes fixed to e.g. integer, templates have holes for arbitrary expressions.
+% - Oracle-Guided Synthesis: picking templates non-trivial, instead verify validity of candidate solutions.
+%   - counterexample-guided inductive synthesis (CEGIS): either the candidate turns out valid, or we find a counter-example.
+%   - oracle-guided inductive synthesis (OGIS) first uses simplified spec.
+%   - Distinguishing Inputs: use loopless programs, check program distinguishability on concrete inputs.
+%   - End-user confidence: e.g. find distinguishing input, ask user which program handles it correctly (if any).
+%   - Syntactic Bias: restrict programs
+%     - Sketching: int holes
+%     - Syntax-Guided Synthesis (SyGuS): logical spec + syntactic template to constrain space. find candidates in grammar G satisfying spec φ in theory (language) T. competition SyGuS-Comp.
+%     - DSL Design: factors:
+%       - Balanced Expressivity
+%       - Choice of Operators
+%       - Naturalness
+%       - Efficiency
+%     - Optimization:
+%       - Metrics: Program speed, Robustness, Naturalness/legibility
+%       - Ranking:
+%         - MCMC (smart hill climber)
+%         - version space algebra (VSA)s: rankable repesentation of program space
+%         - ml
+%         - metasketches: ordered family of partial programs w/ cost function + gradient
+% - Enumerative Search
+%   - Enumerative Search
+%     - Top-down Tree Search: like what I do for program generation
+%     - Bottom-up Tree Search: dedupe bottom-up to prune search space (e.g. x+y vs y+x)
+%   - Bidirectional Enumerative Search: forward search from inputs + backward from outputs.
+%   - Offline Exhaustive Enumeration and Composition: hash programs by i/o.
+% - Constraint Solving: encoding spec + syntactic restrictions in one formula.
+%   - Component-based synthesis: use each component once.
+%     - End-to-end SMT Encoding: ensure program:
+%       - well-formed: syntax, deduped, acyclical
+%       - component usage: respect types?
+%       - specification: i/o correct
+%     - Sketch generation and completion: less restrictive
+%   - Solver-Aided Programming: extend language with SAT/SMT-powered constructs
+%   - Inductive Logic Programming: synthesizing first-order rules/relations, not functional expressions.
+% - Stochastic Search: learn a distribution over the space of programs in the hypothesis space conditioned on the specification, then sample
+%   - Metropolis-Hastings Algorithm for Sampling Expressions: probability based on meeting specification
+%   - Genetic Programming: natural selection/variation
+%   - Machine Learning: learn a probability distribution over the space of programs conditioned by the specification
+%   - Neural Program Synthesis: induction vs synthesis (e.g. NSPS)
+% - Programming by Example
+%   - Problem Definition: use inputs + output examples/constraints. characterized by ease of use and ambiguity. find just the few good programs that match intent and generalize.
+%   - Version Space Algebra: constraining DSL by picking only a few examples for each grammar production.
+%   - Deduction-Based Techniques: push examples thru grammar top-down. aka divide-and-conquer search, top-down search, and backpropagation-based search. done by (a) inverse operator semantics, or (b) type-theoretic.
+%     - Inverse Semantics: mitigating non-trivial inverse:
+%       - witness function: pick only likely (reverse) inputs
+%       - constraints: property of output
+%       - Case split: Per-parameter decomposition of inverse semantics.
+%     - Type-Based Perspective: propagate type refinements.
+%   - Ambiguity Resolution: getting user intent harder with few samples in a rich DSL.
+%     - Ranking: learning-to-rank any correct program on top.
+%     - Active Learning: ask feedback by distinguishing inputs.
+% - Future Work: Debuggability, Multi-modal input, Adaptivity, Statistical techniques, Scaling, Knowledge transfer, Industrialization
+% [79] SmartSynth: synthesizing smartphone automation scripts from natural language
 
 @article{nps,
   author    = {Neel Kant},
@@ -39,6 +111,13 @@
   archivePrefix = {arXiv},
   eprint    = {1802.02353}
 }
+% Though there are still some firm purists in both, the symbolic and connectionist AI camps, the consensus is that neither approach is likely to solve program synthesis in isolation. What is important is that the two paradigms have \textbf{complementary} strengths and weaknesses in their abilities to \emph{represent} and \emph{learn} knowledge. Thus, it is natural to believe that a \textbf{hybrid system} is the most promising path forward.
+
+% 5.2 Future Research Recommendations
+% 6. Building more complete solutions will no doubt require greater \textbf{automation in learning}. Current methods rely heavily on hand-crafted curricula to incrementally challenge a model and improve generalization.
+
+% My main take-away from this paper now is that most other neural techniques, on the basis of their sequence-to-sequence approach, lack an inherent incremental state and as such have to do a bunch of learning tasks just to get a sense of how to construct and update a (memorized) state so as to ultimately obtain a correct program.
+% The way I see it NSPS just completely side-steps all these extra learning tasks, significantly simplifying the learning problem.
 
 % aka Neural FlashFill
 @article{nsps,
@@ -56,6 +135,7 @@
   archivePrefix = {arXiv},
   eprint    = {1611.01855}
 }
+% no code; (1) cross correlation I/O network embeds in/out examples, (2) Recursive-Reverse-Recursive Neural Network (R3NN) incrementally synthesizes AST. R3NN has node representations, then calculates representations bottom-up then top-down to get representations for the next hole to fill. tests on flashfill. ops Concat/ConstStr/SubStr/Position/Direction/Regex.
 
 @article{alphanpi,
   author    = {Thomas Pierrot and
@@ -75,6 +155,8 @@
   archivePrefix = {arXiv},
   eprint    = {1905.12941}
 }
+% [blog](https://www.instadeep.com/research-article/towards-compositionality-in-deep-reinforcement-learning/)
+% Neural Programmer-Interpreter (NPI) + AlphaZero = AlphaNPI. tests on sorting/hanoi tasks. ops as NPI.
 
 % NMT
 @inproceedings{kalchbrenner2013recurrent,
@@ -95,6 +177,7 @@
   journal={arXiv preprint arXiv:1511.06279},
   year={2015}
 }
+% DeepMind, seq2seq. tests on add/sort / canonicalizing 3d models. ops reset/bubble/rshift/lshift/compswap/ptr1l/ptr1r/ptr2l/ptr2r/swap/stop.
 
 % holes
 @inproceedings{hashimoto1997typed,
@@ -120,6 +203,8 @@
   pages={3749--3759},
   year={2018}
 }
+% differentiable [ProbLog](https://dtai.cs.kuleuven.be/problog/).
+% Emile: less relevant cuz untyped? tests on add/sort/algebra on pics/list/text. induction, no ops.
 
 @inproceedings{problog,
   title={ProbLog: A Probabilistic Prolog and Its Application in Link Discovery.},
@@ -145,6 +230,9 @@
   pages={1--64},
   year={2018}
 }
+% ([code](https://github.com/ai-systems/DILP-Core)) @ DeepMind:
+% Differentiable Inductive Logic Programming (∂ILP) = ILP (data efficient) + NNs' ability to handle ambiguity. trained on various symbolic tasks. uses given template so just handles induction. check if this can do types?
+% see pic on p.31. tests on [20 symbolic tasks](https://arxiv.org/pdf/1711.04574.pdf#page=27) (see appendix G: arithmetic, lists, family tree, graphs). task-dependent ops. not sure I can add value here if the template is set.
 
 % #neural-guided-deductive-search
 @article{deepcoder,
@@ -158,6 +246,8 @@
   journal={arXiv preprint arXiv:1611.01989},
   year={2016}
 }
+% (repos [1](https://github.com/HiroakiMikami/deep-coder), [2](https://github.com/dkamm/deepcoder), [3](https://github.com/amitz25/PCCoder))
+% train a neural network to predict properties of the program that generated the outputs from the inputs to augment search techniques, e.g. enumerative search, SMT-based solver, depth-first search (DFS), 'sort and add' enumeration, sketch, λ^2. tested on functional programs. does not use a node tree though, so not amenable to my type-based approach.
 
 % #neural-guided-deductive-search
 @article{kalyan2018neural,
@@ -172,6 +262,19 @@
   journal={arXiv preprint arXiv:1804.01186},
   year={2018}
 }
+% https://www.microsoft.com/en-us/research/blog/neural-guided-deductive-search-best-worlds-approach-program-synthesis/
+% - combines symbolic logic + statistical models by 'branch & bound' from combinatorial optimization.
+% - deductive search: decompose synthesis into sub-problems, Markovian so can do supervised learning.
+% - NGDS: find which sub-problems are useful, predict program generalization by LSTM scoring DSL production rules on i/o.
+% - evaluated on string transformation (PROSE) against RobustFill / DeepCoder.
+% - deductive search seems kinda like pruning by type reasoning, though here it's learned. I guess the stronger the types tho, the less needs learning.
+% - train separate models for different DSL levels, symbols, or even productions.
+% - I *think* this seems iterative top-down, so seems applicable for me, tho no code.
+% - this made me realize you may want to factor in existing operations on i/o to simplify the problem for the given sub-node.
+% - sub-problems mentioned sounds relevant, and their previous paper FlashMeta (which this builds on) is mentioned in a [repo](https://github.com/reudismam/Refazer/blob/58f68f2c3f93e148a50f2eb09879a7bbe7fd6e3a/ProgramSynthesis/ProseFunctions/RelativePositioning/RightWitnessFunction.cs), though I'm not sure where this is imported from.
+% - the used framework PROSE [offers holes](https://microsoft.github.io/prose/documentation/prose/usage/), implying they support the top-down incremental approach I'm hoping these papers are using.
+% - from my understanding, from this paper (and the [FlashMeta paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/12/oopsla15-pbe.pdf)), my impression is that the approach used is more similar to bottom-up (though not narrowing down on one option at any level), prioritizing productions (then higher-level constructs) to direct a search. whereas I like the compositional nature of the bottom-up approach, for type purposes I appreciate that the top-down approach (as used by the NSPS paper) is type-bound by the desired input/output types.
+% - PROSE's witness functions for constraint propagation look super interesting though! I kinda want this both for types and for input/output examples...
 
 @inproceedings{flashmeta,
   title={FlashMeta: a framework for inductive program synthesis},
@@ -197,6 +300,7 @@
   journal={arXiv preprint arXiv:1602.07776},
   year={2016}
 }
+% probabilistic model of phrase-structure trees that can be trained generatively and used as a language model or a parser. seems aimed at language models, i.e. mimicking existing usage, which for program synthesis might be secondary to finding programs properly mapping input to output.
 
 @article{bunel2018leveraging,
   title={Leveraging grammar and reinforcement learning for neural program synthesis},
@@ -209,6 +313,7 @@
   journal={arXiv preprint arXiv:1805.04276},
   year={2018}
 }
+% supervised + RL to generate semantically correct programs. train to generate syntactically correct programs that fulfill the specification. only applies for sequence approach, which doesn't match the trees I want...
 
 @inproceedings{typedmil,
   title={Typed meta-interpretive learning of logic programs},
@@ -222,6 +327,8 @@
   year={2019},
   organization={Springer}
 }
+% Prolog/Python [code](https://github.com/rolfmorel/jelia19-typedmil)
+% typed MIL (~= inductive logic programming (ILP)) reduces space by a cubic factor. tests on [list manipulation](https://github.com/rolfmorel/jelia19-typedmil/tree/master/experiments/03-evaluation). [ops](https://github.com/rolfmorel/jelia19-typedmil/blob/master/experiments/03-evaluation/nestedincr/gen_test_prolog.py#L43-L67). types: list<T>, int, char.
 
 @article{wang2018predicting,
   title={Predicting Haskell Type Signatures From Names},
@@ -231,6 +338,7 @@
   url={https://people.cs.uchicago.edu/~rchugh/static/theses/bowen-wang-thesis.pdf},
   year={2018}
 }
+% encode name/context, recursively select (non-)arrow
 
 @inproceedings{lambda2,
   title={Synthesizing data structure transformations from input-output examples},
@@ -246,6 +354,8 @@
   year={2015},
   organization={ACM}
 }
+% 2015, 145 cites, [code](https://github.com/jfeser/L2), λ^2
+% OCaml+Python PBE from 7 combinators by inductive generalisation + (limited) deduction + enumerative search. typed, incremental, holes. old functional synthesis paper that got good improvement from types. tests on 40 data structure manipulation tasks (lists, trees, nested). ops: map, maptree, filter, foldl, foldr, foldtree, recl. 41 ops (lists, trees, nested).
 
 @article{myth,
   title={Type-and-example-directed program synthesis},
@@ -258,6 +368,9 @@
   pages={619--630},
   year={2015}
 }
+% 100 cites, [code](https://github.com/psosera/thesis/blob/master/code/LambdaTermsCounts.hs)
+% Haskell/OCaml PBE by types + i/o. shows own synthesis/typecheck rules, library. tests on 40 (figure #9) + 5 (#10) functions ([details](https://github.com/psosera/thesis/blob/master/content/benchmark-suite.tex)). code repo unreleased.
+% list/tree categories polymorphic, bool/nat aren't. eval during enum, standardize on beta-normal, typechecks partial functions, lists relevant math. top-down generates refinement trees by cycling through steps adding a type (type refinement) or potential values (guessing enumeratively) by examples. essentially constructs a simple idea that works for one example, check which other examples fail, and which parts of the program should be refined to fix those. pattern matches ADTs like lists (nil). enforces recursion. ppt claims ml-syn incomplete? lists several directions for future work. seems like a good paper, I should look for citing papers in case any has open-sourced a similar solution. should recheck if this does 'holes' though, as it seemed to generate complete programs?
 
 @inproceedings{scout,
   title={Programming assistance for type-directed programming},
@@ -269,6 +382,7 @@
   year={2016},
   organization={ACM}
 }
+% no code?, bridge auto-completion / program synthesis with interactive programming assistant for type-directed programming.
 
 @inproceedings{synquid,
   title={Program synthesis from polymorphic refinement types},
@@ -284,6 +398,8 @@
   year={2016},
   organization={ACM}
 }
+% [code](https://bitbucket.org/nadiapolikarpova/synquid)
+% code from refinement types. synthesize Haskell-like Synquid by SMT-solver from modular refinement type reconstruction to allow type-checking partial programs using liquid types.
 
 @mastersthesis{tamandu,
   title={Top-Down Inductive Synthesis with Higher-Order Functions},
@@ -292,9 +408,11 @@
   year={2016},
   school={ETH Z{\"u}rich}
 }
+% [code](https://github.com/shasfin/ml4fp2016)
+% PBE in toy language from OCaml w/ large library (37 components), based on best-first enumeration combined with type-based pruning, evaluated on 23 functions (table 4.2).
 
 @article{hornclauses,
-  title={},
+  title={Functional Program Synthesis from Relational Specifications},
   author={Nakao, Shuu and
           Satake, Yuki and
           Amano, Hiroshi},
@@ -309,6 +427,7 @@
           佐竹佑規 and
           海野広志},
   journal={日本ソフトウェア科学会大会論文集},
+% Haskell synthesis using Horn clauses.
 
 @phdthesis{gissurarson2018suggesting,
   title={Suggesting Valid Hole Fits for Typed-Holes in Haskell},
@@ -317,6 +436,8 @@
   year={2018},
   school={Master’s thesis. Chalmers University of Technology, University of Gothenburg~…}
 }
+% [code](https://github.com/Tritlo/ExampleHolePlugin)
+% integrates hole filler into GHC. mentions synthesizers insynth (JVM), [djinn](https://github.com/augustss/djinn/) (haskell, non-polymorphic). dependently typed languages: type inference undecidable. mentions hole-filling for agda and idris. great explanation of program synthesis on typed holes at 3.1.
 
 @online{djinn,
   author = {Lennart Augustsson},
@@ -334,6 +455,8 @@
   year={2018},
   author={Guo, Zheng}
 }
+% [code](https://github.com/aaronguo1996/Synquid)
+% generalize succinct types for polymorphism. to find which types are used under polymorphism, abstract the types into coarse-grained succinct types, unordered param type sets describing function i/o.
 
 @inproceedings{eguchi2018automated,
   title={Automated Synthesis of Functional Programs with Auxiliary Functions},
@@ -347,6 +470,7 @@
   year={2018},
   organization={Springer}
 }
+% extension of Synquid to enable top-down iterative synthesis of programs with auxiliary functions using holes.
 
 @inproceedings{scythe,
   title={Constraint-based type-directed program synthesis},
@@ -358,6 +482,7 @@
   year={2019},
   organization={ACM}
 }
+% no code?, synthesis from type. “infer while enumerate” approach to polymorphic type instantiation. uses WIP Haskell synthesis tool Scythe. no task!
 
 @inproceedings{temporalstreamlogic,
   title={Temporal stream logic: Synthesis beyond the bools},
@@ -372,6 +497,7 @@
   year={2019},
   organization={Springer}
 }
+% CEGAR-based synthesis (from formal spec) separating control and data. benchmarks: synthesized music player Android app, controller for autonomous vehicle in the Open Race Car Simulator (TORCS).
 
 @article{combopt,
   title={Machine Learning for Combinatorial Optimization: a Methodological Tour d'Horizon},
@@ -382,6 +508,9 @@
   journal={arXiv preprint arXiv:1811.06128},
   year={2018}
 }
+% - is it useful to frame program synthesis as a [Combinatorial Optimization](https://paperswithcode.com/task/combinatorial-optimization) problem (not unlike the TSP)?
+% - how do they differ? -- CO implies a loss/reward per configuration. for ML I should need a loss anyway tho, so this seems reasonable. the sub-field of linear programming requires linear relationships, which I doubt apply here.
+% - what are the differences between their algorithms?
 
 @inproceedings{houdini,
   title={Houdini: Lifelong learning as program synthesis},
@@ -396,6 +525,8 @@
   pages={8687--8698},
   year={2018}
 }
+% [code](https://github.com/capergroup/houdini)
+% NNs as typed differentiable functional programs to compose a library of neural functions to mix perception and procedural reasoning. library: NN, compose, map, fold, conv, on list/graph/tensor of bool/real. synth: generate (heuristically-guided top-down iterative refinement) + learn, evaluated on lifelong learning. suggests incorporating search strategies from NAS. not actually doing program synthesis tho... tests on several lifelong learning tasks (mix perceptual/algorithmic knowledge): recognize_digit, classify_digit, is_toy, regress_speed, regress_mnist, count_digit, count_toy, sum_digits, shortest_path_street, shortest_path_mnist. ops: hole, map, fold, convolution, compose.
 
 @article{idris,
   title={Idris, a general-purpose dependently typed programming language: Design and implementation},
@@ -406,7 +537,9 @@
   number={5},
   pages={552--593},
   year={2013}
-  }
+}
+% [code](https://github.com/idris-lang/Idris-dev)
+% covers language design including holes (section 4).
 
 @article{forth,
   author    = {Sebastian Riedel and
@@ -489,6 +622,7 @@
   archivePrefix = {arXiv},
   eprint    = {1704.07535}
 }
+% uses LSTM to synthesize ASTs from natural language
 
 @inproceedings{shen2019using,
   title={Using active learning to synthesize models of applications that access databases},
@@ -604,6 +738,15 @@
   pages={321--350},
   year={1994}
 }
+% There are three main approaches to logic program synthesis by formal methods:
+% \item In the constructive approach, a conjecture based on the specification is constructively proved, and from this proof, the specified program is extracted. We call this approach constructive synthesis.
+% \item A more direct approach is to deduce clauses for the specified program directly from the specification. We shall call this approach deductive synthesis. Another approach can induce a program from a partial specification of the program.
+% \item The program is a generalization of the partial specification. We shall call this approach inductive synthesis.
+
+% out of trace-/model-based I guess NPS is model-based while e.g. Osera's approach seemed more trace-based:
+% ~\citep{deville1994logic}: Within the methods for inductive program synthesis, one can distinguish between the trace-based approach and the model-based approach. In the trace-based approach, example traces are first generated. A trace is a sequence of instructions executed by an unknown program on some given input data. Then the traces are generalized into a program. This program may be obtained by folding, matching, and generalizing the traces. Generalization is required since traces are related to some specific inputs; folding is required in order to form loops and recursion. In the model-based approach, synthesis aims at constructing a finite axiomatization of a model of the examples. It thus makes an intensional representation of a relation (i.e., a program) from the given (incomplete) extensional representation (i.e., the examples). The model-based approach to inductive synthesis of logic program is better known as Inductive Logic Programming (ILP).
+% 6.2. Schema-Guided Program Construction: template-based
+% basically every node-picking step I do is an instance of this.
 
 @misc{bodik2013algorithmic,
   title={Algorithmic program synthesis: introduction},
@@ -612,6 +755,13 @@
   year={2013},
   url={https://sci-hub.tw/10.1007/s10009-013-0287-9}
 }
+% We divide the field into reactive synthesis, which is concerned with automata-theoretic techniques for controllers that handle an infinite stream of requests, and functional synthesis, which produces programs consuming finite input.
+% axiomatic synthesizers (improve basic program incrementally by axioms, no partial programs) vs. syntactically derived synthesizers (gradually fill parameterizable template program using a grammar), origins in inductive inference of functions and formal languages from examples.
+% Inductive programming Synthesis of programs from incomplete specifications presented as positive and negative examples has been developed for functional programs [92] and logic programs.
+% generate-and-test
+% mashup of web services: Planning and synthesis techniques have been successfully used to compose web services, e.g., in [10,37].
+% RL by synthesis: The programming language aLisp (agent Lisp) by Andre et al. [4,130] was designed for expressing prior knowledge in hierarchical reinforcement learning of agent policies.
+% Huynh et al. [82] developed an algorithm that synthesizes [a web scraping] extraction program from user demonstration.
 
 % neural tree transducer (NTT): tree-to-tree learning by top-down depth-first context-sensitive tree decoder paired with recursive neural encoders.
 @article{sedoc2018neural,
@@ -722,3 +872,9 @@
   url={https://alexpolozov.com/blog/program-synthesis-2018/},
   urldate = {2020-02-23}
 }
+% Program Synthesis in 2017-18
+% Neural-guided search
+% Sketch generation
+% Graph neural networks
+% Datasets
+% Notable mentions: differentiable FlashFill, Conflict-Driven Learning, Programmatically Interpretable RL
