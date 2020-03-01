@@ -13,6 +13,8 @@ TODO (March 01):
 ```bash
 # verify references with biber thru docker (optional)
 docker run -ti -v $PWD:/app konraifen88/biber-texlive biber --tool --validate-datamodel /app/references.bib
+# install latex packages (Arch Linux):
+pacman -S texlive-core texlive-latexextra
 # compile
 latexmk
 ```

@@ -87,7 +87,7 @@
 %   - Genetic Programming: natural selection/variation
 %   - Machine Learning: learn a probability distribution over the space of programs conditioned by the specification
 %   - Neural Program Synthesis: induction vs synthesis (e.g. NSPS)
-% - Programming by Example
+% - Programming by Example (PBE)
 %   - Problem Definition: use inputs + output examples/constraints. characterized by ease of use and ambiguity. find just the few good programs that match intent and generalize.
 %   - Version Space Algebra: constraining DSL by picking only a few examples for each grammar production.
 %   - Deduction-Based Techniques: push examples thru grammar top-down. aka divide-and-conquer search, top-down search, and backpropagation-based search. done by (a) inverse operator semantics, or (b) type-theoretic.
@@ -234,7 +234,7 @@
   pages={1--64},
   year={2018}
 }
-% ([code](https://github.com/ai-systems/DILP-Core)) @ DeepMind:
+% DeepMind, [code](https://github.com/ai-systems/DILP-Core)
 % Differentiable Inductive Logic Programming (∂ILP) = ILP (data efficient) + NNs' ability to handle ambiguity. trained on various symbolic tasks. uses given template so just handles induction. check if this can do types?
 % see pic on p.31. tests on [20 symbolic tasks](https://arxiv.org/pdf/1711.04574.pdf#page=27) (see appendix G: arithmetic, lists, family tree, graphs). task-dependent ops. not sure I can add value here if the template is set.
 
@@ -552,6 +552,13 @@
 }
 % [code](https://github.com/idris-lang/Idris-dev)
 % covers language design including holes (section 4).
+
+@book{brady2017type,
+  title={Type-driven development with Idris},
+  author={Brady, Edwin},
+  year={2017},
+  publisher={Manning Publications Company}
+}
 
 @article{forth,
   author    = {Sebastian Riedel and
@@ -906,3 +913,14 @@
 % Graph neural networks
 % Datasets
 % Notable mentions: differentiable FlashFill, Conflict-Driven Learning, Programmatically Interpretable RL
+
+@article{hughes1989functional,
+  title={Why functional programming matters},
+  author={Hughes, John},
+  journal={The computer journal},
+  volume={32},
+  number={2},
+  pages={98--107},
+  year={1989},
+  publisher={Oxford University Press}
+}

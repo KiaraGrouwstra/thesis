@@ -7,14 +7,13 @@
 \usepackage[numbers]{natbib}
 \usepackage{subfiles}
 \usepackage{refcheck}
-
-% \title{thesis proposal UvA MSc AI}
-% \author{Kiara Grouwstra}
-% \date{August 2019}
+\usepackage{csquotes}
 
 \begin{document}
 
 \subfile{title-page-ai.tex}
+
+\tableofcontents
 
 \section{Planning} % \label{sec:planning}
 
@@ -29,114 +28,196 @@
     \item [ ] Nov: defense
 \end{itemize}
 
+\pagebreak
+
 \section{Research Direction} % \label{sec:research-direction}
 
-If artificial intelligence is software 2.0~\citep{software20}
-then \emph{program synthesis} is software 2.0 applied to the field of software development.
+\subsection{Program Synthesis}
+
+\begin{displayquote}
+If artificial intelligence is software 2.0~\citep{software20},
+then \emph{program synthesis} is software 2.0 applied to the field of software development itself.
+\end{displayquote}
+% I think only few will feel offended by the implication all program synthesis uses AI.
 
 % synthesis
 \emph{Program synthesis}~\citep{church1957applications} is the task to automatically construct a program%
-~\footnote{While the definition of a program might be debatable as well, and there has been work on predicting type signatures from function names~\citep{wang2018predicting}, for the purpose of our paper we will focus on traditional executable programs, rather than 'programs' describing types.}%
+~\footnote{While the definition of a program might be debatable as well, and there has been work on predicting type signatures from function names~\citep{wang2018predicting}, for the purpose of our paper we will focus on traditional executable programs, rather than e.g. 'programs' describing types.}%
 that satisfies a given high-level specification,
 be it a formal specification, a natural language description, or input-output examples.
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
-This differs from program induction, commonly known as 'supervised learning',
+\subsection{Related fields}
+
+\subsubsection{Program Induction}
+
+% TODO: find less ambiguous terminology
+This differs from program induction, like supervised learning more generally,
 in that fitting the model into the discrete form of a given grammar
 forces one to instantiate such a model from probabilistic data interpretations,
 whereas in traditional supervised learning,
 such probabilistic interpretations of the data may be taken at prediction time.
-% relation to program induction
 As such, program synthesis explicitly returns a program, whereas program induction learns to \emph{mimic} it rather than explicitly return it.~\citep{nps}
-% TODO: find less ambiguous terminology
-% TODO: clarify relation to supervised learning
-% TODO: clarify relation to https://en.wikipedia.org/wiki/Constraint_programming incl SAT/SMT which seemed used a bunch
-% TODO: clarify relation to https://en.wikipedia.org/wiki/Combinatorial_optimization
+
+\subsubsection{Constraint satisfaction vs. discrete optimization}
+
+% relation to https://en.wikipedia.org/wiki/Constraint_programming : that seems a subset associated with logic programming
+% relation to SMT: that's first-order logic, synthesis is second-order
+% relation to SAT: that's SMT without linear constraints, so even less expressive
+While its definition frames program synthesis as a type of constraint satisfaction problem (CSP),
+% ~\footnote{https://en.wikipedia.org/wiki/Constraint_satisfaction_problem}
+some methods may instead opt to approach it as a discrete optimization problem,
+% relation to https://en.wikipedia.org/wiki/Combinatorial_optimization : that one assumes a finite set of objects? 
+as specifications such as input-output examples allow us to count the examples our candidate program satisfies.
+
+Intuitively, a program satisfying part of our examples may be regarded as closer to a solution than one that does not satisfy as many.
+Furthermore, additional considerations such as performance may further push as to find a solution that not only calculates outputs correctly but also runs within reasonable time or memory constraints.
+
+\subsection{Goal: human-machine cooperation}
 
 This means that in program synthesis, we are able to distill our modeled function
 to a simplified discrete form that may well be intelligible to humans as well,
 opening up opportunities for human-machine cooperation in writing software.
+Specifically, this will allow machines to improve on programs written by humans, and the other way around.
 As such, program synthesis may bring \emph{hybrid intelligence} to the field of software development.
 
-And in fact, in a novel functional programming paradigm called
-\emph{type-driven development}~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
-based on typed holes, this is already happening.
+And in fact, in a novel development paradigm in functional programming called \emph{type-driven development}%
+~\citep{brady2017type}, based on typed holes, this is already happening.
 
-% challenges
-While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces,
-e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
+\subsection{Approaches}
 
-% approaches
+\subsubsection{Synthesis from formal specifications}
+
 Program synthesis was traditionally studied as a computer science problem,
-but has recently been explored using machine learning approaches under the name of neural program synthesis~\citep{nps}.
-However, there has not yet been much work combining these two approaches.
+where the problem was typically framed using a formal specification,
+which was then tackled using e.g. an enumerative search, deductive methods, or constraint-solving techniques.~\citep{gulwani2017program}
+However, such formal specifications ended up about as hard to write as the original program,
+rendering this approach to the problem not very useful.
 
-% PBE + types is still only a partial spec so by the following definition I guess this is all part of inductive program synthesis:
-% ~\citep{deville1994logic}
-% ~\citep{bodik2013algorithmic}
-% ~citep{nps}
+\subsubsection{Programming by Example}
 
-% TODO: summarize non-neural program induction/synthesis techniques
+Instead, it was found that for users, input-output examples were a more attractive way to specify desired program behavior,
+although as an incomplete specification this made for a harder problem from the perspective of the synthesizer.~\citep{bodik2013algorithmic}
+This field is named \emph{Programming by Example} (PBE), and was traditionally characterized by methods such as~\citep{gulwani2017program}:
+\begin{description}
+    \item[Version Space Algebras (VSAs)]
+        constraining grammar productions with examples
+    \item[deduction-based techniques]
+        inspired by those from synthesis based on formal specifications
+    \item[ambiguity resolution]
+        requesting user input to resolve potential ambiguities
+\end{description}
 
-% CS vs ML
-Whereas the traditional approaches in program synthesis focused on constraining the large discrete search space,
+\subsubsection{Neural program synthesis}
+
+More recently however, PBE has been explored using machine learning approaches, under the name of neural program synthesis~\citep{nps},
+typically using e.g. sequence-to-sequence techniques supplemented with mechanisms such as attention and memory~\citep{nps},
+though there have also been approaches framing program synthesis by representing programs as \emph{abstract syntax trees} (ASTs) rather than as sequences~\citep{nps,odena2020learning}.
+
+Unfortunately though, program synthesis has been less straight-forward to tackle this way than other AI problems,
+as our search space is typically discrete, meaning we cannot simply apply gradient-based optimization.~\citep{nps}
+
+\subsubsection{Hybrid approaches}
+
+However, while the concensus seems to be that neither traditional nor pure machine learning based approaches are likely to solve program synthesis in isolation,
+making a \textbf{hybrid system} the most promising path forward~\citep{nps},
+the specifics on how to best combine these approaches has remained the subject of active research.
+
+\subsubsection{Differences} % CS vs ML
+
+Whereas traditional approaches in program synthesis (and particularly PBE) focused on constraining the large discrete search space,
+such as deductive and constraint-solving approaches,
 neural program synthesis instead tends to incrementally generate programs,
 using continuous representations of the state space to predict the next token,
 be it in a sequential fashion~\citep{alphanpi},
 or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
 
-While the typically incremental approach of neural program synthesis breaks down the problem by considering one part of the program at a time, the original challenge remains.
+\subsection{Challenges}
+
+While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces,
+e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
+
+\subsubsection{Challenges of type-based synthesis}
+
+While types can be used as a powerful way of specifying program behavior through the use of e.g. refinement types~\citep{synquid} or succinct types~\citep{guospeeding},
+these typically end up in a similar pitfall as program synthesis based on formal specifications,
+requiring the user to essentially write a type that may end up similar in complexity to the actual program itself.
+
+Types of a level that users may be more familiar with, which may include polymorphic types or even algebraic data types,
+may end up not sufficiently expressive: while certainly constraining the program space,
+examples may still be needed to disambiguate between potential candidate programs.
+
+\subsubsection{Challenges of programming by example}
 
 Whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar,
 there is typically no guarantee that such partial program constructions will qualify as a full executable program adherent to the grammar.
 As a result, neural synthesizers will have little intermediary feedback to go by, limiting their effectiveness.
 
 But if only complete programs can be evaluated for validity and behavior, then 
-% for the duration of much of the incremental synthesis, the synthesizer has little feedback to go by.
-it is much harder to provide synthesizers with an accurate understanding of incomplete programs.
-% TODO: CONJECTURE, CITATION NEEDED?
+we will be ill-equipped to provide synthesizers with an accurate understanding of partial programs,
+which make up for a large part of our prediction steps.
+
+\subsubsection{Challenges of neural program synthesis}
+
+While the typically incremental approach of neural program synthesis breaks down the problem of PBE by considering one part of the program at a time, the original challenge remains:
+our search space typically remains large, meaning it will not be viable to proportionally scale our training sets by program size.
+As such, it would be great if we could somehow supervise the intermediate prediction steps.
+
+\subsection{Research question}
+
+\subsubsection{Complementary strengths}
 
 Our key observation here is thus that input-output examples and types are quite complementary as specifications constraining our program behavior:
-whereas input-output examples are relatively expressive, they may only help us to evaluate the quality of complete progress;
+whereas input-output examples are relatively expressive, they may only help us to evaluate the quality of complete programs;
 types, on the other hand, are by themselves not usually descriptive enough of our task,
 but fortunately, due to typed holes,
 % TODO: rewrite stuff on typed holes since I'm technically not even using those yet atm...?
 may help us to evaluate and inform further incremental synthesis steps even of incomplete functions still containing holes.
 
+\subsubsection{Hypotheses}
+
 We therefore hypothesize that program synthesizers may thus capitalize on this synergy by utilizing both types of information,
-rather than settling for only one of the two, as existing methods have done.%
-~\footnote{While one might wonder if this constrains our idea to the subset of PBE problems where type information is available,
-this limitation is essentially meaningless: when one has input-output examples, one should generally be able to infer their type.
-This would render our idea applicable for practically any (neural) methods for PBE.}
-
-Specifically, we hypothesize that the effectiveness of neural program synthesis may be improved by
-% supervising incremental predictions offering additional features 
-adding type information as additional features during training and testing.
-% why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
-% how to supervise with these? representation?
-
-Furthermore, in an incremental node-based synthesis approach, we hypothesize that after each synthesis step,
-languages featuring typed holes may help us to pre-compile even incomplete programs such as to provide immediate feedback.%
+rather than settling for only one of the two, as most existing methods have done.%
 ~\footnote{
-    An alternative approach would be to enumerate any possible options for a given node,
-    then filtering this list of options based on such compiler feedback.
-    While this is indeed done for type-based program synthesis,
-    % TODO: reference
-    for neural program synthesis it poses the challenge of how to meaningfully combine these approaches.
-    An additional concern is the scalability of enumerative approaches as the number of valid options grows.
+    While one might wonder if this constrains our idea to the subset of PBE problems where type information is available,
+    this limitation is essentially meaningless: when one has input-output examples, one should generally be able to infer their type.
+    This would render our idea applicable for practically any (neural) methods for PBE.
+}%
+~\footnote{
+    Whereas one might wonder if a focus on types may constrain our method to synthesizing statically typed languages,
+    in the functional paradigm in particular, we believe there are workarounds to this.
+    While we certainly believe users may find switching to a statically typed functional language to be beneficial~\citep{hughes1989functional},
+    an alternative would be to (1) have one algorithm translate the partial program to a statically typed language,
+    (2) complete the program using program synthesis from there,
+    then finally, (3) using a third algorithm, translate the full program back to the target language.
 }
 
-% supervising using top-level type by inference through parametric return types (parametric polymorphism)? check parametrically typeable task ops e.g. from DILP?
-% sequential monadic shit from DeepMind papers is useless...
+Specifically, we hypothesize that the effectiveness of neural program synthesis may be improved by
+adding type information as additional features during training and testing,
+which in AST-based neural program synthesis may help supervise each incremental prediction step.
 
-% node-level types: probably matches how AI techniques are filtering already, but hard to confirm given lacking source code for NSPS
+\begin{displayquote}
+    \emph{Research question \#1: can neural program synthesis methods benefit from using types as additional features?}
+\end{displayquote}
 
-\emph{Research question: can neural program synthesis methods benefit from using types as additional features?}
-% We hypothesize that the effectiveness of neural program synthesis may be improved by adding type information as additional features during training.
-% TODO: add second question + research?
-% TODO: try other program induction methods (used to reduce the search space) to apply for neural methods.
-% TODO: how can we apply a more generalized program synthesis model to a specific problem? take inspiration from neural network pruning?
-% TODO: investigate propagation of input-output examples to the smallest tree containing all holes, such as to map the encodings to the most precies space. this should mean inversely applying any pruned super-functions to the output examples. for lossless functions like map this should yield propagated output examples; for lossy functions such as filter this would instead yield type constraints (we know the elements that satisfied the condition, but around and between those there could be any number of elements that did not satisfy the constraint). I should check out to what extent such methods have been applied in type/example based program synthesis and theorem provers. caveat though, I dunno to what extent such type constraints could still be faster than fully calculating the input-output for various synthesized programs...
+Furthermore, in an incremental node-based synthesis approach, we hypothesize that after each synthesis step,
+in languages featuring typed holes we may pre-compile even partial programs such as to provide the synthesizer with immediate feedback.
+
+\begin{displayquote}
+    \emph{Research question \#2: can neural program synthesis methods benefit from using compilation checks as additional features?}
+\end{displayquote}
+
+% An alternative approach would be to enumerate any possible options for a given node,
+% then filtering this list of options based on such compiler feedback.%
+% ~\footnote{One potential concern here is the scalability of such enumeration as the number of valid options grows.}
+
+% This is indeed done for type-based program synthesis~\citep{myth},
+% and we hypothesize neural synthesis approaches may benefit from such pre-filtering as well,
+% reducing synthesis to a ranking problem of (partial) candidate programs.
+
+% \begin{displayquote}
+%     \emph{Research question \#3: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
+% \end{displayquote}
 
 \section{Expected Contribution} % \label{sec:expected-contribution}
 
@@ -144,7 +225,10 @@ The present work aims to be the first experiment to:
 \begin{itemize}
     \item bring the type-based information traditionally used in program synthesis into the newer branch of neural program synthesis;
     \item bridge the two fields, such as to find a best-of-both-worlds golden mean;
-    \item use this type info to better constrain the search space, improving the effectiveness of (neural) program synthesis methods. 
+    \item use this type info to better constrain the search space, improving the effectiveness of (neural) program synthesis methods;
+    \item offer an open-source implementation of the algorithm described in \citet{nsps};
+    \item generate a dataset for neural synthesis of functional programs;
+    \item lay out a way of generating such datasets, including an open-source implementation.
 \end{itemize}
 
 \section{Existing work} % \label{sec:existing-work}
@@ -153,6 +237,13 @@ The present work aims to be the first experiment to:
 % ~\citep{gulwani2017program}
 % ~\citep{polozov}
 % TODO: incorporate existing references
+
+% PBE + types is still only a partial spec so by the following definition I guess this is all part of inductive program synthesis:
+% ~\citep{deville1994logic}
+% ~\citep{bodik2013algorithmic}
+% ~citep{nps}
+
+% TODO: summarize non-neural program induction/synthesis techniques
 
 % TODO: add references
 Methods used in program synthesis include evolutionary algorithms, reinforcement learning, bayesian optimization, sequence-to-sequence methods~\citep{neuralmachinetranslation}, active learning~\citep{shen2019using}, graph neural networks, satisfiability modulo theories (SMT) solvers~\citep{rosette,hornclauses,architecture}, and tree-based approaches such as recursive neural networks.
@@ -187,6 +278,9 @@ Outside of neural methods, programming languages designed for program synthesis 
 aimed at generating satisfiability conditions for satisfactory programs based on failing input-output examples such as to synthesize program repairs.
 
 \section{Methodology} % \label{sec:methodology}
+
+% why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
+% how to supervise with these? representation?
 
 For our purposes here, we will focus on synthesis based on input-output examples, aka programming by example (PBE),
 as having known input-output types will help provide us the needed type information we would like to use.
@@ -273,7 +367,7 @@ This guarantees that, rather than just branching out, our search will focus on f
 This is to be contrasted with \emph{imperative} programs, a coding style characterized by variable mutation,
 historically popularized for the purpose of performance optimization from the earlier languages such as assembly.
 Synthesis for such languages exists as well~\citep{shi2019frangel}, but is generally harder as it cannot make as much use of types.
-% TODO: explain incomplete programs, how types enable evaluation of these, and why this means we should perform program synthesis based on types
+% TODO: explain partial programs, how types enable evaluation of these, and why this means we should perform program synthesis based on types
 
 Whereas modern programming languages might have a broad plethora of grammatical constructs available,
 for the purpose of our proof-of-concept we will opt to hide much of this.
@@ -425,8 +519,8 @@ The hole filling is as follows:
     % TODO: distinguish unfilled currying slot vs unfilled holes
     \item we filter these potential programs given their number of remaining holes based on our complexity threshold;
     % TODO: specify complexity threshold
-    \item we add the remaining programs to a queue of complete or incomplete programs, depending on whether they still contain holes;
-    \item we similarly process the functions in the queue of incomplete programs, until we are left with an enumeration of complete programs;
+    \item we add the remaining programs to a queue of complete or partial programs, depending on whether they still contain holes;
+    \item we similarly process the functions in the queue of partial programs, until we are left with an enumeration of complete programs;
     \item we evaluate the complete programs by the input-output examples, to filter down to those matching our behavioral criteria;
     \item finally, we generate sample inputs for each program, and calculate their corresponding outputs.
     % TODO: consider a depth-first alternative for lower memory complexity
@@ -475,8 +569,15 @@ This demonstrates that the findings from traditional program synthesis methods a
 One question we aim to answer here is whether our approach can meaningfully scale to program sizes not explicitly train on.
 % TODO: check what claims NSPS made on this.
 
+\subsection{Topics for future research}
+\begin{itemize}
+    \item How can we apply a more generalized program synthesis model to a specific problem? Can we take inspiration here from neural network pruning?
+    % \item ...
+\end{itemize}
+
 \nocite{*}
-\bibliographystyle{acm}
+% \bibliographystyle{acm}
+\bibliographystyle{plainnat}  % fixes https://tex.stackexchange.com/questions/166840/why-do-i-get-author-when-i-use-citet-with-natbib
 \bibliography{references}
 
 \end{document}
