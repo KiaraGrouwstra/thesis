@@ -771,7 +771,9 @@
 % \item The program is a generalization of the partial specification. We shall call this approach inductive synthesis.
 
 % out of trace-/model-based I guess NPS is model-based while e.g. Osera's approach seemed more trace-based:
-% ~\citep{deville1994logic}: Within the methods for inductive program synthesis, one can distinguish between the trace-based approach and the model-based approach. In the trace-based approach, example traces are first generated. A trace is a sequence of instructions executed by an unknown program on some given input data. Then the traces are generalized into a program. This program may be obtained by folding, matching, and generalizing the traces. Generalization is required since traces are related to some specific inputs; folding is required in order to form loops and recursion. In the model-based approach, synthesis aims at constructing a finite axiomatization of a model of the examples. It thus makes an intensional representation of a relation (i.e., a program) from the given (incomplete) extensional representation (i.e., the examples). The model-based approach to inductive synthesis of logic program is better known as Inductive Logic Programming (ILP).
+% ~\citep{deville1994logic}: Within the methods for inductive program synthesis, one can distinguish between the trace-based approach and the model-based approach.
+% In the trace-based approach, example traces are first generated. A trace is a sequence of instructions executed by an unknown program on some given input data. Then the traces are generalized into a program. This program may be obtained by folding, matching, and generalizing the traces. Generalization is required since traces are related to some specific inputs; folding is required in order to form loops and recursion.
+% In the model-based approach, synthesis aims at constructing a finite axiomatization of a model of the examples. It thus makes an intensional representation of a relation (i.e., a program) from the given (incomplete) extensional representation (i.e., the examples). The model-based approach to inductive synthesis of logic program is better known as Inductive Logic Programming (ILP).
 % 6.2. Schema-Guided Program Construction: template-based
 % basically every node-picking step I do is an instance of this.
 
@@ -922,5 +924,258 @@
   number={2},
   pages={98--107},
   year={1989},
+  url={https://academic.oup.com/comjnl/article/32/2/98/543535},
   publisher={Oxford University Press}
+}
+
+@book{koza1994genetic,
+  title={Genetic programming II},
+  author={Koza, John R and
+          others},
+  volume={17},
+  year={1994},
+  url={https://amazon.com/s?k=9780262111706},
+  publisher={MIT press Cambridge}
+}
+
+@article{allamanis2017learning,
+  title={Learning to represent programs with graphs},
+  author={Allamanis, Miltiadis and
+          Brockschmidt, Marc and
+          Khademi, Mahmoud},
+  journal={arXiv preprint arXiv:1711.00740},
+  url={https://arxiv.org/abs/1711.00740},
+  year={2017}
+}
+
+@article{brockschmidt2018generative,
+  title={Generative code modeling with graphs},
+  author={Brockschmidt, Marc and
+          Allamanis, Miltiadis and
+          Gaunt, Alexander L and
+          Polozov, Oleksandr},
+  journal={arXiv preprint arXiv:1805.08490},
+  url={https://arxiv.org/abs/1805.08490},
+  year={2018}
+}
+
+@inproceedings{looks2005learning,
+  title={Learning computer programs with the bayesian optimization algorithm},
+  author={Looks, Moshe and
+          Goertzel, Ben and
+          Pennachin, Cassio},
+  booktitle={Proceedings of the 7th annual conference on Genetic and evolutionary computation},
+  pages={747--748},
+  doi={10.1145/1068009.1068134},
+  url={https://dl.acm.org/doi/abs/10.1145/1068009.1068134},
+  year={2005}
+}
+
+@article{verma2018programmatically,
+  title={Programmatically interpretable reinforcement learning},
+  author={Verma, Abhinav and
+          Murali, Vijayaraghavan and
+          Singh, Rishabh and
+          Kohli, Pushmeet and
+          Chaudhuri, Swarat},
+  journal={arXiv preprint arXiv:1804.02477},
+  url={https://arxiv.org/abs/1804.02477},
+  year={2018}
+}
+
+@article{akiba2013calibrating,
+  title={Calibrating research in program synthesis using 72,000 hours of programmer time},
+  author={Akiba, Takuya and
+          Imajo, Kentaro and
+          Iwami, Hiroaki and
+          Iwata, Yoichi and
+          Kataoka, Toshiki and
+          Takahashi, Naohiro and
+          Moskal, Micha{\l} and
+          Swamy, Nikhil},
+  journal={MSR, Redmond, WA, USA, Tech. Rep},
+  url={https://pdfs.semanticscholar.org/1cde/a6fa2f0a400f509aed98f9a857ab1788257e.pdf},
+  year={2013}
+}
+
+@book{alur2013syntax,
+  title={Syntax-guided synthesis},
+  author={Alur, Rajeev and
+          Bodik, Rastislav and
+          Juniwal, Garvit and
+          Martin, Milo MK and
+          Raghothaman, Mukund and
+          Seshia, Sanjit A and
+          Singh, Rishabh and
+          Solar-Lezama, Armando and
+          Torlak, Emina and
+          Udupa, Abhishek},
+  year={2013},
+  doi={10.1109/FMCAD.2013.6679385},
+  url={https://ieeexplore.ieee.org/abstract/document/6679385},
+  publisher={IEEE}
+}
+
+@article{alur2016sygus,
+  title={Sygus-comp 2016: results and analysis},
+  author={Alur, Rajeev and
+          Fisman, Dana and
+          Singh, Rishabh and
+          Solar-Lezama, Armando},
+  journal={arXiv preprint arXiv:1611.07627},
+  url={https://arxiv.org/abs/1611.07627},
+  year={2016}
+}
+
+@inproceedings{singh2015predicting,
+  title={Predicting a correct program in programming by example},
+  author={Singh, Rishabh and
+          Gulwani, Sumit},
+  booktitle={International Conference on Computer Aided Verification},
+  pages={398--414},
+  year={2015},
+  doi={10.1007/978-3-319-21690-4_23},
+  url={https://link.springer.com/chapter/10.1007/978-3-319-21690-4_23},
+  organization={Springer}
+}
+
+@book{solar2008program,
+  title={Program synthesis by sketching},
+  author={Solar-Lezama, Armando and
+          Bodik, Rastislav},
+  year={2008},
+  doi={10.5555/1714168},
+  url={http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.207.9048&rep=rep1&type=pdf},
+  publisher={Citeseer}
+}
+
+@article{feng2018program,
+  title={Program synthesis using conflict-driven learning},
+  author={Feng, Yu and
+          Martins, Ruben and
+          Bastani, Osbert and
+          Dillig, Isil},
+  journal={ACM SIGPLAN Notices},
+  volume={53},
+  number={4},
+  pages={420--435},
+  year={2018},
+  doi={10.1145/3296979.3192382},
+  url={https://dl.acm.org/doi/abs/10.1145/3296979.3192382},
+  publisher={ACM New York, NY, USA}
+}
+
+@article{prose,
+  title={Automating string processing in spreadsheets using input-output examples},
+  author={Gulwani, Sumit},
+  journal={ACM Sigplan Notices},
+  volume={46},
+  number={1},
+  pages={317--330},
+  year={2011},
+  doi={10.1145/1925844.1926423},
+  url={https://dl.acm.org/doi/abs/10.1145/1925844.1926423},
+  publisher={ACM New York, NY, USA}
+}
+% see notes on prose framework up at kalyan2018neural
+
+@article{neuralgpu,
+  title={Neural gpus learn algorithms},
+  author={Kaiser, {\L}ukasz and
+          Sutskever, Ilya},
+  journal={arXiv preprint arXiv:1511.08228},
+  url={https://arxiv.org/abs/1511.08228},
+  year={2015}
+}
+
+@article{nmt,
+  title={Neural machine translation by jointly learning to align and translate},
+  author={Bahdanau, Dzmitry and
+          Cho, Kyunghyun and
+          Bengio, Yoshua},
+  journal={arXiv preprint arXiv:1409.0473},
+  url={https://arxiv.org/abs/1409.0473},
+  year={2014}
+}
+
+@inproceedings{ptrnets,
+  title={Pointer networks},
+  author={Vinyals, Oriol and
+          Fortunato, Meire and
+          Jaitly, Navdeep},
+  booktitle={Advances in neural information processing systems},
+  pages={2692--2700},
+  url={http://papers.nips.cc/paper/5866-pointer-networks},
+  year={2015}
+}
+
+@article{structuredattention,
+  title={Structured attention networks},
+  author={Kim, Yoon and
+          Denton, Carl and
+          Hoang, Luong and
+          Rush, Alexander M},
+  journal={arXiv preprint arXiv:1702.00887},
+  url={https://arxiv.org/abs/1702.00887},
+  year={2017}
+}
+
+@article{ntm,
+  title={Neural turing machines},
+  author={Graves, Alex and
+          Wayne, Greg and
+          Danihelka, Ivo},
+  journal={arXiv preprint arXiv:1410.5401},
+  url={https://arxiv.org/abs/1410.5401},
+  year={2014}
+}
+
+@article{neuralram,
+  title={Neural random-access machines},
+  author={Kurach, Karol and
+          Andrychowicz, Marcin and
+          Sutskever, Ilya},
+  journal={arXiv preprint arXiv:1511.06392},
+  url={https://arxiv.org/abs/1511.06392},
+  year={2015}
+}
+
+@article{neuralprogrammer,
+  title={Neural programmer: Inducing latent programs with gradient descent},
+  author={Neelakantan, Arvind and
+          Le, Quoc V and
+          Sutskever, Ilya},
+  journal={arXiv preprint arXiv:1511.04834},
+  url={https://arxiv.org/abs/1511.04834},
+  year={2015}
+}
+
+@article{hierarchicalmemory,
+  title={Learning efficient algorithms with hierarchical attentive memory},
+  author={Andrychowicz, Marcin and
+          Kurach, Karol},
+  journal={arXiv preprint arXiv:1602.03218},
+  url={https://arxiv.org/abs/1602.03218},
+  year={2016}
+}
+
+@article{npl,
+  title={Neural program lattices},
+  author={Li, Chengtao and
+          Tarlow, Daniel and
+          Gaunt, Alexander L and
+          Brockschmidt, Marc and
+          Kushman, Nate},
+  url={https://openreview.net/forum?id=HJjiFK5gx},
+  year={2016}
+}
+
+@article{cai2017making,
+  title={Making neural programming architectures generalize via recursion},
+  author={Cai, Jonathon and
+          Shin, Richard and
+          Song, Dawn},
+  journal={arXiv preprint arXiv:1704.06611},
+  url={https://arxiv.org/abs/1704.06611},
+  year={2017}
 }

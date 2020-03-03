@@ -35,8 +35,12 @@
 \subsection{Program Synthesis}
 
 \begin{displayquote}
-If artificial intelligence is software 2.0~\citep{software20},
-then \emph{program synthesis} is software 2.0 applied to the field of software development itself.
+    truly solving program synthesis is the last programming problem mankind will have to solve~\citep{nps}
+\end{displayquote}
+
+\begin{displayquote}
+    If artificial intelligence is software 2.0~\citep{software20},
+    then \emph{program synthesis} is software 2.0 applied to the field of software development itself.
 \end{displayquote}
 % I think only few will feel offended by the implication all program synthesis uses AI.
 
@@ -44,7 +48,7 @@ then \emph{program synthesis} is software 2.0 applied to the field of software d
 \emph{Program synthesis}~\citep{church1957applications} is the task to automatically construct a program%
 ~\footnote{While the definition of a program might be debatable as well, and there has been work on predicting type signatures from function names~\citep{wang2018predicting}, for the purpose of our paper we will focus on traditional executable programs, rather than e.g. 'programs' describing types.}%
 that satisfies a given high-level specification,
-be it a formal specification, a natural language description, or input-output examples.
+be it a formal specification, a natural language description, full program \emph{traces}, or input-output examples.
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
 \subsection{Related fields}
@@ -98,7 +102,13 @@ rendering this approach to the problem not very useful.
 
 Instead, it was found that for users, input-output examples were a more attractive way to specify desired program behavior,
 although as an incomplete specification this made for a harder problem from the perspective of the synthesizer.~\citep{bodik2013algorithmic}
-This field is named \emph{Programming by Example} (PBE), and was traditionally characterized by methods such as~\citep{gulwani2017program}:
+This field is named \emph{Programming by Example} (PBE).
+As the specification is incomplete here, PBE is considered \emph{inductive} synthesis, as opposed to the \emph{deductive} synthesis when we do have a complete specification.
+In other words, from the perspective of the synthesizer, PBE is generally a more difficult problem.
+PBE may be further split up according to the target programming language to be synthesized~\citep{bodik2013algorithmic},
+notably logic programs (e.g. Prolog language) versus functional programs (e.g. Lisp, Haskell).
+Our interest here is primarily in synthesis of functional programs.
+PBE was traditionally characterized by methods such as~\citep{gulwani2017program}:
 \begin{description}
     \item[Version Space Algebras (VSAs)]
         constraining grammar productions with examples
@@ -134,7 +144,7 @@ or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
 
 \subsection{Challenges}
 
-While considered a holy grail of computer science, program synthesis is a challenging task, characterized by large search spaces,
+While considered a holy grail of computer science~\citep{gulwani2017program}, program synthesis is a challenging task, characterized by large search spaces,
 e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
 
 \subsubsection{Challenges of type-based synthesis}
@@ -219,6 +229,12 @@ in languages featuring typed holes we may pre-compile even partial programs such
 %     \emph{Research question \#3: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
 % \end{displayquote}
 
+% Lastly, we hypothesize that these added features still offer added value over deduction-based approaches aiming to push input-output examples through the grammar (investigate separately for datasets without and with many functions that are not invertible)
+
+% \begin{displayquote}
+%     \emph{Research question \#4: can deduction-based neural program synthesis methods benefit from using types and compilation checks as additional features?}
+% \end{displayquote}
+
 \section{Expected Contribution} % \label{sec:expected-contribution}
 
 The present work aims to be the first experiment to:
@@ -228,27 +244,43 @@ The present work aims to be the first experiment to:
     \item use this type info to better constrain the search space, improving the effectiveness of (neural) program synthesis methods;
     \item offer an open-source implementation of the algorithm described in \citet{nsps};
     \item generate a dataset for neural synthesis of functional programs;
-    \item lay out a way of generating such datasets, including an open-source implementation.
+    \item lay out a way of generating such datasets, including an open-source implementation, addressing the current reliance on hand-crafted curricula~\citep{nps}.
 \end{itemize}
 
 \section{Existing work} % \label{sec:existing-work}
 
-% TODO: give overview based on e.g.:
-% ~\citep{gulwani2017program}
-% ~\citep{polozov}
-% TODO: incorporate existing references
+Methods used in program synthesis include:
+\begin{itemize}
+    \item approaches based on enumerative search~\citep{akiba2013calibrating,alur2013syntax,alur2016sygus};
+    \item oracle-guided synthesis~\citep{solar2008program}, based on the idea of splitting the synthesis task into generating and filling \emph{sketches} of programs;
+    \item constraint solving methods such as satisfiability modulo theories (SMT) solvers~\citep{rosette,architecture} and conflict-driven learning~\citep{feng2018program,hornclauses};
+    \item deductive search techniques, based on theorem provers, recursively reducing the synthesis problem into sub-problems, propagating constraints, including approaches based on inverse semantics of DSL operators~\citep{flashmeta,prose} and type-theoretic PBE~\citep{myth,synquid};
+    \item sequence-to-sequence methods~\citep{npi,neuralmachinetranslation,alphanpi}, leveraging techniques from natural language processing (NLP) to represent program synthesis as a sequence prediction problem, often combined with mechanisms such as convolutional recurrence~\citep{neuralgpu}, attention~\citep{nmt,ptrnets,structuredattention}, memory~\citep{ntm,neuralram,neuralprogrammer,hierarchicalmemory}, function hierarchies~\citep{npi,npl}, and recursion~\citep{cai2017making};
+    \item tree-based approaches such as recursive neural networks~\cite{nsps};
+    \item graph neural networks~\citep{allamanis2017learning,brockschmidt2018generative}, which aim to model relations between variable occurrences;
+    \item evolutionary algorithms~\citep{koza1994genetic}, which generate programs similar to existing promising candidates;
+    \item reinforcement learning~\citep{chen2017towards,bunel2018leveraging,xu2019neural,camacho2019towards}, learning to synthesize by trying rather than from supervision signals;
+    \item learning-to-rank methods~\citep{singh2015predicting}, which use techniques from information retrieval (IR) to rank a satisfactory candidate program on top;
+    \item bayesian optimization~\citep{looks2005learning,verma2018programmatically}, which aims to find an optimal solution within the shortest number of attempted programs by framing synthesis as a discrete optimization problem;
+    \item active learning~\citep{shen2019using}, intended to efficiently request interactive user feedback.
+\end{itemize}
 
-% PBE + types is still only a partial spec so by the following definition I guess this is all part of inductive program synthesis:
-% ~\citep{deville1994logic}
-% ~\citep{bodik2013algorithmic}
-% ~citep{nps}
-
-% TODO: summarize non-neural program induction/synthesis techniques
-
-% TODO: add references
-Methods used in program synthesis include evolutionary algorithms, reinforcement learning, bayesian optimization, sequence-to-sequence methods~\citep{neuralmachinetranslation}, active learning~\citep{shen2019using}, graph neural networks, satisfiability modulo theories (SMT) solvers~\citep{rosette,hornclauses,architecture}, and tree-based approaches such as recursive neural networks.
 
 % TODO: expand on Myth paper somewhere
+
+As per \citet{gulwani2017program}, a synthesizer is typically characterized by three key dimensions:
+\begin{itemize}
+    \item the kind of \emph{constraints} that it accepts as expression of \emph{user intent};
+    \item the \emph{space} of programs over which it searches;
+    \item the \emph{search technique} it employs.
+\end{itemize}
+
+% user intent
+As the constraints to express user intent, we would like to use input-output examples, which may be considered a compromise between what is easier for the \emph{end-user}, which may ideally prefer natural-language descriptions of program behavior, versus what is easier for the \emph{synthesizer}, which may ideally prefer a complete formal specification of program behavior.
+
+% program space
+
+% search technique
 
 \subsection{Synthesis language}
 
