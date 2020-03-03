@@ -1,12 +1,16 @@
 # UvA master thesis
 
-TODO (March 01):
-- [x] research question
-- [ ] literature review
-- [ ] methodology
-- [x] updated title
-- [~] updated planning
-- [/] any new information
+### planning 
+
+- [x] December: finish literature review
+- [x] January/February: implement dataset generation
+- [ ] March: implement baseline
+- [ ] April: implement improvement
+- [ ] May: finish experiment design
+- [ ] June: perform experiment, gather results
+- [ ] July: finalize write-up
+- [ ] August: uitloop
+- [ ] Nov: defense
 
 ### building
 
