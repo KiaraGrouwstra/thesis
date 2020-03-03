@@ -252,8 +252,9 @@ Methods used in program synthesis include:
     \item active learning~\citep{shen2019using}, intended to efficiently request interactive user feedback.
 \end{itemize}
 
-
 % TODO: expand on Myth paper somewhere
+
+\section{Methodology} % \label{sec:methodology}
 
 As per \citet{gulwani2017program}, a synthesizer is typically characterized by three key dimensions:
 \begin{itemize}
@@ -262,14 +263,25 @@ As per \citet{gulwani2017program}, a synthesizer is typically characterized by t
     \item the \emph{search technique} it employs.
 \end{itemize}
 
-% user intent
+For our purposes here, we will focus on synthesis based on input-output examples, aka programming by example (PBE),
+as having known input-output types will help provide us the needed type information we would like to use.
+
+\subsection{User intent}
+
 As the constraints to express user intent, we would like to use input-output examples, which may be considered a compromise between what is easier for the \emph{end-user}, which may ideally prefer natural-language descriptions of program behavior, versus what is easier for the \emph{synthesizer}, which may ideally prefer a complete formal specification of program behavior.
 
-% program space
+\subsection{Program search space}
 
-% search technique
+The program search space consists of the synthesis language (defined by a \emph{context-free grammar}), either general-purpose or a \emph{domain-specific language} (DSL), potentially further restricted to a subset of its original operators, such as by providing a whitelist of \emph{operators}.
 
-\subsection{Synthesis language}
+The trade-off here is one of expressiveness (can we write a satisfactory program, ideally using not too much code?) versus limiting our search space (ensure we can find a solution within too long).
+Within this context, it would seem preferable to pick a limited grammar in the functional programming paradigm using static typing.
+
+% why functional
+% why static typing
+% why limited grammar, and limited how
+
+% \subsubsubsection{Synthesis language}
 
 % PBE
 User intent in program synthesis can be expressed in various forms, including logical specification~\citep{temporalstreamlogic},
@@ -296,24 +308,33 @@ However, such purely SGD-based methods proved less effective than traditional or
 Outside of neural methods, programming languages designed for program synthesis also include solver-aided languages~\citep{rosette},
 aimed at generating satisfiability conditions for satisfactory programs based on failing input-output examples such as to synthesize program repairs.
 
-\section{Methodology} % \label{sec:methodology}
+\subsection{Search technique}
+
+As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
+
+As a benchmark algorithm we will therefore use \cite{nsps}, a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
+
+The reason we picked this as our benchmark in particular is that there have been only few neural synthesizers out there based on abstract syntax trees (ASTs), rather than sequences.
+This is important for us because we can apply types to an AST containing holes, though we may not be able to for any sequence representing a partial program.
+
+This method is based on two novel neural modules.
+The first module, called the \emph{cross correlation I/O network}, given a set of input-output examples, produces a continuous representation of the set of I/O examples.
+The second module, the \emph{Recursive-Reverse-Recursive Neural Network} (R3NN), given the continuous representation of the examples, synthesizes a program by incrementally expanding partial programs.~\citep{nsps}
 
 % why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
 % how to supervise with these? representation?
 
-For our purposes here, we will focus on synthesis based on input-output examples, aka programming by example (PBE),
-as having known input-output types will help provide us the needed type information we would like to use.
+% section levels?
 
-% structure
-As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
-% why?
+\subsection{Structure}
 
 Type-based approaches to synthesis are based on \emph{deductive search}, a top-down search strategy.
 Such type-based deductive search is most powerful in a setting where the underlying DSL is loosely-constrained,
 that is, permits arbitrary type-safe combinations of subexpressions.
 In particular, any ML-like calculus with algebraic datatypes can serve as a core language for type-driven synthesis.~\citep{gulwani2017program}
 
-% holes
+\subsection{Holes}
+
 Particularly useful for our purposes is a programming language feature called \emph{typed holes}~\citep{hashimoto1997typed},
 as used in Agda~\footnote{\url{https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html}},
 Idris~\footnote{\url{http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html\#holes}},
@@ -326,7 +347,8 @@ programming method \emph{sketching}~\citep{gulwani2017program} or
 % ~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
 As such, one of our goals is to improve suggested hole completions in such languages to facilitate this interactive programming style.
 
-% types
+\subsection{Types}
+
 To get the most out of our types, we will want to provide them for:
 \begin{itemize}
     \item inputs
@@ -340,7 +362,8 @@ The basic idea here is simple: our program should return the desired type, while
 However, in the simple case, the implications of this info do not require much computation:
 one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar.
 
-% generics
+\subsection{Generics}
+
 What makes the use of types more powerful in restricting the search space is the use of \emph{parametric polymorphism}:
 a function $append$ may work using either lists of numbers or lists of strings.
 ~\footnote{Left out of scope here are \emph{refinement types}, which further aid synthesis based on conditions.}
@@ -361,7 +384,8 @@ using the synthesized program as input to obtain a program translated into the t
 
 % I'd lean toward a language with ML framework as the source language (Python/Haskell/OCaml?), and a target language with holes (Haskell/Idris/Agda) and proper type-checks (any but Python/Prolog). none of these used any of those; this intersection means a shared source/target language implies Haskell is the only option and I need to throw out existing implementations anyway. in terms of respectable benchmark, L^2 seems to actually have been used by others before.
 
-% haskell
+\subsection{Haskell language}
+
 In other words, languages with stronger type systems are preferable for program synthesis.
 This is well-known in the traditional program synthesis community,
 where various researchers~\citep{synquid,hornclauses,scythe,gissurarson2018suggesting}
@@ -466,16 +490,6 @@ Our programs are structured as follows:
 \section{Experiment} % \label{sec:experiment}
 
 \subsection{Benchmark task}
-
-% TODO: benchmark algorithm
-% - NSPS is closed due to IP issues -_-
-% - NPI variants are sequence-based rather than AST-based
-% - Batch Bayesian Optimization via Multi-objective Acquisition Ensemble for Automated Analog Circuit Design (http://proceedings.mlr.press/v80/lyu18a/lyu18a.pdf)
-% - Programmatically Interpretable Reinforcement Learning (https://arxiv.org/pdf/1804.02477.pdf)
-% - Towards Mixed Optimization for Reinforcement Learning with Program Synthesis (https://arxiv.org/pdf/1807.00403.pdf)
-% - Program Synthesis using Conflict-Driven Learning (https://arxiv.org/pdf/1711.08029v1.pdf)
-
-As a benchmark algorithm we will use~\cite{nsps}, a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
 
 % benchmark task:
 % - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
