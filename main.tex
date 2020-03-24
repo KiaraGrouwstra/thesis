@@ -314,6 +314,8 @@ aimed at generating satisfiability conditions for satisfactory programs based on
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
 
 As a benchmark algorithm we will therefore use \cite{nsps}, a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
+This is a \emph{strongly supervised} synthesis method, i.e. it creates a differentiable loss signal to supervise synthesis training by checking if the synthesized program is \emph{identical} to the target program, rather than if it has \emph{equivalent behavior}.
+This is in contrast to \emph{weakly supervised} program synthesis~\citep{mapo}, which instead tends to address the problem of reward differentiability by using reinforcement learning techniques.
 
 The reason we picked this as our benchmark in particular is that there have been only few neural synthesizers out there based on abstract syntax trees (ASTs), rather than sequences.
 This is important for us because we can apply types to an AST containing holes, though we may not be able to for any sequence representing a partial program.
