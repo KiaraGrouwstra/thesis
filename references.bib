@@ -12,6 +12,7 @@
   title={Applications of recursive arithmetic to the problem of circuit synthesis},
   author={Church, Alonzo},
   journal={Institute for Symbolic Logic, Cornell University},
+  doi={10.2307/2271310},
   year={1957}
 }
 
@@ -790,7 +791,7 @@
 % Inductive programming Synthesis of programs from incomplete specifications presented as positive and negative examples has been developed for functional programs [92] and logic programs.
 % generate-and-test
 % mashup of web services: Planning and synthesis techniques have been successfully used to compose web services, e.g., in [10,37].
-% RL by synthesis: The programming language aLisp (agent Lisp) by Andre et al. [4,130] was designed for expressing prior knowledge in hierarchical reinforcement learning of agent policies.
+% RL by synthesis: The programming language aLisp (agent Lisp) by Andre et al. [4,130] was designed for expressing prior knowledge in hierarchical reinforcement learning of agent policies. trains RL agents by expanding on an existing partial program.
 % Huynh et al. [82] developed an algorithm that synthesizes [a web scraping] extraction program from user demonstration.
 
 % neural tree transducer (NTT): tree-to-tree learning by top-down depth-first context-sensitive tree decoder paired with recursive neural encoders.
@@ -915,6 +916,20 @@
 % Graph neural networks
 % Datasets
 % Notable mentions: differentiable FlashFill, Conflict-Driven Learning, Programmatically Interpretable RL
+
+@article{pirl,
+  title={Programmatically interpretable reinforcement learning},
+  author={Verma, Abhinav and
+          Murali, Vijayaraghavan and
+          Singh, Rishabh and
+          Kohli, Pushmeet and
+          Chaudhuri, Swarat},
+  journal={arXiv preprint arXiv:1804.02477},
+  url={https://arxiv.org/abs/1804.02477},
+  year={2018}
+}
+% RL by program synthesis for interpretable/verifiable agent policies.
+% Neurally Directed Program Search (NDPS): first learn a neural policy network using DRL, then perform a local search over programmatic policies that seeks to minimize a distance from this neural "oracle".
 
 @article{hughes1989functional,
   title={Why functional programming matters},
@@ -1235,4 +1250,71 @@
   year = {2018},
   publisher = {Curran Associates, Inc.},
   url = {http://papers.nips.cc/paper/8204-memory-augmented-policy-optimization-for-program-synthesis-and-semantic-parsing.pdf}
+}
+
+@article{muggleton1991inductive,
+  title={Inductive logic programming},
+  author={Muggleton, Stephen},
+  journal={New generation computing},
+  volume={8},
+  number={4},
+  pages={295--318},
+  year={1991},
+  doi={10.1007/BF03037089},
+  publisher={Springer}
+}
+
+@article{lisp,
+  author = {Summers, Phillip D.},
+  title = {A Methodology for LISP Program Construction from Examples},
+  year = {1977},
+  issue_date = {Jan. 1977},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {24},
+  number = {1},
+  issn = {0004-5411},
+  url = {https://doi.org/10.1145/321992.322002},
+  doi = {10.1145/321992.322002},
+  journal = {J. ACM},
+  month = jan,
+  pages = {161–175},
+  numpages = {15}
+}
+
+@article{fogel1966intelligent,
+  title={Intelligent decision making through a simulation of evolution},
+  author={Fogel, Lawrence J and Owens, Alvin J and Walsh, Michael J},
+  journal={Behavioral science},
+  volume={11},
+  number={4},
+  pages={253--272},
+  year={1966},
+  publisher={Wiley Online Library}
+}
+
+@misc{popplestone1969experiment,
+  title={An experiment in automatic induction. Machine Intelligence 5},
+  author={Popplestone, RJ},
+  year={1969},
+  url={https://aitopics.org/download/classics:0B2939E6},
+  publisher={Edinburgh: Edinburgh University Press}
+}
+
+@article{plotkin1970note,
+  title={A note on inductive generalization},
+  author={Plotkin, Gordon D},
+  journal={Machine intelligence},
+  volume={5},
+  number={1},
+  pages={153--163},
+  url={http://homepages.inf.ed.ac.uk/gdp/publications/MI5_note_ind_gen.pdf},
+  year={1970}
+}
+
+@article{russell2002artificial,
+  title={Artificial intelligence: a modern approach},
+  author={Russell, Stuart and Norvig, Peter},
+  url={https://people.eecs.berkeley.edu/~russell/aima1e.html},
+  year={2002}
 }

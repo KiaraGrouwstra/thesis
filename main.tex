@@ -31,6 +31,8 @@
 \end{displayquote}
 % I think only few will feel offended by the implication all program synthesis uses AI.
 
+% TODO: talk more about the gaps between 1.0/engineering vs 2.0/AI, and how the present work aims to bridge those.
+
 % synthesis
 \emph{Program synthesis}~\citep{church1957applications} is the task to automatically construct a program%
 ~\footnote{While the definition of a program might be debatable as well, and there has been work on predicting type signatures from function names~\citep{wang2018predicting}, for the purpose of our paper we will focus on traditional executable programs, rather than e.g. 'programs' describing types.}%
@@ -42,13 +44,58 @@ be it a formal specification, a natural language description, full program \emph
 
 \subsubsection{Program Induction}
 
+Unfortunately the field suffers from competing definitions, blurring the distinction between what constitutes program \emph{synthesis} versus what constitutes program \emph{induction}. In short though, those in either field claim to be more general than the other branch.
+The field of \emph{inductive programming}~\citep{popplestone1969experiment,plotkin1970note,fogel1966intelligent}, primarily known for its sub-branch of \emph{inductive logic programming}~\citep{muggleton1991inductive} focused on propositional logic, is simply the use of inductive logic for the purpose of automatic synthesis of programs, and was coined to distinguish itself from the \emph{deductive} techniques used in \citet{church1957applications}'s synthesis of circuits. Under this definition, the term program synthesis is used to refer to its original scope of program generation using deductive techniques.
+To explain, whereas in the original problem definition the desired behavior was fully specified, program \emph{induction} aimed to generalize the problem to also tackle automatic generation of programs for which the desired behavior had only partially been made explicit.
+Under this definition, there is no significant distinction between our present work and program induction's sub-branch of \emph{inductive functional programming}, focused on the generation of programs in functional programming languages such as Lisp~\citep{lisp} or Haskell.
+
 % TODO: find less ambiguous terminology
-This differs from program induction, like supervised learning more generally,
-in that fitting the model into the discrete form of a given grammar
-forces one to instantiate such a model from probabilistic data interpretations,
-whereas in traditional supervised learning,
+Nevertheless, in current parlance \emph{program synthesis} is often used in a broader scope, extending from the original deductive approach to include inductive approaches as well. In this view, the two fields are distinguished in that program \emph{synthesis} is defined as to explicitly return a program, whereas program \emph{induction} learns to \emph{mimic} it rather than explicitly return it.~\citep{gulwani2017program,nps}
+While this appears to clash with the latter term as used in the field of inductive \emph{functional} programming, this view likely stems from widespread use of the term in the field of inductive \emph{logic} programming.
+
+This terminology itself is not of much concern for our present paper, as the boundaries between the fields have often been muddy.
+Moreover, recent applications of AI to this field have led to the more recent term of \emph{neural program synthesis}~\citep{nps}. Therefore, we will simply settle for using 'program synthesis' to the field in general as well.
+
+\subsubsection{Supervised Learning}
+
+The above definition of program synthesis as explicitly returning a program is helpful to explain how it differs from \emph{supervised learning},
+the machine learning task of learning a function that maps an input to an output based on example input-output pairs~\citep{russell2002artificial}.
+Whereas the use of example input-output pairs is only one of several options in the field of program synthesis,
+fitting a model into the discrete form of a given grammar to produce a program forces one to instantiate such a model from probabilistic data interpretations,
+whereas in supervised learning,
 such probabilistic interpretations of the data may be taken at prediction time.
-As such, program synthesis explicitly returns a program, whereas program induction learns to \emph{mimic} it rather than explicitly return it.~\citep{nps}
+This also explains the relative benefits of these two fields.
+Whereas supervised learning may stay in the continuous realm,
+characterized by differentiable models optimizable by backpropagation,
+and not limited in expressivity by the limitations of any particular grammar or set of operations.
+This makes it well-positioned to solve problems deemed too complex for traditional programming, such as image recognition.
+Program synthesis may instead construct a traditional program, which may be both deterministic as well as potentially faster to execute than predictions using the original machine learning model.
+Moreover, using programs as a common denominator between human and machine-based programmers makes for human-intelligible machine-made models,
+relevant in the field of \emph{interpretable} or \emph{explainable artificial intelligence}
+~footnote{
+    One may note that if the goal in using program synthesis is to make models more interpretable,
+    one could potentially start out by training a neural model, then approximate this by synthesizing a program similar to it. And in fact, \citet{pirl} apply exactly this approach for reinforcement learning.
+},
+while also enabling human-machine cooperation in the production and maintenance of software.
+Furthermore, program synthesis may help tackle the problem in AI of \emph{composability}:
+programs in their essence \emph{compose} operations into larger logical building blocks,
+to be reused or further generalized.
+In supervised learning, on the other hand,
+one would traditionally need to retrain their model in the event a new predictor class is added,
+which depending on the model complexity may be quite costly.
+In program synthesis, one may take an existing program, and synthesize variants intended to generalize the existing logic to match the new data.
+This makes program synthesis well-suited to facilitate the automation of programming.
+~\footnote{
+    One may note that this would technically enable the synthesis of programs implementing machine learning models as well.
+    However, such an approach would make for a relatively expensive evaluation function,
+    and as such is traditionally delegated to the field of \emph{neural architecture search}.
+}
+In other words, whereas supervised learning makes for simpler learning,
+program synthesis may make for programs that are more efficient, composable,
+and providing better interaction with humans in terms of being understandable and incorporating knowledge of human experts.
+% TODO: citation needed?
+% TODO: conciliate this with the later section on human-machine cooperation
+% table of relative merits: supervised learning side, pros: able to model ill-defined logic, more suited for stochastic predictions
 
 \subsubsection{Constraint satisfaction vs. discrete optimization}
 
