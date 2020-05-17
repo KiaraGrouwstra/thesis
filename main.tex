@@ -26,7 +26,7 @@
 \end{displayquote}
 
 \begin{displayquote}
-    If artificial intelligence is software 2.0~\citep{software20},
+    If artificial intelligence (AI) is software 2.0~\citep{software20},
     then \emph{program synthesis} is software 2.0 applied to the field of software development itself.
 \end{displayquote}
 % I think only few will feel offended by the implication all program synthesis uses AI.
@@ -37,19 +37,34 @@
 \emph{Program synthesis}~\citep{church1957applications} is the task to automatically construct a program%
 ~\footnote{While the definition of a program might be debatable as well, and there has been work on predicting type signatures from function names~\citep{wang2018predicting}, for the purpose of our paper we will focus on traditional executable programs, rather than e.g. 'programs' describing types.}%
 that satisfies a given high-level specification,
-be it a formal specification, a natural language description, full program \emph{traces}, or input-output examples.
+be it a formal specification, a natural language description, full program \emph{traces}, input-output examples, or an existing program.~\citep{gulwani2017program}.
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
+This enables us to distill our modeled function
+to a simplified discrete form that may well be intelligible to humans as well,
+opening up opportunities for human-machine cooperation in writing software.
+Specifically, this will allow machines to improve on programs written by humans, and the other way around.
+As such, program synthesis may bring \emph{hybrid intelligence} to the field of software development.
+
+And in fact, we may already see this in the proliferation of intelligent code completion tools%
+~\footnote{These include Microsoft's \emph{Intellisense}, Google's \emph{ML Complete}, Jetbrains's code completion in their IntelliJ IDE, as well as Codota's \emph{TabNine}.},
+as well as in a novel development paradigm in functional programming based on typed holes called \emph{type-driven development}~\citep{brady2017type}.
+
 \subsection{Related fields}
+
+To give more context on how program synthesis fits into the bigger picture,
+we will briefly compare it to some other fields: program induction, supervised learning, as well as constraint satisfaction and discrete optimization.
 
 \subsubsection{Program Induction}
 
 Unfortunately the field suffers from competing definitions, blurring the distinction between what constitutes program \emph{synthesis} versus what constitutes program \emph{induction}. In short though, those in either field claim to be more general than the other branch.
+
 The field of \emph{inductive programming}~\citep{popplestone1969experiment,plotkin1970note,fogel1966intelligent}, primarily known for its sub-branch of \emph{inductive logic programming}~\citep{muggleton1991inductive} focused on propositional logic, is simply the use of inductive logic for the purpose of automatic synthesis of programs, and was coined to distinguish itself from the \emph{deductive} techniques used in \citet{church1957applications}'s synthesis of circuits. Under this definition, the term program synthesis is used to refer to its original scope of program generation using deductive techniques.
+
 To explain, whereas in the original problem definition the desired behavior was fully specified, program \emph{induction} aimed to generalize the problem to also tackle automatic generation of programs for which the desired behavior had only partially been made explicit.
+
 Under this definition, there is no significant distinction between our present work and program induction's sub-branch of \emph{inductive functional programming}, focused on the generation of programs in functional programming languages such as Lisp~\citep{lisp} or Haskell.
 
-% TODO: find less ambiguous terminology
 Nevertheless, in current parlance \emph{program synthesis} is often used in a broader scope, extending from the original deductive approach to include inductive approaches as well. In this view, the two fields are distinguished in that program \emph{synthesis} is defined as to explicitly return a program, whereas program \emph{induction} learns to \emph{mimic} it rather than explicitly return it.~\citep{gulwani2017program,nps}
 While this appears to clash with the latter term as used in the field of inductive \emph{functional} programming, this view likely stems from widespread use of the term in the field of inductive \emph{logic} programming.
 
@@ -60,41 +75,54 @@ Moreover, recent applications of AI to this field have led to the more recent te
 
 The above definition of program synthesis as explicitly returning a program is helpful to explain how it differs from \emph{supervised learning},
 the machine learning task of learning a function that maps an input to an output based on example input-output pairs~\citep{russell2002artificial}.
-Whereas the use of example input-output pairs is only one of several options in the field of program synthesis,
-fitting a model into the discrete form of a given grammar to produce a program forces one to instantiate such a model from probabilistic data interpretations,
+
+Neural learning methods may be applied to any branch of program synthesis,
+and several of these may in fact be tackled using setups involving supervised learning.
+Of particular note here however is a branch referred to as \emph{programming by example} (PBE),
+like supervised learning based on modeling the logic of given input-output pairs.
+
+What sets these apart is that PBE fits a model into the discrete form of a given grammar to produce a program,
+forcing one to instantiate such a model from probabilistic data interpretations,
 whereas in supervised learning,
 such probabilistic interpretations of the data may be taken at prediction time.
+
 This also explains the relative benefits of these two fields.
+
 Whereas supervised learning may stay in the continuous realm,
-characterized by differentiable models optimizable by backpropagation,
+characterized by differentiable models optimizable by backpropagation~\citep{backproprnn},
 and not limited in expressivity by the limitations of any particular grammar or set of operations.
 This makes it well-positioned to solve problems deemed too complex for traditional programming, such as image recognition.
-Program synthesis may instead construct a traditional program, which may be both deterministic as well as potentially faster to execute than predictions using the original machine learning model.
+
+PBE may instead construct a traditional program,
+which may be both deterministic as well as potentially faster to execute than predictions using the original machine learning model.
 Moreover, using programs as a common denominator between human and machine-based programmers makes for human-intelligible machine-made models,
 relevant in the field of \emph{interpretable} or \emph{explainable artificial intelligence}
-~footnote{
+~\footnote{
     One may note that if the goal in using program synthesis is to make models more interpretable,
     one could potentially start out by training a neural model, then approximate this by synthesizing a program similar to it. And in fact, \citet{pirl} apply exactly this approach for reinforcement learning.
 },
 while also enabling human-machine cooperation in the production and maintenance of software.
+
 Furthermore, program synthesis may help tackle the problem in AI of \emph{composability}:
 programs in their essence \emph{compose} operations into larger logical building blocks,
 to be reused or further generalized.
 In supervised learning, on the other hand,
 one would traditionally need to retrain their model in the event a new predictor class is added,
 which depending on the model complexity may be quite costly.
-In program synthesis, one may take an existing program, and synthesize variants intended to generalize the existing logic to match the new data.
+This challenge of composabability in AI has also been studied by the field of \emph{hierarchical reinforcement learning}~\citep{hierarchicalrl}.
+
+In program synthesis, one may take an existing program, and synthesize variants intended to generalize the existing logic to match the new data.~\citep{myth}
 This makes program synthesis well-suited to facilitate the automation of programming.
 ~\footnote{
     One may note that this would technically enable the synthesis of programs implementing machine learning models as well.
     However, such an approach would make for a relatively expensive evaluation function,
     and as such is traditionally delegated to the field of \emph{neural architecture search}.
 }
+
 In other words, whereas supervised learning makes for simpler learning,
 program synthesis may make for programs that are more efficient, composable,
 and providing better interaction with humans in terms of being understandable and incorporating knowledge of human experts.
 % TODO: citation needed?
-% TODO: conciliate this with the later section on human-machine cooperation
 % table of relative merits: supervised learning side, pros: able to model ill-defined logic, more suited for stochastic predictions
 
 \subsubsection{Constraint satisfaction vs. discrete optimization}
@@ -102,110 +130,182 @@ and providing better interaction with humans in terms of being understandable an
 % relation to https://en.wikipedia.org/wiki/Constraint_programming : that seems a subset associated with logic programming
 % relation to SMT: that's first-order logic, synthesis is second-order
 % relation to SAT: that's SMT without linear constraints, so even less expressive
-While its definition frames program synthesis as a type of constraint satisfaction problem (CSP),
+While its definition may appear to frame program synthesis as a type of \emph{constraint satisfaction} problem (CSP),
+where a program either does or does not satisfy the given specification,
 % ~\footnote{https://en.wikipedia.org/wiki/Constraint_satisfaction_problem}
-some methods may instead opt to approach it as a discrete optimization problem,
+one could also opt to approach it as a \emph{discrete optimization} problem,
 % relation to https://en.wikipedia.org/wiki/Combinatorial_optimization : that one assumes a finite set of objects? 
 as specifications such as input-output examples allow us to count the examples our candidate program satisfies.
 
 Intuitively, a program satisfying part of our examples may be regarded as closer to a solution than one that does not satisfy as many.
-Furthermore, additional considerations such as performance may further push as to find a solution that not only calculates outputs correctly but also runs within reasonable time or memory constraints.
+Furthermore, additional considerations such as performance may further push us to find a solution that not only calculates outputs correctly but also runs within reasonable time or memory constraints.
+These then provide a quantifiable feedback measure for us to optimize.
 
-\subsection{Goal: human-machine cooperation}
+However, constraint satisfaction and discrete optimization were intended to solve fully specified problems (\emph{deduction}),
+while in modern-day program synthesis, as we will explain later,
+we usually need to settle for a \emph{partial} specification of the intended program's behavior (\emph{induction}).
 
-This means that in program synthesis, we are able to distill our modeled function
-to a simplified discrete form that may well be intelligible to humans as well,
-opening up opportunities for human-machine cooperation in writing software.
-Specifically, this will allow machines to improve on programs written by humans, and the other way around.
-As such, program synthesis may bring \emph{hybrid intelligence} to the field of software development.
+As such, applying such techniques to the field of program synthesis using partial specifications may lead us to the problem of \emph{overfitting}:
+while found solutions might well satisfy the \emph{specified} behavior,
+the question would be whether these would also \emph{generalize} to match our \emph{intended} behavior,
+as is the goal in program synthesis.
 
-And in fact, in a novel development paradigm in functional programming called \emph{type-driven development}%
-~\citep{brady2017type}, based on typed holes, this is already happening.
+\subsection{Types of program synthesis}
 
-\subsection{Approaches}
+While the common thread in program synthesis is that our intended output takes the form of a program,
+sub-branches of this field are primarily defined by the types of input we use to come to this output.
+Here we will give a brief overview of such variants of program synthesis.
 
 \subsubsection{Synthesis from formal specifications}
 
 Program synthesis was traditionally studied as a computer science problem,
-where the problem was typically framed using a formal specification,
-which was then tackled using e.g. an enumerative search, deductive methods, or constraint-solving techniques.~\citep{gulwani2017program}
-However, such formal specifications ended up about as hard to write as the original program,
-rendering this approach to the problem not very useful.
+where the problem was typically framed using a formal specification.
+This problem was then tackled using e.g. an enumerative search, deductive methods, or constraint-solving techniques.~\citep{gulwani2017program}
+% However, such formal specifications ended up about as hard to write as the original program,
+% rendering this approach to the problem not very useful.
 
-\subsubsection{Programming by Example}
+\subsubsection{Synthesis from natural-language descriptions}
+
+Synthesis from \emph{natural-language} descriptions%
+~\citep{neuralprogrammer,zhong2017seq2sql},
+which might also involve \emph{speech recognition}%
+~\citep{juang1991hidden,graves2013speech},
+like PBE
+% is an example of \emph{inductive} synthesis:
+% as we are no longer tied to a formal specification,
+lacks a formal specification,
+as the language used is not necessarily constrained.
+As such, this ends up as a supervised learning problem:
+we take sample natural language inputs,
+and try to learn their corresponding resulting programs.
+
+This area is closely connected to the field of
+\emph{personal virtual assistants}~\citep{virtualassistant,genie},
+where response actions may be regarded as constrained synthesized programs,
+although these might also feature unconstrained \emph{dialogue}~\citep{li2016deep} responses,
+as well as \emph{goal-oriented} or \emph{task-oriented dialogue}~\citep{bordes2016goaldialogue,li2016taskdialogue}.
+
+This task has also been combined with \emph{programming from examples}.~\citep{polosukhin2018neural}
+
+\subsubsection{Program repair}
+
+\emph{Program repair} is a synthesis task where the input to the synthesizer is a (broken) program that is to be fixed by making changes to the program.~\citep{demsky2006inference,kaleeswaran2014minthint}
+This can be used in e.g. IDEs, to suggest users how they might potentially fix syntax errors or misspelled variables in their code.
+
+As the input to this synthesis branch consists of existing programs,
+it also has quite some overlap with \emph{static code analysis}~\citep{louridas2006static,brockschmidt2018generative},
+which is about gaining insights into snippets of source code,
+and as such may help provide features relevant for use in program repair.
+
+\subsubsection{Source-to-source translation}
+
+Similar to program repair, \emph{source-to-source translation}%
+~\citep{loveman1977program,albrecht1980source,partsch1983program,waters1988program,visser2005survey,czarnecki2006feature,chen2018tree}
+is a branch of synthesis where both the input and output are a program.
+However, rather than fixing an existing program,
+the task here is to learn a specific \emph{translation} task,
+e.g. from one programming language to another.
+Over recent years, this field has become an area of application for \emph{neural machine translation}.%
+~\citep{cho2014nmt,kim2019translating}
+
+\subsubsection{Programming by Example (PBE)}
 
 Instead, it was found that for users, input-output examples were a more attractive way to specify desired program behavior,
 although as an incomplete specification this made for a harder problem from the perspective of the synthesizer.~\citep{bodik2013algorithmic}
 This field is named \emph{Programming by Example} (PBE).
-As the specification is incomplete here, PBE is considered \emph{inductive} synthesis, as opposed to the \emph{deductive} synthesis when we do have a complete specification.
+
+As the specification is incomplete here, PBE is considered \emph{inductive} synthesis, as opposed to the \emph{deductive} synthesis where we do have a complete specification.
 In other words, from the perspective of the synthesizer, PBE is generally a more difficult problem.
-PBE may be further split up according to the target programming language to be synthesized~\citep{bodik2013algorithmic},
-notably logic programs (e.g. Prolog language) versus functional programs (e.g. Lisp, Haskell).
-Our interest here is primarily in synthesis of functional programs.
-PBE was traditionally characterized by methods such as~\citep{gulwani2017program}:
-\begin{description}
-    \item[Version Space Algebras (VSAs)]
-        constraining grammar productions with examples
-    \item[deduction-based techniques]
-        inspired by those from synthesis based on formal specifications
-    \item[ambiguity resolution]
-        requesting user input to resolve potential ambiguities
-\end{description}
 
-\subsubsection{Neural program synthesis}
+PBE may be further split up according to the type of program to be synthesized~\citep{bodik2013algorithmic},
+generating logic programs (assigning truth values to variables),
+or generating functional programs (e.g. Lisp, Haskell).
 
-More recently however, PBE has been explored using machine learning approaches, under the name of neural program synthesis~\citep{nps},
-typically using e.g. sequence-to-sequence techniques supplemented with mechanisms such as attention and memory~\citep{nps},
-though there have also been approaches framing program synthesis by representing programs as \emph{abstract syntax trees} (ASTs) rather than as sequences~\citep{nps,odena2020learning}.
+PBE too has branches based on deductive techniques (including \emph{type-theoretic} PBE),
+inspired by synthesis from formal specifications.
 
-Unfortunately though, program synthesis has been less straight-forward to tackle this way than other AI problems,
-as our search space is typically discrete, meaning we cannot simply apply gradient-based optimization.~\citep{nps}
+% Note that these categories are not necessarily mutually exclusive:
+% a synthesizer might for example have a natural language input,
+% while using this to say generate a functional program.
+% Either way,
+Our work will focus on PBE in the category of functional programs,
+where the goal is to automate traditional programming tasks.
 
-\subsubsection{Hybrid approaches}
+\subsubsection{Synthesis from traces}
 
-However, while the concensus seems to be that neither traditional nor pure machine learning based approaches are likely to solve program synthesis in isolation,
-making a \textbf{hybrid system} the most promising path forward~\citep{nps},
-the specifics on how to best combine these approaches has remained the subject of active research.
+Synthesis from program \emph{traces}~\citep{koskimies1994automatic},
+and the related synthesis from \emph{Linear Temporal Logic} (LTL)
+specifications~\citep{camacho2019towards}, are about
+a system reacting to sequences of inputs to mimic the desired program behavior.
+These are useful for e.g. specifying the expected behavior of user interfaces.
+Essentially this task may be viewed as a generalized version of PBE,
+adding the additional challenge of figuring out which inputs triggered which state changes.
 
-\subsubsection{Differences} % CS vs ML
+\subsubsection{Neural program synthesis (NPS)}
+
+Over recent years, synthesis problems have been explored using \emph{machine learning} approaches,
+under the name of \emph{neural program synthesis} (NPS)~\citep{nps}.
+This area is about learning to solve a class of synthesis problems given data.
+Note that this is a synthesis \emph{technique}, whereas the the above categories are synthesis \emph{problem types}.
 
 Whereas traditional approaches in program synthesis (and particularly PBE) focused on constraining the large discrete search space,
 such as deductive and constraint-solving approaches,
-neural program synthesis instead tends to incrementally generate programs,
-using continuous representations of the state space to predict the next token,
-be it in a sequential fashion~\citep{alphanpi},
-or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
+\emph{neural} program synthesis instead tends break down the problem by incrementally generating programs,
+using continuous representations of the state space to predict the next token.
+% be it in a sequential fashion~\citep{npi,neuralmachinetranslation,alphanpi},
+% or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
 
 \subsection{Challenges}
 
-While considered a holy grail of computer science~\citep{gulwani2017program}, program synthesis is a challenging task, characterized by large search spaces,
+\subsubsection{Challenges of program synthesis}
+
+While considered a holy grail of computer science~\citep{gulwani2017program},
+program synthesis in general is a challenging task, characterized by large search spaces,
 e.g. a space of $10^{5943}$ programs discovering an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
 
-\subsubsection{Challenges of type-based synthesis}
+% \subsubsection{Challenges of programming by example}
 
-While types can be used as a powerful way of specifying program behavior through the use of e.g. refinement types~\citep{synquid} or succinct types~\citep{guospeeding},
-these typically end up in a similar pitfall as program synthesis based on formal specifications,
-requiring the user to essentially write a type that may end up similar in complexity to the actual program itself.
+\subsubsection{Challenges of type-theoretic PBE}
 
-Types of a level that users may be more familiar with, which may include polymorphic types or even algebraic data types,
+% \subsubsection{Challenges of deductive synthesis}
+
+% Deductive synthesis includes both synthesis from formal specifications as well as deductive techniques used in PBE, which includes type-theoretic approaches.
+
+One issue with type-theoretic approaches to PBE is that,
+while accurate specifications of program behavior could be written through the
+use of e.g. refinement types~\citep{synquid} or succinct types~\citep{guospeeding},
+types of a level that users may be more familiar with,
+which may include polymorphic types or even algebraic data types,
 may end up not sufficiently expressive: while certainly constraining the program space,
 examples may still be needed to disambiguate between potential candidate programs.
 
-\subsubsection{Challenges of programming by example}
-
-Whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar,
-there is typically no guarantee that such partial program constructions will qualify as a full executable program adherent to the grammar.
-As a result, neural synthesizers will have little intermediary feedback to go by, limiting their effectiveness.
-
-But if only complete programs can be evaluated for validity and behavior, then 
-we will be ill-equipped to provide synthesizers with an accurate understanding of partial programs,
-which make up for a large part of our prediction steps.
-
-\subsubsection{Challenges of neural program synthesis}
+\subsubsection{Challenges of neural PBE}
 
 While the typically incremental approach of neural program synthesis breaks down the problem of PBE by considering one part of the program at a time, the original challenge remains:
 our search space typically remains large, meaning it will not be viable to proportionally scale our training sets by program size.
-As such, it would be great if we could somehow supervise the intermediate prediction steps.
+
+Whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar,
+we may generally only be able to evaluate the quality of \emph{complete} programs:
+there is typically no guarantee that \emph{partial} constructions of the full program would \emph{also} qualify as a full executable program adherent to the grammar.
+As a result, neural synthesizers will have little intermediary feedback to go by, limiting their effectiveness.
+
+But if only \emph{complete} programs can be evaluated for validity and behavior, then 
+we will be ill-equipped to provide synthesizers with an accurate understanding of partial programs,
+which make up for a large part of our prediction steps.
+As such, it would be desirable to somehow supervise the intermediate prediction steps.
+
+% \subsubsubsection
+\subsubsection{Challenges of sequential-based neural PBE}
+
+Most neural synthesis techniques, particular those using a \emph{sequence-to-sequence} approach~\footnote{
+    While in tree-based synthesis techniques it might not be possible to \emph{execute} programs either,
+    this should at least result in an (incomplete) AST, which should be significantly easier to learn to embed given the knowledge of how to embed a complete AST than a program that does not even parse.
+    % TODO: confirm if there is a distinction between tree-based / node-based
+},
+additionally face the issue of dissonance between their representation of complete programs and that of intermediate states.
+As such intermediate states do not in general constitute valid programs,
+these neural synthesizers have an additional task to solve:
+compensating for their lack of an inherently meaningful incremental state.
 
 \subsection{Research question}
 
@@ -214,9 +314,7 @@ As such, it would be great if we could somehow supervise the intermediate predic
 Our key observation here is thus that input-output examples and types are quite complementary as specifications constraining our program behavior:
 whereas input-output examples are relatively expressive, they may only help us to evaluate the quality of complete programs;
 types, on the other hand, are by themselves not usually descriptive enough of our task,
-but fortunately, due to typed holes,
-% TODO: rewrite stuff on typed holes since I'm technically not even using those yet atm...?
-may help us to evaluate and inform further incremental synthesis steps even of incomplete functions still containing holes.
+but may help us to evaluate and inform further incremental synthesis steps even of incomplete functions still containing holes.
 
 \subsubsection{Hypotheses}
 
@@ -269,38 +367,358 @@ in languages featuring typed holes we may pre-compile even partial programs such
 %     \emph{Research question \#4: can deduction-based neural program synthesis methods benefit from using types and compilation checks as additional features?}
 % \end{displayquote}
 
+\pagebreak
+
 \section{Expected Contribution} % \label{sec:expected-contribution}
 
 The present work aims to be the first experiment to:
 \begin{itemize}
-    \item bring the type-based information traditionally used in program synthesis into the newer branch of neural program synthesis;
-    \item bridge the two fields, such as to find a best-of-both-worlds golden mean;
-    \item use this type info to better constrain the search space, improving the effectiveness of (neural) program synthesis methods;
-    \item offer an open-source implementation of the algorithm described in \citet{nsps};
-    \item generate a dataset for neural synthesis of functional programs;
-    \item lay out a way of generating such datasets, including an open-source implementation, addressing the current reliance on hand-crafted curricula~\citep{nps}.
+    \item bring the \emph{type-based information} traditionally used in program synthesis into the newer branch of neural program synthesis;
+    \item \emph{bridge} the two fields, such as to find a best-of-both-worlds golden mean;
+    \item use this type info to better \emph{constrain the search space}, improving the effectiveness of (neural) program synthesis methods;
+    \item show that the synthesis of statically typeable programs may benefit from techniques \emph{specific} to this domain, and therefore for the purpose of automatic programming merits further study in itself;
+    \item offer an \emph{open-source implementation} of the algorithm described in \citet{nsps};
+    \item generate a \emph{dataset} for neural synthesis of functional programs;
+    \item lay out a way of \emph{generating} such datasets, including an open-source implementation, addressing the current reliance on hand-crafted curricula~\citep{nps};
+    % provide an implementation that may be one of the first machine learning projects utilizing
+    \item showcase \emph{static tensor typing} as offered by the \emph{HaskTorch} deep learning library~\citep{hasktorch}.
 \end{itemize}
 
-\section{Existing work} % \label{sec:existing-work}
+\pagebreak
 
-Methods used in program synthesis include:
+\section{Existing approaches to PBE}
+
+PBE has traditionally known heuristics such as
+\emph{Version Space Algebras} (VSAs), which aim to constrain
+grammar productions with a limited number of examples.
+
+Another useful tool is \emph{ambiguity resolution},
+i.e. requesting user input to resolve ambiguity
+in the event that multiple candidate programs
+fulfill the given input-output example pairs.%
+~\citep{gulwani2017program}
+While we will come back to ambiguity resolution as it is
+alleviated by \emph{active learning},
+these two techniques are primarily used to complement
+other methods we will introduce here now.
+
+Please do note that program synthesis has been somewhat different
+from other branches of machine learning, such as image recognition:
+unfortunately the field has been so diverse that there has been little
+standardization of benchmarking tasks to compare approaches like
+\emph{ImageNet}~\citep{deng2009imagenet} had done for computer vision tasks.
+While this means we will not present statistics
+comparing the performance of these various approaches,
+we will instead lay out their conceptual differences and weaknesses.
+
+\subsection{Enumerative search}
+
+The naive approach to synthesis would be to enumerate all the possible programs in our search space,
+and for each one evaluate whether it satisfies our task specification.
+This is called \emph{enumerative} or \emph{depth-first search} (DFS).
+As one might expect, such an approach does not generalize \emph{scale} well with search space size however.
+
+\subsection{Evolutionary algorithms}
+
+\emph{Evolutionary algorithms}~\citep{eiben2003introduction} are a black-box optimization method of potentially discrete functions.
+
+\emph{Genetic programming} is a branch of evolutionary algorithms based on \emph{tree} representations,
+rendering it viable to \emph{evolve} programs using some AST representation.~\citep{koza1994genetic}
+Such \emph{evolution} is a search method that consists of generating programs similar to existing promising candidates, using either \emph{mutations} or \emph{combinations} of existing candidate solutions.
+
+However, while such heuristics help improve on the baseline of enumerative search,
+unfortunately such optimization is a one-shot exercise:
+it has little notion of \emph{learning} from previous problems to improve performance on future similar problems.%
+~\footnote{
+    Technically one way to let an evolutionary algorithm \emph{learn} would be to seed runs on new problems using solutions from previous similar problems.
+    However, such choices would be left up to the user,
+    and are not something that the evolutionary algorithm itself is able to help out on.
+    In practice, even under the same class of problems,
+    different problem instances will likely require different end solutions,
+    largely rendering this hack moot.
+}
+As such, evolutionary approaches have been more popular in areas where their strategy of \emph{local search} would pose an advantage, such as for \emph{super-optimization}~\citep{schkufza2016stochastic} (optimizing the performance of an existing program) and \emph{program repair}~\citep{weimer2009automatically,forrest2009genetic}.
+
+\subsection{Active learning and Bayesian optimization}
+
+\emph{Active learning}~\citep{settles2009active} and
+\emph{Bayesian optimization}~\citep{mockus2012bayesian}
+are two techniques intended to minimize a required number of
+expensive evaluation rounds in modeling discrete functions.
+Their difference however lies in their intended objective:
+the objective in \emph{active learning} is to most accurately
+model the underlying function, while in
+\emph{Bayesian optimization} the objective is to maximize
+a given reward (as a total over the number of evaluations),
+which renders it a trade-off of \emph{exploration} versus
+\emph{exploitation} similar to that of reinforcement learning.
+
+Within program synthesis, active learning is primarily used to
+facilitate effectively requesting interactive user feedback when
+trying to synthesize a particular function in PBE when faced
+with ambiguity of user intent.~\citep{shen2019using}%
+~\footnote{
+    Interactive user feedback is a useful technique in the face of ambiguity,
+    but for the purpose of this paper we will not focus on this technique.
+}
+
+Unlike evolutionary algorithms, these techniques model the underlying function,
+allowing one to generalize to other problem instances as well.
+As a result, we can use these not only in interactive feedback,
+but also to directly decide which programs we wish to evaluate programmatically.
+However, programmatic evaluations are typically cheap,
+making this use-case less of a fit given the premise of these techniques.
+
+While Bayesian optimization has been used to this end~\citep{looks2005learning},
+the problem with using it this way is that the cost complexity of this technique
+scales terribly to larger search spaces, which are common in program synthesis.
+The risk with this is that this may make it much faster to just evaluate
+multiple programs in the search space than it would be to spend those CPU cycles
+figuring out which single evaluation might be most promising or informative.
+As such, subsequent attempts have limited its use to constrained
+sub-problems like \emph{sketch filling}.~\citep{verma2018programmatically}
+
+\subsection{Oracle-guided synthesis}
+
+One attempt to overcome the computational complexity of program synthesis
+has been \emph{oracle-guided synthesis}~\citep{solar2008program},
+which splits the synthesis task into generating and filling of program
+\emph{sketches}~\citep{murali2017neural}.
+Unlike full synthesis itself, sketch filling is not a second-order but a
+first-order logic problem, enabling the use of constraint solving methods
+such as satisfiability (SAT) or satisfiability modulo theories (SMT) solvers%
+~\citep{akiba2013calibrating,alur2013syntax,alur2016sygus,rosette,architecture}%
+~\footnote{
+    SMT solvers combine SAT-style search with theories like arithmetic and inequalities.
+} for the filling of sketches, potentially further extended with
+\emph{conflict-driven learning}~\citep{feng2018program,hornclauses},
+which help \emph{backtrack} if the branch explored turns out unviable.
+The point here is that if a given sketch has multiple holes,
+once a filled version turns out unviable due to a certain production rules used for one of its holes,
+other variants involving the faulty choice in question may be ruled out as well.
+
+However, like evolutionary algorithms, this is a one-shot technique
+that does not learn across problem instances.
+As such, it is likely not as efficient if our goal is to create a general synthesizer,
+although it could still be incorporated into hybrid approaches~\citep{deepcoder}.
+
+\subsection{Deductive techniques}
+
+\emph{Deductive} search techniques for PBE were inspired by such
+techniques used in synthesis from formal specifications,
+but have been applied to the \emph{inductive} task of PBE as well.
+Deductive techniques are based on theorem provers,
+and recursively reduce the synthesis problem into sub-problems,
+propagating constraints.
+These include approaches based on \emph{inverse semantics} of
+DSL operators and \emph{type-theoretic PBE}.
+
+\subsubsection{Inverse semantics}
+
+The idea of \emph{inverse semantics} is to reduce the complexity
+of the synthesis task by using inverse logic.~\citep{flashmeta,prose}
+This is a top-down search where we would take a grammatical
+production rule, presume it to be our outer expression,
+and use its inverse logic to propagate our original
+input-output examples to its sub-expressions.
+This way we have obtained a simpler sub-problem to solve.
+
+The generalization of such a function inverse to work with functions
+taking multiple parameters using \emph{witness functions},
+each representing a function inverse for a given parameter.
+
+While these are a useful search technique however, their
+use is unfortunately limited to invertible operations,
+rendering this a helpful complement to, yet not a
+reliable alternative to other PBE methods.%
+~\footnote{
+    A recent potential workaround not reliant on invertability
+    has been the approach by \citet{odena2020learning},
+    who would, given properties of a function composition
+    $f \circ g$ and of $f$, use machine learning to predict
+    the properties of $g$.
+    However, it is not immediately clear if this technique
+    has a straight-forward equivalent in the domain of
+    input-output examples.
+}
+
+\subsubsection{Type-theoretic PBE}
+
+\emph{Type-theoretic} deductive search in PBE%
+~\citep{myth,synquid} is about the use of programming
+types to constrain the synthesis search space.
+While there have been pure type-based approaches based on e.g.
+refinement types~\citep{synquid} or succinct types~\citep{guospeeding},
+which can be used as a powerful way of specifying program behavior,
+unfortunately these typically end up in a similar pitfall as
+synthesis from formal specifications;
+they often require the user to essentially write a specification
+that may end up similar in complexity to the actual program itself,
+in a sense potentially defeating the point of using a synthesizer.
+
+As such, as with synthesis from formal specifications itself,
+it may be more realistic to use type-based logic from
+the type information we do have readily available,
+using this to complement other synthesis methods,
+rather than presume we may fully rely on just type-theoretic PBE.
+
+\subsection{Neural program synthesis (NPS)}
+
+More recently, PBE has been explored using machine learning approaches, under the name of \emph{neural program synthesis} (NPS)~\citep{nps}.
+Whereas traditional approaches in program synthesis (and particularly PBE) focused on constraining the large discrete search space,
+such as deductive and constraint-solving approaches,
+\emph{neural} program synthesis instead tends to incrementally generate programs,
+using continuous representations of the state space to predict the next token,
+be it in a sequential fashion~\citep{npi,neuralmachinetranslation,alphanpi},
+or in a structured one based on abstract syntax trees (ASTs)~\citep{nsps}.
+
+Unfortunately though, program synthesis in its general sense has been less straight-forward to tackle by neural methods than other AI problems,
+as our search space is typically discrete, meaning we cannot simply apply gradient-based optimization such as \emph{stochastic gradient descent} (SGD).~\citep{nps}
+
+This issue can be worked around in different ways:
 \begin{itemize}
-    \item approaches based on enumerative search~\citep{akiba2013calibrating,alur2013syntax,alur2016sygus};
-    \item oracle-guided synthesis~\citep{solar2008program}, based on the idea of splitting the synthesis task into generating and filling \emph{sketches} of programs;
-    \item constraint solving methods such as satisfiability modulo theories (SMT) solvers~\citep{rosette,architecture} and conflict-driven learning~\citep{feng2018program,hornclauses};
-    \item deductive search techniques, based on theorem provers, recursively reducing the synthesis problem into sub-problems, propagating constraints, including approaches based on inverse semantics of DSL operators~\citep{flashmeta,prose} and type-theoretic PBE~\citep{myth,synquid};
-    \item sequence-to-sequence methods~\citep{npi,neuralmachinetranslation,alphanpi}, leveraging techniques from natural language processing (NLP) to represent program synthesis as a sequence prediction problem, often combined with mechanisms such as convolutional recurrence~\citep{neuralgpu}, attention~\citep{nmt,ptrnets,structuredattention}, memory~\citep{ntm,neuralram,neuralprogrammer,hierarchicalmemory}, function hierarchies~\citep{npi,npl}, and recursion~\citep{cai2017making};
-    \item tree-based approaches such as recursive neural networks~\cite{nsps};
-    \item graph neural networks~\citep{allamanis2017learning,brockschmidt2018generative}, which aim to model relations between variable occurrences;
-    \item evolutionary algorithms~\citep{koza1994genetic}, which generate programs similar to existing promising candidates;
-    \item reinforcement learning~\citep{chen2017towards,bunel2018leveraging,xu2019neural,camacho2019towards}, learning to synthesize by trying rather than from supervision signals;
-    \item learning-to-rank methods~\citep{singh2015predicting}, which use techniques from information retrieval (IR) to rank a satisfactory candidate program on top;
-    \item bayesian optimization~\citep{looks2005learning,verma2018programmatically}, which aims to find an optimal solution within the shortest number of attempted programs by framing synthesis as a discrete optimization problem;
-    \item active learning~\citep{shen2019using}, intended to efficiently request interactive user feedback.
+    \item Using a \emph{differentiable interpreter} to directly enable gradient-based optimization.~\citep{forth,terpret,houdini,feser2016differentiable,rocktaschel2017end}
+          However, such purely SGD-based methods have proven less effective than traditional or mixed methods.~\citep{terpret}    
+    \item providing a differentiable feedback signal by \emph{supervising} using the correct program.
+        This approach unfortunately simplifies our problem \emph{too much}%
+        ~\footnote{
+            In reality, we wish to condition our model to synthesize not just the known programs,
+            but to generalize to learn to synthesize \emph{unknown} programs matching our task specification as well.
+            Supervising by a given 'known correct' program instead tells our model that other programs matching our specification somehow do not qualify as correct.
+            As a result, such supervision requires that the training dataset provides a representative sample of our full program space.
+            Note that this assumption is broken for datasets much smaller than the program space,
+            meaning that this approach does not scale well to bigger search spaces.
+            % TODO: add references?
+        }, but does make for a relatively simple setup.
+    \item using \emph{reinforcement learning} to estimate a gradient to optimize by~\citep{chen2017towards,bunel2018leveraging,xu2019neural,camacho2019towards}, so as to learn to synthesize by \emph{trying} based on program performance rather than from direct supervision signals. This approach requires a more complex setup, but solves the issues of supervised neural synthesis.
+    \item using neural methods in a \emph{hybrid} setup. This approach is explored further in section \ref{sec:ngs}.
 \end{itemize}
 
-% TODO: tell about some existing works, kinda argue why I wanna do my thing instead of them being good enough already
+\subsubsection{Graph-based NPS}
+
+One neural network type used in NPS has been
+\emph{graph neural networks}~\citep{shuman2013emerging,wu2020comprehensive}.
+These have been used for representing programs~\citep{allamanis2017learning}
+as well as for generative modeling of source code~\citep{brockschmidt2018generative}%
+to better capture e.g. the relations between variable occurrences,
+which \citet{brockschmidt2018generative} suggested would be of use in areas such as \emph{code repair},
+where the input to the synthesizer is a (broken) program that is to be fixed.
+
+Such methods could also reasonably be extended to facilitate training of embeddings for neural synthesizer using \emph{transfer learning}~\citep{pan2009survey} or \emph{multi-task learning}~\citep{multitasklearning} setups.
+However, while these appear to be a potentially useful complement to other techniques
+in the role of program encoder~\footnote{
+    One caveat here is that graph neural networks' use in capturing
+    variable relationships is only useful if one is synthesizing new variables,
+    which in our present \emph{pointfree} DSL will remain out of scope,
+    as we will explain in further detail later.
+}, these appear not to have been designed with PBE in mind specifically.
+
+\subsubsection{Information retrieval methods in NPS}
+
+A different approach has been to apply techniques from the field of
+\emph{information retrieval} (IR) such as \emph{learning-to-rank} (LTR) methods%
+~\citep{singh2015predicting}, which aims to learn to judge the
+relative quality of programs to rank a satisfactory program candidate on top,
+rather than learning to assign scores for each individual program candidate.
+
+However, this method was primarily intended for automated ambiguity resolution;
+as one might notice,
+it has a cost complexity linear to the number of candidates evaluated,
+rendering it essentially the ambiguity resolution equivalent of enumerative search.
+
+As such, this method is useful as a tiebreaker complementing existing methods,
+as a potential alternative to other neural models within a top-down search,
+or as the neural component in the \emph{neural-guided search} methods discussed below.%
+~\footnote{Technically LTR could perform PBE by itself, but this would not scale well.}
+While the insight of this approach in itself is valid,
+it leaves unanswered questions regarding e.g. feature selection.
+
+\subsubsection{Sequence-based NPS}
+
+Neural synthesis methods typically employ \emph{sequence-to-sequence}
+(or simply \emph{seq2seq}) techniques~\citep{npi,neuralmachinetranslation,alphanpi},
+such as the \emph{recurrent neural network} (RNN)~\citep{backproprnn}
+and \emph{long short-term memory} (LSTM)~\citep{lstm},
+leveraging techniques commonly used in \emph{natural language processing} (NLP)
+to represent program synthesis as a sequence prediction problem.%
+~\footnote{
+    Although many might be most familiar with \emph{seq2seq} methods for their prevalence in NLP,
+    the original experiment for the RNN however did in fact test it
+    on an inductive logic programming task!~\citep{backproprnn}
+}
+
+Such sequential neural synthesizers have been extended with mechanisms such as convolutional recurrence~\citep{neuralgpu}, attention~\citep{nmt,ptrnets,structuredattention}, memory~\citep{ntm,neuralram,neuralprogrammer,hierarchicalmemory}, function hierarchies~\citep{npi,npl}, and recursion~\citep{cai2017making}.
+
+However, while a hypothetical synthesizer only producing compilable programs would always have direct feedback to its program embeddings,
+this feedback signal is much delayed if a synthesizer would gradually synthesize a program e.g. one character at a time,
+only learning about resulting program behavior once the program is complete.
+
+As such, sequence-based neural techniques must learn quite a lot:
+\emph{in addition to} (continuous logical equivalents of) the traditional compiler tasks of \emph{lexing} input into token categories,
+\emph{parsing} these token sequences into hierarchical structures (ASTs),
+and interpreting these to \emph{execute} them as programs,
+these synthesizers must additionally learn how to construct and update a (memorized) state so as to ultimately,
+when the synthesizer considers its code complete, obtain a correct program.
+
+\subsubsection{Tree-based NPS}
+
+Since then, there have also been approaches framing program synthesis by representing programs as \emph{abstract syntax trees} (ASTs) rather than as sequences~\citep{odena2020learning,polosukhin2018neural},
+allowing such methods to use \emph{tree-structured networks}%
+%  such as \emph{recursive} neural networks
+.
+Of particular interest to us in this category has been the work of \citet{nsps},
+which we will introduce in more detail.
+% TODO: specify section
+
 % TODO: expand on Myth paper
+
+\subsubsection{Neuro-symbolic program synthesis}
+
+% TODO
+
+\subsubsection{Neural-guided search} \label{sec:ngs}
+
+\emph{Neural-guided search} is an approach to \emph{hybrid} neural synthesis,
+combining symbolic and statistical synthesis methods.~\citep{nps}
+It employs neural components to indicate order within traditional search methods
+such as enumerative search (possibly pruned using deduction),
+'sort-and-add' enumeration or sketch filling.~\citep{deepcoder}
+
+\citet{kalyan2018neural} built on this to extend the guidance to each search step,
+integrating \emph{deductive} search (e.g. a SAT/SMT solver, extensions
+like \emph{conflict-driven} learning~\citep{feng2018program}),
+a \emph{statistical model} judging generalization,
+and a controller deciding which of the model's suggested branches
+to explore (branch-and-bound~\citep{kalyan2018neural}, beam search%
+~\citep{polosukhin2018neural}, A\*~\citep{lee2018accelerating}).
+The statistical model mentioned here is where other
+neural synthesis methods would fit into this approach.
+Also of importance here is deciding when to \emph{prune} branches,
+although near the leaves this check may be slower
+than to just explore any that remain.~\citep{polozov}
+
+\citet{feng2018program} expanded on deductive techniques
+like SMT solvers by \emph{conflict-driven} learning,
+ensuring that if e.g. a \emph{map} operation would yield an
+output list length not corresponding to the desired length,
+other operations suffering from the same issue such as
+\emph{reverse} and \emph{sort} would be automatically ruled out as well.
+
+\citet{zhang2018leveraging} focus on incorporating deduced constraints
+into the statistical model, to allow taking this info into account
+in the decision of which branches to focus on.
+Another similar effort has been that of \citet{odena2020learning},
+which adds additional features describing properties of a function.
+Types however have so far been missing here.
+
+Compared to other neural methods, neural-guided search seems
+more of a complementary than a competing effort.
+The engineering involved to conciliate the benefits of
+different approaches here may be quite involved, and as such
+are likely less common in research papers comparing neural components,
+their benefits in production systems seem clear.
+
+\pagebreak
 
 \section{Methodology} % \label{sec:methodology}
 
@@ -325,9 +743,25 @@ The program search space consists of the synthesis language (defined by a \emph{
 The trade-off here is one of expressiveness (can we write a satisfactory program, ideally using not too much code?) versus limiting our search space (ensure we can find a solution within too long).
 Within this context, it would seem preferable to pick a limited grammar in the functional programming paradigm using static typing.
 
-% why functional
-% why static typing
-% why limited grammar, and limited how
+\subsubsection{Functional programming}
+
+The \emph{functional} paradigm offers various general-purpose programming languages,
+which helps potentially make our synthesizer potentially applicable to a wide variety of domains.
+While there are general-purpose programming languages of other paradigms as well,
+the functional programming paradigm has been characterized by its composability or \emph{modularity}~\citep{hughes1989functional},
+which is key in the creation of synthesizers that generalize well.
+
+In addition, functional programming is well amenable to programming \emph{types}, allowing advanced constructs such as algebraic datatypes (ADTs)~\citep{burstall1977design}, generalized algebraic datatypes (GADTs)~\citep{dybjer1991logical}, and type classes~\citep{blott1991type}.
+While \citet{haskellhistory} provides an overview of these,
+the point for our purpose is that these features contribute to expressiveness,
+or conversely, help reduce the search space in program synthesis.
+
+\subsubsection{Static typing}
+
+% TODO
+
+% \subsubsection{Subset}
+% TODO: why limited grammar, and limited how
 
 % \subsubsubsection{Synthesis language}
 
@@ -347,10 +781,13 @@ and this branch of program synthesis has commonly focused on using functional pr
 ~\citep{synquid,eguchi2018automated,scythe,scout,gissurarson2018suggesting,idris,lenses}
 
 % Synthesis language
-Note that other work in this area have used differentiable programming languages
-as the synthesis language such as to enable optimization based on
-stochastic gradient descent (SGD)~\citep{forth,terpret}.
-However, such purely SGD-based methods proved less effective than traditional or mixed methods~\citep{terpret}.
+
+% TODO: adjust, already used above
+% Note that other work in this area have used differentiable programming languages
+% as the synthesis language such as to enable optimization based on
+% stochastic gradient descent (SGD)~\citep{forth,terpret}.
+% However, such purely SGD-based methods proved less effective than traditional or mixed methods~\citep{terpret}.
+
 % More unfortunately for our purposes, such languages have generally been relatively imperative in nature,
 % rendering them less amenable to type-driven synthesis.
 Outside of neural methods, programming languages designed for program synthesis also include solver-aided languages~\citep{rosette},
@@ -359,6 +796,8 @@ aimed at generating satisfiability conditions for satisfactory programs based on
 \subsection{Search technique}
 
 As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
+
+% TODO: explain why supervised instead of RL / hybrid
 
 As a benchmark algorithm we will therefore use \cite{nsps}, a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
 This is a \emph{strongly supervised} synthesis method, i.e. it creates a differentiable loss signal to supervise synthesis training by checking if the synthesized program is \emph{identical} to the target program, rather than if it has \emph{equivalent behavior}.
@@ -396,6 +835,8 @@ programming method \emph{sketching}~\citep{gulwani2017program} or
 \emph{type-driven development}.
 % ~\footnote{\url{https://manning.com/books/type-driven-development-with-idris}}
 As such, one of our goals is to improve suggested hole completions in such languages to facilitate this interactive programming style.
+On the other hand, we may also hook into such existing completion logic to inform our synthesizer.
+% TODO: expand on this if in scope, add to follow-up suggestions if out of scope
 
 \subsection{Types}
 
@@ -425,7 +866,7 @@ but only those for which potential building blocks include statically typed func
 
 % decouple synthesis/target languages
 As a result, this restriction limits our method from being used for direct synthesis of programming languages that are dynamically typed,
-e.g. Ruby language, as well as to those lacking parametric polymorphism, e.g. C language.
+e.g. Ruby language, as well as to those lacking parametric polymorphism, e.g. Go language.
 However, this only partly hinders those wishing to synthesize programs in such languages:
 rather than synthesizing in such languages directly, we would suggest synthesizing from the language that best constrains the search space,
 then using source-to-source translation methods (e.g. neural machine translation~\citep{kalchbrenner2013recurrent})
@@ -446,9 +887,10 @@ a statically typed, purely functional programming language with type inference a
 The advantages of Haskell as a synthesis language over the above-mentioned ML lies in its focus on the functional paradigm,
 unlike e.g. OCaml: this paradigm is more amenable to static types, which for synthesis helps us constrain our search space.
 
-Another advantage of Haskell over OCaml is it offers typed holes, which are useful for our purposes to evaluate the type of a given hole.
-While Idris language offers these benefits as well, Haskell's lazy evaluation seems a more sensible default for our purposes than Idris's strict evaluation.
-% TODO: justify why
+Another advantage of Haskell over OCaml is it offers typed holes, potentially useful for our purposes to evaluate the type of a given hole.
+% TODO: was this needed?
+While Idris language offers these benefits as well, Haskell's lazy evaluation seems a more sensible default for our purposes than Idris's strict evaluation, as lazy evaluation brings benefits like being able to deal with infinite data structures.
+%~\footnote{Source: \url{https://wiki.haskell.org/Lazy_evaluation}}
 ~\footnote{As an interesting coincidence, using Haskell for program synthesis also means using an implementation of \citet{lambdacalculus}'s lambda calculus to address \citet{church1957applications}'s problem of synthesizing programs.}
 
 % TODO: explain why I don't feel I need imperative statements or variable definitions
@@ -540,6 +982,8 @@ Our programs are structured as follows:
 \subsection{Compiler / type feedback}
 
 % \citep{bunel2018leveraging} condition on syntax to generate only correct programs, see their section 5.
+
+\pagebreak
 
 \section{Experiment} % \label{sec:experiment}
 
@@ -644,12 +1088,16 @@ The synthesis process itself is as follows:
 % TODO: EXPERIMENT
 % TODO: elaborate how to supervise existing methods with type info
 
+\pagebreak
+
 \section{Result} % \label{sec:result}
 
 Having added our type-level supervision during training, we expect synthesis success rates to rise and required evaluations to drop compared to the baseline algorithm.
 This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
 % TODO: RESULT
+
+\pagebreak
 
 \section{Discussion} % \label{sec:discussion}
 
@@ -661,6 +1109,8 @@ One question we aim to answer here is whether our approach can meaningfully scal
     \item How can we apply a more generalized program synthesis model to a specific problem? Can we take inspiration here from neural network pruning?
     % \item ...
 \end{itemize}
+
+\pagebreak
 
 \nocite{*}
 % \bibliographystyle{acm}

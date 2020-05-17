@@ -278,8 +278,8 @@
 % - this made me realize you may want to factor in existing operations on i/o to simplify the problem for the given sub-node.
 % - sub-problems mentioned sounds relevant, and their previous paper FlashMeta (which this builds on) is mentioned in a [repo](https://github.com/reudismam/Refazer/blob/58f68f2c3f93e148a50f2eb09879a7bbe7fd6e3a/ProgramSynthesis/ProseFunctions/RelativePositioning/RightWitnessFunction.cs), though I'm not sure where this is imported from.
 % - the used framework PROSE [offers holes](https://microsoft.github.io/prose/documentation/prose/usage/), implying they support the top-down incremental approach I'm hoping these papers are using.
-% - from my understanding, from this paper (and the [FlashMeta paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/12/oopsla15-pbe.pdf)), my impression is that the approach used is more similar to bottom-up (though not narrowing down on one option at any level), prioritizing productions (then higher-level constructs) to direct a search. whereas I like the compositional nature of the bottom-up approach, for type purposes I appreciate that the top-down approach (as used by the NSPS paper) is type-bound by the desired input/output types.
-% - PROSE's witness functions for constraint propagation look super interesting though! I kinda want this both for types and for input/output examples...
+% - unlike deepcoder's bottom-up, this seems top-down, prioritizing productions (then higher-level constructs) to direct a search. can probably combine this with NSPS!
+% - PROSE's witness functions for constraint propagation look super interesting! I kinda want this both for types and for input/output examples...
 
 @inproceedings{flashmeta,
   title={FlashMeta: a framework for inductive program synthesis},
@@ -540,6 +540,32 @@
 % [code](https://github.com/capergroup/houdini)
 % NNs as typed differentiable functional programs to compose a library of neural functions to mix perception and procedural reasoning. library: NN, compose, map, fold, conv, on list/graph/tensor of bool/real. synth: generate (heuristically-guided top-down iterative refinement) + learn, evaluated on lifelong learning. suggests incorporating search strategies from NAS. not actually doing program synthesis tho... tests on several lifelong learning tasks (mix perceptual/algorithmic knowledge): recognize_digit, classify_digit, is_toy, regress_speed, regress_mnist, count_digit, count_toy, sum_digits, shortest_path_street, shortest_path_mnist. ops: hole, map, fold, convolution, compose.
 
+@article{feser2016differentiable,
+  author    = {John K. Feser and
+               Marc Brockschmidt and
+               Alexander L. Gaunt and
+               Daniel Tarlow},
+  title     = {Neural Functional Programming},
+  journal   = {CoRR},
+  volume    = {abs/1611.01988},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1611.01988},
+  archivePrefix = {arXiv},
+  eprint    = {1611.01988},
+  timestamp = {Mon, 13 Aug 2018 16:47:13 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/FeserBGT16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{rocktaschel2017end,
+  title={End-to-end differentiable proving},
+  author={Rockt{\"a}schel, Tim and Riedel, Sebastian},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={3788--3800},
+  url={http://papers.nips.cc/paper/6969-end-to-end-differentiable-proving},
+  year={2017}
+}
+
 @article{idris,
   title={Idris, a general-purpose dependently typed programming language: Design and implementation},
   author={Brady, Edwin},
@@ -634,8 +660,8 @@
 
 @article{abstractsyntaxnetworks,
   author    = {Maxim Rabinovich and
-                Mitchell Stern and
-                Dan Klein},
+               Mitchell Stern and
+               Dan Klein},
   title     = {Abstract Syntax Networks for Code Generation and Semantic Parsing},
   journal   = {CoRR},
   volume    = {abs/1704.07535},
@@ -730,8 +756,8 @@
 
 @inproceedings{odena2020learning,
   title={Learning to Represent Programs with Property Signatures},
-  author={Augustus Odena and
-          Charles Sutton},
+  author={Odena, Augustus and
+          Sutton, Charles},
   editor={},
   booktitle={International Conference on Learning Representations},
   year={2020},
@@ -1050,7 +1076,7 @@
   pages={398--414},
   year={2015},
   doi={10.1007/978-3-319-21690-4_23},
-  url={https://link.springer.com/chapter/10.1007/978-3-319-21690-4_23},
+  url={https://doi.org/10.1007/978-3-319-21690-4_23},
   organization={Springer}
 }
 
@@ -1079,6 +1105,7 @@
   url={https://dl.acm.org/doi/abs/10.1145/3296979.3192382},
   publisher={ACM New York, NY, USA}
 }
+% top-down, SMT + conflict-driven. if output list length doesn't correspond with `map`, also rule out `reverse` and `sort`. sounds crazy smart! neural ordering like NSPS could maybe hook in as their `decide` function.
 
 @article{prose,
   title={Automating string processing in spreadsheets using input-output examples},
@@ -1317,4 +1344,583 @@
   author={Russell, Stuart and Norvig, Peter},
   url={https://people.eecs.berkeley.edu/~russell/aima1e.html},
   year={2002}
+}
+
+@article{hierarchicalrl,
+  title={Recent advances in hierarchical reinforcement learning},
+  author={Barto, Andrew G and
+          Mahadevan, Sridhar},
+  journal={Discrete event dynamic systems},
+  volume={13},
+  number={1-2},
+  pages={41--77},
+  year={2003},
+  doi={10.1023/A:1022140919877},
+  url={https://link.springer.com/article/10.1023/A:1022140919877},
+  publisher={Springer}
+}
+
+@article{burstall1977design,
+  title={Design considerations for a functional programming language},
+  author={Burstall, Rod M},
+  journal={The software revolution},
+  year={1977}
+}
+
+@article{dybjer1991logical,
+  title={Logical Frameworks: Inductive sets and families in Martin-L{\"o}f's type theory and their set-theoretic semantics},
+  author={Dybjer, Peter},
+  year={1991}
+}
+
+@phdthesis{blott1991type,
+  title={Type classes},
+  author={Blott, Stephen},
+  year={1991},
+  school={PhD thesis, Department of Computing Science, Glasgow University}
+}
+
+@inproceedings{haskellhistory,
+  author = {Hudak, Paul and Hughes, John and Peyton Jones, Simon and Wadler, Philip},
+  title = {A History of Haskell: Being Lazy with Class},
+  year = {2007},
+  isbn = {9781595937667},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/1238844.1238856},
+  doi = {10.1145/1238844.1238856},
+  booktitle = {Proceedings of the Third ACM SIGPLAN Conference on History of Programming Languages},
+  pages = {12–1–12–55},
+  numpages = {55},
+  location = {San Diego, California},
+  series = {HOPL III}
+}
+
+@article{backproprnn,
+  title={Learning representations by back-propagating errors},
+  author={Rumelhart, David E and Hinton, Geoffrey E and Williams, Ronald J},
+  journal={nature},
+  volume={323},
+  number={6088},
+  pages={533--536},
+  year={1986},
+  publisher={Nature Publishing Group}
+}
+
+@article{lstm,
+  title={Long short-term memory},
+  author={Hochreiter, Sepp and Schmidhuber, J{\"u}rgen},
+  journal={Neural computation},
+  volume={9},
+  number={8},
+  pages={1735--1780},
+  year={1997},
+  publisher={MIT Press}
+}
+
+@article{lee2018accelerating,
+  title={Accelerating search-based program synthesis using learned probabilistic models},
+  author={Lee, Woosuk and
+          Heo, Kihong and
+          Alur, Rajeev and
+          Naik, Mayur},
+  journal={ACM SIGPLAN Notices},
+  volume={53},
+  number={4},
+  pages={436--449},
+  year={2018},
+  url={https://www.cis.upenn.edu/~alur/PLDI18.pdf},
+  publisher={ACM New York, NY, USA}
+}
+% top-down, A* (order by estimated distance from goal), SyGuS, probabilistic higher order grammar (PHOG)
+
+@article{zhang2018leveraging,
+  title={Leveraging constraint logic programming for neural guided program synthesis},
+  author={Zhang, Lisa and
+          Rosenblatt, Gregory and
+          Fetaya, Ethan and
+          Liao, Renjie and
+          Byrd, William E and
+          Urtasun, Raquel and
+          Zemel, Richard},
+  url={https://openreview.net/pdf?id=HJIHtIJvz},
+  year={2018}
+}
+% miniKanren builds constraints per rule; embed -> score -> pick. deductive so propagates constraints.
+
+@article{polosukhin2018neural,
+  title={Neural program search: Solving programming tasks from description and examples},
+  author={Polosukhin, Illia and
+          Skidanov, Alexander},
+  journal={arXiv preprint arXiv:1802.04335},
+  url={https://arxiv.org/abs/1802.04335},
+  year={2018}
+}
+% synthesis from description + examples; offers pseudo-code for tree-beam search
+
+@online{hasktorch,
+  author={Huang, Austin and
+          Stites, Sam and
+          Hashimoto, Junji and
+          Scholak, Torsten and
+          Paszke, Adam},
+  title={HaskTorch: Tensors and neural networks in Haskell},
+  year={2017},
+  month={Sep},
+  url={https://github.com/hasktorch/hasktorch},
+  urldate={2020-05-13}
+}
+
+@article{murali2017neural,
+  title={Neural sketch learning for conditional program generation},
+  author={Murali, Vijayaraghavan and
+          Qi, Letao and
+          Chaudhuri, Swarat and
+          Jermaine, Chris},
+  journal={arXiv preprint arXiv:1703.05698},
+  url={https://arxiv.org/abs/1703.05698},
+  year={2017}
+}
+
+@article{shuman2013emerging,
+  title={The emerging field of signal processing on graphs: Extending high-dimensional data analysis to networks and other irregular domains},
+  author={Shuman, David I and
+          Narang, Sunil K and
+          Frossard, Pascal and
+          Ortega, Antonio and
+          Vandergheynst, Pierre},
+  journal={IEEE signal processing magazine},
+  volume={30},
+  number={3},
+  pages={83--98},
+  year={2013},
+  url={https://arxiv.org/abs/1211.0053},
+  publisher={IEEE}
+}
+
+@article{wu2020comprehensive,
+  title={A comprehensive survey on graph neural networks},
+  author={Wu, Zonghan and
+          Pan, Shirui and
+          Chen, Fengwen and
+          Long, Guodong and
+          Zhang, Chengqi and
+          Philip, S Yu},
+  journal={IEEE Transactions on Neural Networks and Learning Systems},
+  year={2020},
+  url={https://arxiv.org/abs/1901.00596},
+  publisher={IEEE}
+}
+
+@article{multitasklearning,
+  author    = {Sebastian Ruder},
+  title     = {An Overview of Multi-Task Learning in Deep Neural Networks},
+  journal   = {CoRR},
+  volume    = {abs/1706.05098},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1706.05098},
+  archivePrefix = {arXiv},
+  eprint    = {1706.05098},
+  timestamp = {Mon, 13 Aug 2018 16:48:50 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/Ruder17a.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{pan2009survey,
+  title={A survey on transfer learning},
+  author={Pan, Sinno Jialin and
+          Yang, Qiang},
+  journal={IEEE Transactions on knowledge and data engineering},
+  volume={22},
+  number={10},
+  pages={1345--1359},
+  year={2009},
+  doi={10.1109/TKDE.2009.191},
+  url={https://doi.org/10.1109/TKDE.2009.191},
+  publisher={IEEE}
+}
+
+@article{zhong2017seq2sql,
+  title={Seq2sql: Generating structured queries from natural language using reinforcement learning},
+  author={Zhong, Victor and
+          Xiong, Caiming and
+          Socher, Richard},
+  journal={arXiv preprint arXiv:1709.00103},
+  url={https://arxiv.org/abs/1709.00103},
+  year={2017}
+}
+
+@article{koskimies1994automatic,
+  title={Automatic synthesis of state machines from trace diagrams},
+  author={Koskimies, Kai and
+          M{\"a}kinen, Erkki},
+  journal={Software: Practice and Experience},
+  volume={24},
+  number={7},
+  pages={643--658},
+  year={1994},
+  doi={10.1002/spe.4380240704},
+  url={https://doi.org/10.1002/spe.4380240704},
+  publisher={Wiley Online Library}
+}
+
+@inproceedings{demsky2006inference,
+  title={Inference and enforcement of data structure consistency specifications},
+  author={Demsky, Brian and
+          Ernst, Michael D and
+          Guo, Philip J and
+          McCamant, Stephen and
+          Perkins, Jeff H and
+          Rinard, Martin},
+  booktitle={Proceedings of the 2006 international symposium on Software testing and analysis},
+  pages={233--244},
+  doi={10.1145/1146238.1146266},
+  url={https://doi.org/10.1145/1146238.1146266},
+  year={2006}
+}
+
+@inproceedings{kaleeswaran2014minthint,
+  title={Minthint: Automated synthesis of repair hints},
+  author={Kaleeswaran, Shalini and
+          Tulsian, Varun and
+          Kanade, Aditya and
+          Orso, Alessandro},
+  booktitle={Proceedings of the 36th International Conference on Software Engineering},
+  pages={266--276},
+  url={https://dl.acm.org/doi/pdf/10.1145/2568225.2568258},
+  doi={10.1145/2568225.2568258},
+  year={2014}
+}
+
+@article{louridas2006static,
+  title={Static code analysis},
+  author={Louridas, Panagiotis},
+  journal={Ieee Software},
+  volume={23},
+  number={4},
+  pages={58--61},
+  year={2006},
+  url={https://doi.org/10.1109/MS.2006.114},
+  doi={10.1109/MS.2006.114},
+  publisher={IEEE}
+}
+
+@article{albrecht1980source,
+  title={Source-to-source translation: Ada to Pascal and Pascal to Ada},
+  author={Albrecht, Paul F and
+          Garrison, Philip E and
+          Graham, Susan L and
+          Hyerle, Robert H and
+          Ip, Patricia and
+          Krieg-Br{\"u}ckner, Bernd},
+  journal={ACM SIGPLAN Notices},
+  volume={15},
+  number={11},
+  pages={183--193},
+  year={1980},
+  url={https://doi.org/10.1145/947783.948658},
+  doi={10.1145/947783.948658},
+  publisher={ACM New York, NY, USA}
+}
+
+@article{loveman1977program,
+  title={Program improvement by source-to-source transformation},
+  author={Loveman, David B},
+  journal={Journal of the ACM (JACM)},
+  volume={24},
+  number={1},
+  pages={121--145},
+  year={1977},
+  url={https://doi.org/10.1145/321992.322000},
+  doi={10.1145/321992.322000},
+  publisher={ACM New York, NY, USA}
+}
+
+@article{czarnecki2006feature,
+  title={Feature-based survey of model transformation approaches},
+  author={Czarnecki, Krzysztof and
+          Helsen, Simon},
+  journal={IBM Systems Journal},
+  volume={45},
+  number={3},
+  pages={621--645},
+  year={2006},
+  url={https://doi.org/10.1147/sj.453.0621},
+  doi={10.1147/sj.453.0621},
+  publisher={IBM}
+}
+
+@article{visser2005survey,
+  title={A survey of strategies in rule-based program transformation systems},
+  author={Visser, Eelco},
+  journal={Journal of symbolic computation},
+  volume={40},
+  number={1},
+  pages={831--873},
+  year={2005},
+  url={https://doi.org/10.1016/j.jsc.2004.12.011},
+  doi={10.1016/j.jsc.2004.12.011},
+  publisher={Elsevier}
+}
+
+@article{partsch1983program,
+  title={Program transformation systems},
+  author={Partsch, Helmuth and
+          Steinbr{\"u}ggen, Ralf},
+  journal={ACM Computing Surveys (CSUR)},
+  volume={15},
+  number={3},
+  pages={199--236},
+  year={1983},
+  url={https://doi.org/10.1145/356914.356917},
+  doi={10.1145/356914.356917},
+  publisher={ACM New York, NY, USA}
+}
+
+@article{waters1988program,
+  title={Program translation via abstraction and reimplementation},
+  author={Waters, Richard C},
+  journal={IEEE Transactions on Software Engineering},
+  volume={14},
+  number={8},
+  pages={1207--1228},
+  year={1988},
+  url={https://doi.org/10.1109/32.7629},
+  doi={doi.org/10.1109/32.7629},
+  publisher={IEEE}
+}
+
+@incollection{chen2018tree,
+  title = {Tree-to-tree Neural Networks for Program Translation},
+  author = {Chen, Xinyun and
+            Liu, Chang and
+            Song, Dawn},
+  booktitle = {Advances in Neural Information Processing Systems 31},
+  editor = {S. Bengio and H. Wallach and H. Larochelle and K. Grauman and N. Cesa-Bianchi and R. Garnett},
+  pages = {2547--2557},
+  year = {2018},
+  publisher = {Curran Associates, Inc.},
+  url = {http://papers.nips.cc/paper/7521-tree-to-tree-neural-networks-for-program-translation.pdf}
+}
+
+@inproceedings{kim2019translating,
+  title={Translating CUDA to OpenCL for hardware generation using neural machine translation},
+  author={Kim, Yonghae and
+          Kim, Hyesoon},
+  booktitle={2019 IEEE/ACM International Symposium on Code Generation and Optimization (CGO)},
+  pages={285--286},
+  year={2019},
+  url={https://doi.org/10.1109/CGO.2019.8661172},
+  doi={10.1109/CGO.2019.8661172},
+  organization={IEEE}
+}
+
+@article{cho2014nmt,
+  author    = {KyungHyun Cho and
+               Bart van Merrienboer and
+               Dzmitry Bahdanau and
+               Yoshua Bengio},
+  title     = {On the Properties of Neural Machine Translation: Encoder-Decoder Approaches},
+  journal   = {CoRR},
+  volume    = {abs/1409.1259},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1409.1259},
+  archivePrefix = {arXiv},
+  eprint    = {1409.1259},
+  timestamp = {Mon, 13 Aug 2018 16:47:23 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/ChoMBB14.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@InProceedings{virtualassistant,
+  author={Tulshan, Amrita S. and
+          Dhage, Sudhir Namdeorao},
+  editor={Thampi, Sabu M. and
+          Marques, Oge and
+          Krishnan, Sri and
+          Li, Kuan-Ching and
+          Ciuonzo, Domenico and
+          Kolekar, Maheshkumar H.},
+  title={Survey on Virtual Assistant: Google Assistant, Siri, Cortana, Alexa},
+  booktitle={Advances in Signal Processing and Intelligent Recognition Systems},
+  year={2019},
+  publisher={Springer Singapore},
+  address={Singapore},
+  pages={190--201},
+  url={https://doi.org/10.1109/msp.2016.2617341},
+  doi={10.1109/msp.2016.2617341},
+  abstract={Virtual assistant is boon for everyone in this new era of 21st century. It has paved way for a new technology where we can ask questions to machine and can interact with IVAs as people do with humans. This new technology attracted almost whole world in many ways like smart phones, laptops, computers etc. Some of the significant VPs are like Siri, Google Assistant, Cortana, and Alexa. Voice recognition, contextual understanding and human interaction are the issues which are not solved yet in this IVAs. So, to solve those issues 100 users participated a survey for this research and shared their experiences. All users' task was to ask questions from the survey to all personal assistants and from their experiences this research paper came up with the actual results. According to that results many services were covered by these assistants but still there are some improvements required in voice recognition, contextual understanding and hand free interaction. After addressing these improvements in IVAs will definitely increased its use is the main goal for this research paper.},
+  isbn={978-981-13-5758-9}
+}
+
+@article{genie,
+  author    = {Giovanni Campagna and
+               Silei Xu and
+               Mehrad Moradshahi and
+               Richard Socher and
+               Monica S. Lam},
+  title     = {Genie: {A} Generator of Natural Language Semantic Parsers for Virtual
+               Assistant Commands},
+  journal   = {CoRR},
+  volume    = {abs/1904.09020},
+  year      = {2019},
+  url       = {http://arxiv.org/abs/1904.09020},
+  archivePrefix = {arXiv},
+  eprint    = {1904.09020},
+  timestamp = {Fri, 26 Apr 2019 13:18:53 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1904-09020.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{juang1991hidden,
+  title={Hidden Markov models for speech recognition},
+  author={Juang, Biing Hwang and Rabiner, Laurence R},
+  journal={Technometrics},
+  volume={33},
+  number={3},
+  pages={251--272},
+  year={1991},
+  doi={https://www.tandfonline.com/doi/abs/10.1080/00401706.1991.10484833},
+  publisher={Taylor \& Francis}
+}
+
+@inproceedings{graves2013speech,
+  title={Speech recognition with deep recurrent neural networks},
+  author={Graves, Alex and Mohamed, Abdel-rahman and Hinton, Geoffrey},
+  booktitle={2013 IEEE international conference on acoustics, speech and signal processing},
+  pages={6645--6649},
+  year={2013},
+  url={https://doi.org/10.1109/ICASSP.2013.6638947},
+  doi={10.1109/ICASSP.2013.6638947},
+  organization={IEEE}
+}
+
+@article{li2016deep,
+  author    = {Jiwei Li and
+               Will Monroe and
+               Alan Ritter and
+               Michel Galley and
+               Jianfeng Gao and
+               Dan Jurafsky},
+  title     = {Deep Reinforcement Learning for Dialogue Generation},
+  journal   = {CoRR},
+  volume    = {abs/1606.01541},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1606.01541},
+  archivePrefix = {arXiv},
+  eprint    = {1606.01541},
+  timestamp = {Mon, 13 Aug 2018 16:48:20 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/LiMRGGJ16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{bordes2016goaldialogue,
+  author    = {Bordes, Antoine and
+               Weston, Jason},
+  title     = {Learning End-to-End Goal-Oriented Dialog},
+  journal   = {CoRR},
+  volume    = {abs/1605.07683},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1605.07683},
+  archivePrefix = {arXiv},
+  eprint    = {1605.07683},
+  timestamp = {Mon, 13 Aug 2018 16:45:59 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/BordesW16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{li2016taskdialogue,
+  author    = {Li, Xiujun and
+               Lipton, Zachary C. and
+               Dhingra, Bhuwan and
+               Li, Lihong and
+               Gao, Jianfeng and
+               Chen, Yun{-}Nung},
+  title     = {A User Simulator for Task-Completion Dialogues},
+  journal   = {CoRR},
+  volume    = {abs/1612.05688},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1612.05688},
+  archivePrefix = {arXiv},
+  eprint    = {1612.05688},
+  timestamp = {Mon, 13 Aug 2018 16:47:16 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/LiLDLGC16.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@book{eiben2003introduction,
+  title={Introduction to evolutionary computing},
+  author={Eiben, Agoston E and
+          Smith, James E and others},
+  volume={53},
+  year={2003},
+  url={https://link.springer.com/book/10.1007/978-3-662-44874-8},
+  doi={10.1007/978-3-662-44874-8},
+  publisher={Springer}
+}
+
+@techreport{settles2009active,
+  title={Active learning literature survey},
+  author={Settles, Burr},
+  year={2009},
+  url={http://burrsettles.com/pub/settles.activelearning.pdf},
+  institution={University of Wisconsin-Madison Department of Computer Sciences}
+}
+
+@book{mockus2012bayesian,
+  title={Bayesian approach to global optimization: theory and applications},
+  author={Mockus, Jonas},
+  volume={37},
+  year={2012},
+  url={https://books.google.com/books?id=VuKoCAAAQBAJ},
+  publisher={Springer Science \& Business Media}
+}
+
+@inproceedings{deng2009imagenet,
+  title={Imagenet: A large-scale hierarchical image database},
+  author={Deng, Jia and
+          Dong, Wei and
+          Socher, Richard and
+          Li, Li-Jia and
+          Li, Kai and
+          Li, Fei-Fei},
+  booktitle={2009 IEEE conference on computer vision and pattern recognition},
+  pages={248--255},
+  year={2009},
+  url={https://doi.org/10.1109/CVPR.2009.5206848},
+  doi={10.1109/CVPR.2009.5206848},
+  organization={Ieee}
+}
+
+@article{schkufza2016stochastic,
+  title={Stochastic program optimization},
+  author={Schkufza, Eric and Sharma, Rahul and Aiken, Alex},
+  journal={Communications of the ACM},
+  volume={59},
+  number={2},
+  pages={114--122},
+  year={2016},
+  url={https://doi.org/10.1145/2863701},
+  doi={10.1145/2863701},
+  publisher={ACM New York, NY, USA}
+}
+
+@inproceedings{weimer2009automatically,
+  title={Automatically finding patches using genetic programming},
+  author={Weimer, Westley and Nguyen, ThanhVu and Le Goues, Claire and Forrest, Stephanie},
+  booktitle={2009 IEEE 31st International Conference on Software Engineering},
+  pages={364--374},
+  year={2009},
+  url={https://solar.fricke.co.uk/Teaching/CS523_2013Spring/Presentations/GenProg.pdf},
+  organization={IEEE}
+}
+
+@inproceedings{forrest2009genetic,
+  title={A genetic programming approach to automated software repair},
+  author={Forrest, Stephanie and Nguyen, ThanhVu and Weimer, Westley and Le Goues, Claire},
+  booktitle={Proceedings of the 11th Annual conference on Genetic and evolutionary computation},
+  pages={947--954},
+  doi={10.1145/1569901.1570031},
+  url={https://doi.org/10.1145/1569901.1570031},
+  year={2009}
 }

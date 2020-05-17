@@ -4,7 +4,7 @@
 
 - [x] December: finish literature review
 - [x] January/February: implement dataset generation
-- [ ] March: implement baseline
+- [x] March: implement baseline
 - [ ] April: implement improvement
 - [ ] May: finish experiment design
 - [ ] June: perform experiment, gather results
