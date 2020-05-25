@@ -44,9 +44,16 @@
 
 % synthesis
 \emph{Program synthesis}~\citep{church1957applications} is the task to automatically construct a program%
-~\footnote{While the definition of a program might be debatable as well, and there has been work on predicting type signatures from function names~\citep{wang2018predicting}, for the purpose of our paper we will focus on traditional executable programs, rather than e.g. 'programs' describing types.}%
+~\footnote{
+    While the definition of a program might be debatable as well,
+    and there has been work on predicting type signatures from function names~\citep{wang2018predicting},
+    for the purpose of our paper we will focus on traditional executable programs,
+    rather than e.g. 'programs' describing types.
+}%
 that satisfies a given high-level specification,
-be it a formal specification, a natural language description, full program \emph{traces}, input-output examples, or an existing program.~\citep{gulwani2017program}.
+be it a formal specification, a natural language description,
+full program \emph{traces}, input-output examples,
+or an existing program.~\citep{gulwani2017program}.
 % ~\footnote{\url{https://en.wikipedia.org/wiki/Program_synthesis}}
 
 This enables us to distill our modeled function
@@ -56,7 +63,12 @@ Specifically, this will allow machines to improve on programs written by humans,
 As such, program synthesis may bring \emph{hybrid intelligence} to the field of software development.
 
 And in fact, we may already see this in the proliferation of intelligent code completion tools%
-~\footnote{These include Microsoft's \emph{Intellisense}, Google's \emph{ML Complete}, Jetbrains's code completion in their IntelliJ IDE, as well as Codota's \emph{TabNine}.},
+~\footnote{
+    These include Microsoft's \emph{Intellisense},
+    Google's \emph{ML Complete},
+    Jetbrains's code completion in their IntelliJ IDE,
+    as well as Codota's \emph{TabNine}.
+},
 as well as in a novel development paradigm in functional programming based on typed holes called \emph{type-driven development}~\citep{brady2017type}.
 
 \subsection{Related fields}
@@ -103,7 +115,7 @@ and not limited in expressivity by the limitations of any particular grammar or 
 This makes it well-positioned to solve problems deemed too complex for traditional programming, such as image recognition.
 
 PBE may instead construct a traditional program,
-which may be both deterministic as well as potentially faster to execute than predictions using the original machine learning model.
+which may be deterministic, generalize better~\citep{nps}, be provably correct~\citep{nps}, as well as potentially faster to execute than predictions using the original machine learning model.
 Moreover, using programs as a common denominator between human and machine-based programmers makes for human-intelligible machine-made models,
 relevant in the field of \emph{interpretable} or \emph{explainable artificial intelligence}
 ~\footnote{
@@ -311,12 +323,16 @@ But if only \emph{complete} programs can be evaluated for validity and behavior,
 we will be ill-equipped to provide synthesizers with an accurate understanding of partial programs,
 which make up for a large part of our prediction steps.
 As such, it would be desirable to somehow supervise the intermediate prediction steps.
+This echoes \citet{nps}'s conclusion that one area of research in neural program synthesis that requires further exploration is
+\emph{specifically designing neural architectures} to excel at the difficult problems of program synthesis.
 
 % \paragraph{Challenges of sequential-based neural programming by example}
 
-Most neural synthesis techniques, particular those using a \emph{sequence-to-sequence} approach~\footnote{
+Most neural synthesis techniques, particular those using a \emph{sequence-to-sequence} approach%
+~\footnote{
     While in tree-based synthesis techniques it might not be possible to \emph{execute} programs either,
-    this should at least result in an (incomplete) AST, which should be significantly easier to learn to embed given the knowledge of how to embed a complete AST than a program that does not even parse.
+    this should at least result in an (incomplete) AST,
+    which should be significantly easier to learn to embed given the knowledge of how to embed a complete AST than a program that does not even parse.
     % TODO: confirm if there is a distinction between tree-based / node-based
 },
 additionally face the issue of dissonance between their representation of complete programs and that of intermediate states.
@@ -384,6 +400,11 @@ in languages featuring typed holes we may pre-compile even partial programs such
 %     \emph{Research question \#4: can deduction-based neural program synthesis methods benefit from using types and compilation checks as additional features?}
 % \end{displayquote}
 
+These hypotheses also give rise to an additional question:
+\begin{displayquote}
+    \emph{Research question \#3: what dataset features are conducive to benefiting from type info?}
+\end{displayquote}
+
 \pagebreak
 
 \section{Expected Contribution} % \label{sec:expected-contribution}
@@ -435,8 +456,19 @@ Under search-based methods for programming by example we will classify any appro
 
 While the approaches in this category range from naive to sophisticated,
 they unfortunately share a common drawback:
-they have no sense of \emph{learning} across problem instances,
-meaning they must solve any new synthesis task essentially from scratch.
+whereas neural synthesizers allow one to tweak a \emph{loss function} to take into account various sub-goals,
+non-neural synthesizers have no sense of \emph{learning}
+from existing programs or across problem instances,
+meaning they will have trouble achieving:
+\begin{itemize}
+    \item \emph{generalizability}~\citep{nps};
+    \item \emph{interpretability} to humans (human \emph{source code bias})~\citep{nps};
+    \item \emph{synthesized program performance}~\citep{schkufza2016stochastic};
+    \item an increase in \emph{synthesizer performance},
+    as they must solve any new synthesis task essentially from scratch,
+    and could never have as much information to this end as a neural synthesizer,
+    which may in fact be able to use arbitrary learned features~\citep{odena2020learning}.
+\end{itemize}
 
 \subsubsection{Enumerative search}
 
@@ -778,7 +810,7 @@ considering the task function to have passed if any of these demonstrate the cor
 Some critiques of this model have included it being harder to \emph{batch} for larger programs due to its tree-based architectures,
 as well as its pooling at the I/O encoding level being harder to reconcile with \emph{attention} than models using \emph{late pooling}.~\citep{devlin2017robustfill}
 
-For our purposes, by merit of the Microsoft Excel \emph{FlashFill} domain this model was tested on,
+For our purposes, by merit of the Microsoft Excel \emph{FlashFill}~\citep{prose} domain this model was tested on,
 it also shares a weakness with other neural synthesis models:
 as these have usually been applied to \emph{untyped} domains,
 they have not been augmented to use information on \emph{types},
@@ -1135,11 +1167,11 @@ the simplest~\citep{selinger2008lecture}
 \emph{Turing-complete}~\citep{turing1936computable} grammar.
 The lambda calculus requires only three grammatical categories:
 variables, function definition, and function application.
-One simple example showcasing all three of these is $((\lambda x.x) z)$.
+One simple example showcasing all three of these is (($\lambda$x.x) z).
 
-Working from the inner expression $(\lambda x.x)$,
+Working from the inner expression ($\lambda$x.x),
 we have a function definition that given a parameter that we will name $x$, will return the value $x$.
-Our outer expression $((\lambda x.x) z)$, then,
+Our outer expression (($\lambda$x.x) z), then,
 invokes a function \emph{application} on this function,
 using as its sole argument the variable $z$.
 $z$ will then be bound to the value of the parameter $x$.
@@ -1152,18 +1184,18 @@ yielding our final result.%
 }
 
 Understanding the basics,
-it would be illuminating to go over a slightly more involved example $((\lambda x y z . (+ x y)) 1 2)$,
+it would be illuminating to go over a slightly more involved example (($\lambda$x.$\lambda$y.$\lambda$z. + x y) 1 2),
 including a binary arithmetic addition operator $+$ taken two arguments of a numeric type,
 two actual numeral literals we will use as arguments,
-and a ternary function with parameters $x y z$.
+and three nested functions with respective parameters $x$, $y$, and $z$.
 As before, our main expression is a function application containing two parameters, $1$ and $2$,
 which we will apply left-to-right.
 Applying our first argument, substituting our parameter $x$ with $1$,
-we obtain $((\lambda y z . (+ 1 y)) 2)$.
+we obtain (($\lambda$y.$\lambda$z. + 1 y) 2).
 Applying our second argument, substituting $y$ with $2$,
-we then get $(\lambda z . (+ 1 2))$.
+we then get ($\lambda$z. + 1 2).
 No longer having any symbolic variables in our inner function application now,
-we can now simplify it, leaving us with $(\lambda z . 3)$,
+we can now simplify it, leaving us with ($\lambda$z. 3),
 i.e. a unary function ignoring its sole parameter value to return $3$.
 
 What this example demonstrates is the concept of \emph{currying}~\citep{currying},
@@ -1269,7 +1301,7 @@ Together with not doing synthesizer-defined variables, this helps forego additio
 Instead of using such function definitions,
 we would instead like to stick to the simpler \emph{point-free} style.
 In other words, we would like to leave out redundant \emph{variable names} where possible,
-i.e. to go from $(\lambda x . (+ 1 x))$ to just $(+ 1)$.%
+i.e. to go from ($\lambda$x. + 1 x) to just $(+ 1)$.%
 ~\footnote{
     In lambda calculus this simplification is titled $\eta$-\emph{reduction},
     corresponding to \emph{local completeness} in \emph{natural deduction}~\citep{gentzen1935untersuchungen}.
@@ -1456,7 +1488,7 @@ named \emph{HaskTorch}~\citep{hasktorch}%
 turned out the significantly more active of the two,
 and along with its welcoming and helpful community solidified our choice.
 
-\subsubsection{Grammatical subset}
+\subsubsection{Grammatical subset} \label{sec:subset}
 
 We had previously discussed that our synthesis DSL,
 i.e. the grammar to be actively produced by our synthesizer,
@@ -1613,43 +1645,210 @@ and their respective results in section \ref{sec:experiment}.
 
 \subsection{Dataset generation}
 
-% TODO
+% benchmark task:
+% - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
+% - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors. partial official code. allows recursion. components not listed in the paper~\citep{tamandu}.
+% - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num. permissive grammar involving pattern matching, recursion, and a flexible set of primitive operators and constants. seems to actually have been used by others before.
+% - [x] NPI/AlphaNPI: task is sequential :(
+% - [x] NSPS: flashfill so few parametric types :(, also tasks not publicized
+% - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare -- just rules, no trees or types :(
+% - [x] DeepCoder: dataset (/code) not published :(
+% - [x] Suggesting Valid Hole Fits: based on types, not examples :(
+% - [x] Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples :(
+% - [x] Scythe: no code :(, uses types + i/o examples. no (own) task! :(
+% - [x] Scout: no code, and only extended abstract available, with no info on task :(
+% - [x] Idris: based on types, not examples :(
+% - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
+% - [x] Terpret: 12 tasks (table 2), complex grammar (figure 3) incl constants on probabilistic language, so seems kinda different, plus quite binary so not very type-ey :(
+% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
+% https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
 
-The process for generating task functions to train our synthesizer on is as follows:
-\begin{itemize}
-    \item we start using a body consisting of a hole, typed with a wildcard;
-    \item we use hole-filling to generate potential complete programs within a certain complexity threshold.
-    % TODO: compare to approach used in https://github.com/minori5214/programming-by-example/blob/master/generate.py
-\end{itemize}
+We had trouble finding a suitable benchmark task in the literature.
 
-We additionally considered alternative methods of generating task functions:
+On the one hand, especially benchmark tasks within \emph{non-neural} program synthesis methods have usually consisted of only a limited number of tasks%
+~\citep{myth,lambda2,typedmil,houdini,tamandu,dilp}~\cite{terpret},
+as such non-neural methods do not require an equivalent to the training set typically used in machine learning setups.
+
+On the other hand, benchmark tasks within \emph{neural} program synthesis have often remained somewhat simpler in nature,
+rendering them less fit for our purposes ---
+either being imperative in nature (and as such being less amenable to types),
+such as sorting tasks~\citep{npi,alphanpi},
+or otherwise focusing on a simple set of types --- such as strings~\citep{nsps} ---%
+or differently put, not including operators with parametric return types.
+
+As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder}.
+
+As a result, it appears we would need to create a benchmark task,
+or at least a training dataset, ourselves.
+
+% we may simply ensure our test sets contain the benchmark tasks of existing papers.
+% To achieve this, we may increasingly add types, such as to support, in order of complexity:
+% \begin{itemize}
+%     \item list, bool~\citep{terpret}
+%     \item int~\citep{tamandu}
+%     \item char~\citep{typedmil}
+%     \item nat, tree~\citep{myth,lambda2}
+% \end{itemize}
+
+Now, while it seemed preferable to hook into existing operator sets to benchmark against other algorithms than \citet{nsps},
+it turned out tough to find potential comparisons there that would have a level playing field;
+while neural methods typically used synthesis domains outside of functional programs,
+or did not publish their datasets,
+non-neural methods did not need to deal with the engineering challenges of a neural synthesizer.
+
+For our purposes, this gap made it challenging to keep up in terms of synthesizer feature set.
+Other non-neural methods considered as potential benchmarks often featured more comprehensive grammars,
+typically incorporating function recursion~\citep{typedmil,myth},
+if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2},
+while our synthesizer has focused on keeping to a minimal feature set required to investigate our hypotheses.
+
+% To constrain the engineering scope of our experiment, it would seem reasonable to use a benchmark paper similarly limited in grammar, so as to reduce complexity not required for the experiment where possible.
+% By this reasoning, we would like to benchmark against \citet{tamandu}, which "[focuses] on the synthesis of purely functional programs without any lambda expressions, explicit recursion or conditionals (i.e., only function application is allowed)".
+% We will do this by taking libraries of basic operations in accordance with this paper,
+% then, in order to create a training set,
+% generating any possible functions using combinations thereof within a given complexity threshold.
+
+However, while comparing neural to non-neural methods is a topic of interest,
+given the present state of datasets and neural methods in the field of functional program synthesis,
+it is not the primary focus of this paper.
+
+% The process for generating task functions to train our synthesizer on is as follows:
+% \begin{itemize}
+%     \item we start using a body consisting of a hole, typed with a wildcard;
+%     \item we use hole-filling to generate potential complete programs within a certain complexity threshold.
+% \end{itemize}
+
+% We additionally considered alternative methods of generating task functions:
+% \begin{itemize}
+%     \item generating a function based on a type signature;
+%     \item generating a function based on an input parameter type; % , then filling holes, only afterwards seeing what return type ends up coming out.    
+% \end{itemize}
+% There are two reasons we decided against using these type-first approaches:
+% \begin{itemize}
+%     \item as they impose constraints on the functions generated, they will end up generating less functions given the same amount of compute;
+%     \item if we wanted to allow generating more general versions of the desired function, then fixing the types upfront such as not to allow more generic implementations feels counter-productive, if not anti-thetical to the spirit of functional programming.
+% \end{itemize}
+
+% genBlockVariants
+First off, we generate variants to \emph{unroll} each operator in the dataset
+as described in section \ref{sec:subset},
+using a different number of holes corresponding to any applicable arity.
+% By our control variable \emph{maxWildcardDepth} we allow imposing a maximum
+% level of functions to imagine in a wildcard for function generation.
+
+% genFns
+
+To create our dataset of task functions,
+we start from an expression consisting of only a hole,
+then step by step generate any type-checking permutation
+by filling a hole in such an expression using our above operator variants.
+% so as to just directly generate any functions in batch,
+% and see what types end up coming out.
+We use a control variable \emph{maxHoles} to set a limit on
+the number of holes to fill in a generated expression.
+
+Note that as we add sub-expressions to our program,
+our total type signature may incur type variables,
+which we may then use when adding new sub-expressions.
+If such a new sub-expression would expect a type constraint on this type variable,
+the constraint is then automatically propagated up to our root type signature.
+
+Thus, whereas \citet{nsps} uniformly sample programs from the DSL,
+we presently reserve sampling for the generation of
+concrete types (for instantiating type variables) and of sample values,
+while program permutations we exhaustively generate given the imposed limitations.
+
+While we quickly mentioned type-checking programs to filter out bad ones,
+we had yet to expand on this practice:
+we presently use a Haskell interpreter to type-check our generated programs at run-time,
+filter out non-function programs,
+and check if program types look \emph{sane}:
+to weed out some programs we deem less commonly useful,
+we filter out types \emph{containing} functions (e.g. list of functions),
+as well as types with constraints that span more than a single type variable (e.g. \verb|(Eq (a -> Bool)) => a|).
+
+% genTypes
+We generate a fixed number of concrete types we will use for instantiating type variables.
+Using a \emph{nestLimit} control variable here we dictate the maximum number of nesting,
+to prevent generating types like 'list of lists of booleans'.
+The maximum number of types generated is dictated by control variable \emph{maxInstances},
+although this may get less after deduplicating such generated type instances.
+
+We then use these concrete types to instantiate any polymorphic
+(non-function) input types occurring in our task functions.
+In the event the type variables in our types here involve \emph{type constraints},
+% matchesConstraints
+we ensure to only instantiate such type variables using our concrete types that satisfy the applicable type constraints.
+% Our approach here presently only handles type variables here of a \emph{unary kind}.
+
+% instantiateTypes
+This yields us a set of concrete potential input types,
+for which we proceed to generate sample values,
+up to a given maximum number as indicated by our control variable \emph{numInputs},
+although this may get less after filtering out duplicates.
+We use control parameters to indicate range restrictions for different types here;
+\emph{numMin} and \emph{numMax} for integer values,
+\emph{listMin} and \emph{listMax} for the possible number of elements in a generated list.
+
+For any given given task function type signature,
+we then check for the types of each of their input parameters,
+and take any corresponding combinations of instantiations for these types.
+
+% genInputs
+Now, for any non-function parameter types,
+we may just take the previously generated sample values for those types.
+% matchesType
+Parameter function types, however,
+we instead instantiate to function values by just taking
+any of our generated task functions corresponding to that type.
+
+% fnOutputs
+Based on these sample inputs, we would then like to generate corresponding outputs for our generated task functions.
+For our task functions that are polymorphic, i.e. contain type variables,
+we must do this separately for different type instantiations.
+
+% fnIoPairs
+
+% As we only have the programs and inputs as ASTs,
+% we also only know the types at run-time,
+% which is when the programs are constructed.
+% Therefore,
+We run our programs using our run-time Haskell interpreter.
+Using a flag \emph{crashOnError} we determine whether to
+just crash on error while calculating function outputs,
+or perform an additional typecheck (slower).
+We catch run-time errors on specific inputs such that
+we can regard these errors as just another resulting output
+that our synthesizer should consider when comparing behavior between programs.
+In other words, a \emph{partial function},
+i.e. a function that only works on certain inputs of the desired input types,
+may still constitute a valid program that we may wish to learn to synthesize.
+
+% TODO: ensure sets contains no fns w/ behavior identical to any in other sets to prevent cheating
+% dedupeFunctions: not in use; deduplicate functions by identical types + io, keeping the shortest
+
+Having generated input/output examples for our task functions,
+we finally filter out any programs for which we have somehow failed to generate such samples.
+At this point we:
 \begin{itemize}
-    \item generating a function based on a type signature;
-    \item generating a function based on an input parameter type; % , then filling holes, only afterwards seeing what return type ends up coming out.    
-\end{itemize}
-There are two reasons we decided against using these type-first approaches:
-\begin{itemize}
-    \item as they impose constraints on the functions generated, they will end up generating less functions given the same amount of compute;
-    \item if we wanted to allow generating more general versions of the desired function, then fixing the types upfront such as not to allow more generic implementations feels counter-productive, if not anti-thetical to the spirit of functional programming.
+    \item use a random split to divide our task functions over training, validation and test sets;
+    \item calculate the longest examples in our dataset (as string), when considering types (as per our experiment) also for those;
+    \item track any characters used in the expressions in our dataset
+    (for our type experiment also those used in the types),
+    and assign them to indices for our one-hot encodings of examples (and their associated types).    
 \end{itemize}
 
 \subsection{Search technique}
 
 Type-based approaches typically call for a \emph{top-down search strategy}.
-
-As we are interested in types, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) synthesis methods.
-
-% TODO: explain why supervised instead of RL / hybrid
+As such, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) neural synthesis methods.
 
 As a benchmark algorithm we will therefore use the neuro-symbolic program synthesis method introduced in \citet{nsps} and further explained in section \ref{sec:nsps},
-a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information.
+a top-down incremental neural synthesis method which like other neural methods is not presently making use of type-level information,
+as it was originally designed for the \emph{FlashFill}~\citep{prose} domain.
 
 The reason we picked this as our benchmark in particular is that there have been only few neural synthesizers out there based on abstract syntax trees (ASTs), rather than sequences.
 This is important for us because we can apply types to an AST containing holes, though we may not be able to for any sequence representing a partial program.
-
-This method is based on two novel neural modules.
-The first module, called the \emph{cross correlation I/O network}, given a set of input-output examples, produces a continuous representation of the set of I/O examples.
-The second module, the \emph{Recursive-Reverse-Recursive Neural Network} (R3NN), given the continuous representation of the examples, synthesizes a program by incrementally expanding partial programs.~\citep{nsps}
 
 \subsubsection{Types}
 
@@ -1679,85 +1878,35 @@ one will just restrict their search to those AST nodes allowed for the present h
 
 \subsection{Benchmark task}
 
-% in terms of respectable benchmark, L^2 seems to actually have been used by others before.
 
-% benchmark task:
-% - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
-% - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors. partial official code. allows recursion. components not listed in the paper~\citep{tamandu}.
-% - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num. permissive grammar involving pattern matching, recursion, and a flexible set of primitive operators and constants.
-% - [x] NPI/AlphaNPI: task is sequential :(
-% - [x] NSPS: flashfill so few parametric types :(, also tasks not publicized
-% - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare -- just rules, no trees or types :(
-% - [x] DeepCoder: dataset (/code) not published :(
-% - [x] Suggesting Valid Hole Fits: based on types, not examples :(
-% - [x] Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples :(
-% - [x] Scythe: no code :(, uses types + i/o examples. no (own) task! :(
-% - [x] Scout: no code, and only extended abstract available, with no info on task :(
-% - [x] Idris: based on types, not examples :(
-% - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
-% - [x] Terpret: 12 tasks (table 2), complex grammar (figure 3) incl constants on probabilistic language, so seems kinda different, plus quite binary so not very type-ey :(
-% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
-% https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
+Generation config:
 
-We had trouble finding suitable benchmark task in the literature.
+crashOnError: when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
 
-On the one hand, especially benchmark tasks within non-neural program synthesis methods have usually consisted of only a limited number of tasks%
-~\citep{myth,lambda2,typedmil,houdini,tamandu,dilp}~\cite{terpret},
-as such non-neural methods do not require an equivalent to the training set typically used in machine learning setups.
+nestLimit (0): max number of levels of nesting for generated types. high values make for big logs while debugging...
 
-% While \cite{lambda2} did not use neural methods,
-On the other hand, benchmark tasks within Neural Program Synthesis have often remained somewhat simpler in nature,
-rendering them less fit for our purposes --- either being imperative in nature (and as such being less amenable to types),
-such as sorting tasks~\citep{npi,alphanpi},
-or otherwise focusing on a simple set of types --- such as strings~\citep{nsps} ---%
-or differently put, not including building blocks with parametric return types.
+maxInstances (5): max number of instantiations to generate for any type containing type variables. may get less after deduplicating type instances.
 
-As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder}.
+numInputs (10): max number of inputs to generate. may get less after nub filters out duplicates.
+cf. NSPS: for all results, the program tree generation is conditioned on a set of 10 input/output string pairs.
 
-As a result, it looks like we would need to create a benchmark task, or if anything a training dataset compatible with one of the existing benchmark tasks, ourselves.
+maxWildcardDepth (2): the maximum level of functions to imagine in a wildcard for function generation
 
-Now, for compatibility we may simply ensure our test sets contain the benchmark tasks of existing papers.
-% To achieve this, we may increasingly add types, such as to support, in order of complexity:
-% \begin{itemize}
-%     \item list, bool~\citep{terpret}
-%     \item int~\citep{tamandu}
-%     \item char~\citep{typedmil}
-%     \item nat, tree~\citep{myth,lambda2}
-% \end{itemize}
+maxHoles (1): the maximum number of holes to allow in a generated expression
 
-To constrain the engineering scope of our experiment, it would seem reasonable to use a benchmark paper similarly limited in grammar, so as to reduce complexity not required for the experiment where possible.
+numMin (-20): the minimum value for numbers to generate
 
-% By this reasoning, we would like to benchmark against \citet{tamandu}, which "[focuses] on the synthesis of purely functional programs without any lambda expressions, explicit recursion or conditionals (i.e., only function application is allowed)".
+numMax (20): the maximum value for numbers to generate
 
-% Other papers considered as potential benchmarks often featured more comprehensive grammars, typically incorporating function recursion~\citep{typedmil,myth}, if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2}.
+listMin (0): the minimum number of elements to generate for list types
 
-We will do this by taking libraries of basic operations in accordance with these papers, then, in order to create a training set, generating any possible functions using combinations thereof within a given complexity threshold.
+listMax (5): the maximum number of elements to generate for list types
 
-The hole filling is as follows:
-\begin{itemize}
-    % TODO: handle parameters ensuring their use
-    \item we take our function, containing a number of parameters, a return type, and a body that contains holes;
-    \item we enumerate the variables we have that could (if applicable, after function application) return a type compatible with our desired return type, to create versions of the function with said hole plugged with these variables (which in the case of functions, may, in turn, contain holes);
-    % TODO: queue or whatever, any data structure really
-    % TODO: distinguish unfilled currying slot vs unfilled holes
-    \item we filter these potential programs given their number of remaining holes based on our complexity threshold;
-    % TODO: specify complexity threshold
-    \item we add the remaining programs to a queue of complete or partial programs, depending on whether they still contain holes;
-    \item we similarly process the functions in the queue of partial programs, until we are left with an enumeration of complete programs;
-    \item we evaluate the complete programs by the input-output examples, to filter down to those matching our behavioral criteria;
-    \item finally, we generate sample inputs for each program, and calculate their corresponding outputs.
-    % TODO: consider a depth-first alternative for lower memory complexity
-    % TODO: compare to approach used in https://github.com/minori5214/programming-by-example/blob/master/generate.py
-\end{itemize}
+figure out a sensible split. NSPS mentions training/test tho not validation.
+We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
 
-The synthesis process itself is as follows:
-\begin{itemize}
-    \item we take the type of our function, along with a body consisting of a hole;
-    \item we use hole-filling to generate potential complete programs;
-    \item we generate sample inputs for each program, and calculate their corresponding outputs;
-    \item we evaluate the complete programs by the input-output examples, to filter down to those matching our behavioral criteria;
-    % TODO: consider a depth-first alternative for lower memory complexity
-\end{itemize}
+train (0.45) / validation (0.1) / test (0.45)
+
 
 % TODO: EXPERIMENT
 % TODO: elaborate how to supervise existing methods with type info
