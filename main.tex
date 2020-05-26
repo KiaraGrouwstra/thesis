@@ -371,16 +371,21 @@ Specifically, we hypothesize that the effectiveness of neural program synthesis 
 adding type information as additional features during training and testing,
 which in AST-based neural program synthesis may help supervise each incremental prediction step.
 
-\begin{displayquote}
+\begin{displayquote} % \label{hyp:types}
     \emph{Research question \#1: can neural program synthesis methods benefit from using types as additional features?}
 \end{displayquote}
 
-Furthermore, in an incremental node-based synthesis approach, we hypothesize that after each synthesis step,
-in languages featuring typed holes we may pre-compile even partial programs such as to provide the synthesizer with immediate feedback.
-
-\begin{displayquote}
-    \emph{Research question \#2: can neural program synthesis methods benefit from using compilation checks as additional features?}
+This hypothesis gives rise to an additional question:
+\begin{displayquote} % \label{hyp:feats}
+    \emph{Research question \#2: what dataset features are conducive to benefiting from type info?}
 \end{displayquote}
+
+% Furthermore, in an incremental node-based synthesis approach, we hypothesize that after each synthesis step,
+% in languages featuring typed holes we may pre-compile even partial programs such as to provide the synthesizer with immediate feedback.
+
+% \begin{displayquote} % \label{hyp:compile}
+%     \emph{Research question \#3: can neural program synthesis methods benefit from using compilation checks as additional features?}
+% \end{displayquote}
 
 % An alternative approach would be to enumerate any possible options for a given node,
 % then filtering this list of options based on such compiler feedback.%
@@ -389,23 +394,19 @@ in languages featuring typed holes we may pre-compile even partial programs such
 % This is indeed done for type-based program synthesis~\citep{myth},
 % and we hypothesize neural synthesis approaches may benefit from such pre-filtering as well,
 % reducing synthesis to a ranking problem of (partial) candidate programs.
+% % TODO: figure out if this is really innovation
 
-% \begin{displayquote}
-%     \emph{Research question \#3: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
+% \begin{displayquote} % \label{hyp:filter}
+%     \emph{Research question \#4: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
 % \end{displayquote}
 
 % Lastly, we hypothesize that these added features still offer added value over deduction-based approaches aiming to push input-output examples through the grammar (investigate separately for datasets without and with many functions that are not invertible) and using type-based filters:
 
-% \begin{displayquote}
-%     \emph{Research question \#4: can deduction-based neural program synthesis methods benefit from using types and compilation checks as additional features?}
+% \begin{displayquote} % \label{hyp:both}
+%     \emph{Research question \#5: can deduction-based neural program synthesis methods benefit from using types and compilation checks as additional features?}
 % \end{displayquote}
 
-These hypotheses also give rise to an additional question:
-\begin{displayquote}
-    \emph{Research question \#3: what dataset features are conducive to benefiting from type info?}
-\end{displayquote}
-
-\pagebreak
+% \pagebreak
 
 \section{Expected Contribution} % \label{sec:expected-contribution}
 
@@ -422,7 +423,7 @@ The present work aims to be the first experiment to:
     \item showcase \emph{static tensor typing} as offered by the \emph{HaskTorch} deep learning library~\citep{hasktorch}.
 \end{itemize}
 
-\pagebreak
+% \pagebreak
 
 \section{Existing approaches to programming by example}
 
@@ -710,7 +711,7 @@ or as the neural component in the \emph{neural-guided search} methods discussed 
 While the insight of this approach in itself is valid,
 it leaves unanswered questions regarding e.g. feature selection.
 
-\subsubsection{Sequence-based neural program synthesis}
+\subsubsection{Sequence-based neural program synthesis} % \label{sec:seqnps}
 
 Neural synthesis methods typically employ \emph{sequence-to-sequence}
 (or simply \emph{seq2seq}) techniques~\citep{npi,neuralmachinetranslation,alphanpi},
@@ -724,7 +725,12 @@ to represent program synthesis as a sequence prediction problem.%
     on an inductive logic programming task!~\citep{backproprnn}
 }
 
-Such sequential neural synthesizers have been extended with mechanisms such as convolutional recurrence~\citep{neuralgpu}, attention~\citep{nmt,ptrnets,structuredattention}, memory~\citep{ntm,neuralram,neuralprogrammer,hierarchicalmemory}, function hierarchies~\citep{npi,npl}, and recursion~\citep{cai2017making}.
+Such sequential neural synthesizers have been extended with mechanisms such as
+convolutional recurrence~\citep{neuralgpu},
+attention~\citep{nmt,ptrnets,structuredattention},
+memory~\citep{ntm,neuralram,neuralprogrammer,hierarchicalmemory},
+function hierarchies~\citep{npi,npl},
+and recursion~\citep{cai2017making}.
 
 However, while a hypothetical synthesizer only producing compilable programs would always have direct feedback to its program embeddings,
 this feedback signal is much delayed if a synthesizer would gradually synthesize a program e.g. one character at a time,
@@ -736,6 +742,10 @@ As such, sequence-based neural techniques must learn quite a lot:
 and interpreting these to \emph{execute} them as programs,
 these synthesizers must additionally learn how to construct and update a (memorized) state so as to ultimately,
 when the synthesizer considers its code complete, obtain a correct program.
+
+In addition, for our purposes, in sequence-based neural synthesis techniques,
+any given intermediate prediction does \emph{not} necessarily \emph{itself} qualify as a program in the grammar,
+meaning we are not able to apply a type-based analysis to gain further info for use in further synthesis steps.
 
 \subsubsection{Tree-based neural program synthesis}
 
@@ -749,7 +759,9 @@ which we will introduce in more detail in section \ref{sec:nsps}.
 \subsubsection{Neuro-symbolic program synthesis} \label{sec:nsps}
 
 The \emph{neuro-symbolic} program synthesis (NSPS) method introduced in \citet{nsps} improves on existing \emph{sequence-to-sequence}-based neural synthesis models by using a tree-based neural architecture they call the \emph{recursive-reverse-recursive neural network} (R3NN).
-This aims to make predictions on credible rule expansions to fill holes in \emph{partial program trees} (\emph{PPTs}, basically ASTs containing holes) based on the program's content and structure,
+This aims to make predictions on credible rule expansions to fill holes%
+~\footnote{Note that in the parlance used in \citet{nsps}, \emph{holes} are also referred to as \emph{non-terminal leaf nodes}.}
+in \emph{partial program trees} (\emph{PPTs}, basically ASTs containing holes) based on the program's content and structure,
 while additionally conditioning on the input/output examples, as seen in figure \ref{nsps}.
 The workings of the R3NN are illustrated in figure \ref{r3nn}.
 
@@ -858,7 +870,7 @@ different approaches here may be quite involved, and as such
 are likely less common in research papers comparing neural components,
 their benefits in production systems seem clear.
 
-\pagebreak
+% \pagebreak
 
 \section{Methodology} % \label{sec:methodology}
 
@@ -955,7 +967,9 @@ we would like them to prune out any parts of the search space that are not sensi
 
 As we have laid out above,
 types are nearly a \emph{free lunch} when it comes to restricting the synthesis search space,
-as per our hypothesis \#1 thereby improving synthesis performance.
+as per our hypothesis \#1
+% \ref{hyp:types}
+thereby improving synthesis performance.
 Aside from making it easier to automate programming,
 static typing, as one step toward formal verification,
 brings the additional advantage of helping reduce the
@@ -1840,6 +1854,8 @@ At this point we:
 
 \subsection{Search technique}
 
+\subsubsection{Neuro-symbolic program synthesis}
+
 Type-based approaches typically call for a \emph{top-down search strategy}.
 As such, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) neural synthesis methods.
 
@@ -1848,7 +1864,8 @@ a top-down incremental neural synthesis method which like other neural methods i
 as it was originally designed for the \emph{FlashFill}~\citep{prose} domain.
 
 The reason we picked this as our benchmark in particular is that there have been only few neural synthesizers out there based on abstract syntax trees (ASTs), rather than sequences.
-This is important for us because we can apply types to an AST containing holes, though we may not be able to for any sequence representing a partial program.
+This is important for us because we can apply types to an AST containing holes,
+which we may not be able to do for any given \emph{sequence} representing a partial program.
 
 \subsubsection{Types}
 
@@ -1857,22 +1874,58 @@ This is important for us because we can apply types to an AST containing holes, 
 
 To get the most out of our types, we will want to provide them for:
 \begin{itemize}
-    \item inputs
-    \item outputs
-    \item abstract syntax trees (ASTs)
+    \item inputs and outputs%
+    ~\footnote{
+        These may span multiple types for any given task function exhibiting \emph{parametric polymorphism}.
+    },
+    which we may just incorporate as additional features in \citet{nsps}'s \emph{example encoder};
+    \item expansion rule expressions, for which we may calculate types statically upfront, then embed
+    % separate from our other inputs
+    in the initialization of \citet{nsps}'s \emph{R3NN};%
+    ~\footnote{
+        If we are using an unrolled grammar,
+        then would like to take its type presuming all holes contained in the expansion rule expression have already been filled.
+        At this moment, this is not yet the case,
+        meaning we have will not yet have received additional type constraints that may yet manifest further down the road.
+        If we use the original grammar,
+        closer to that of the lambda calculus itself,
+        we are unfortunately unable to obtain any type for the function application expansion rule,
+        which could itself end up returning any potential type.
+    }
+    % \item holes to be filled by synthesis;%
+    \item abstract syntax tree (AST) nodes, spanning both leaf nodes (variables or holes%
+    ~\footnote{
+        In the event of a function application node where both sub-nodes are still holes,
+        for its argument sub-node we will not yet have any type available.
+        For its function sub-node, we will have a return type available,
+        based on the type asked by its parent node,
+        although our argument type will still be unknown.
+    }
+    ) and branch nodes (in our domain so far all indicating function application); these may be based on the above-mentioned expansion rule types, although the branch nodes should be handled as in \citet{nsps}'s \emph{R3NN}.
 \end{itemize}
 
 The basic idea here is simple: our program should return the desired type, while taking the desired input types.
-% BNFs
+Using this information should improve our search,
+as per our research hypothesis \#1.
+% \ref{hyp:types}.
 
-However, in the simple case, the implications of this info do not require much computation:
-one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar.
+% \subsubsection{Compiler feedback}
 
-\subsubsection{Compiler / type feedback}
+% % \citep{bunel2018leveraging} condition on syntax to generate only correct programs, see their section 5.
+% While we would like to also condition on \emph{compiler feedback},
+% as per our research hypothesis \ref{hyp:compile}.
+% this would require a \emph{weakly supervised} neural synthesizer,
+% i.e. using \emph{reinforcement learning},
+% whereas our present synthesizer is based on the simpler \emph{strongly supervised} setup.
+% As such, this is unfortunately out of scope for our current paper.
 
-\citep{bunel2018leveraging} condition on syntax to generate only correct programs, see their section 5.
+% \subsubsection{Type filter}
 
-\pagebreak
+% However, in the simple case, the implications of this info do not require much computation:
+% one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar,
+% as per our research hypothesis \ref{hyp:filter}.
+
+% \pagebreak
 
 \section{Experiment} \label{sec:experiment}
 
@@ -1911,7 +1964,7 @@ train (0.45) / validation (0.1) / test (0.45)
 % TODO: EXPERIMENT
 % TODO: elaborate how to supervise existing methods with type info
 
-\pagebreak
+% \pagebreak
 
 \section{Result} % \label{sec:result}
 
@@ -1920,7 +1973,7 @@ This demonstrates that the findings from traditional program synthesis methods a
 
 % TODO: RESULT
 
-\pagebreak
+% \pagebreak
 
 \section{Discussion} % \label{sec:discussion}
 
@@ -1933,7 +1986,7 @@ One question we aim to answer here is whether our approach can meaningfully scal
     % \item ...
 \end{itemize}
 
-\pagebreak
+% \pagebreak
 
 \nocite{*}
 % \bibliographystyle{acm}
