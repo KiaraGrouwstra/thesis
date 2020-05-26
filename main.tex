@@ -1483,7 +1483,7 @@ named \emph{HaskTorch}~\citep{hasktorch}%
 turned out the significantly more active of the two,
 and along with its welcoming and helpful community solidified our choice.
 
-\subsubsection{Grammatical subset} \label{sec:subset}
+\subsubsection{Grammar \emph{unrolling}} \label{sec:unroll}
 
 We had previously discussed that our synthesis DSL,
 i.e. the grammar to be actively produced by our synthesizer,
@@ -1539,7 +1539,6 @@ expr = "(", expr, " ", expr, ")";
 expr = "and" | "false";
 \end{verbatim}
 
-
 Now, in practice, we would like to support using different operator sets,
 so it is fortunate we did not need to fix these at the grammar level itself.
 However, for the purpose of a naive synthesizer,
@@ -1559,7 +1558,8 @@ this grammar still enables generating some bad programs:
 
 The latter problem we can deal with in either of two ways:
 \begin{itemize}
-    \item we ignore the problem by deferring it to the type-level, providing a solution consistent with how we handle problems of the former type.
+    \item we ignore the problem by deferring it to the type-level,
+    providing a solution consistent with how we handle problems of the former type.
     \item we reframe the grammar by statically \emph{unrolling} any provided operators such as to ensure only valid function arities are supported.
 \end{itemize}
 
@@ -1567,7 +1567,35 @@ We consider the second option to be preferable from the synthesizer perspective;
 although this would \emph{expand} the number of production rules in the grammar,
 different numbers of function application for a given operator yield different \emph{result types}.
 For a type-based synthesizer, distinguishing these \emph{makes sense},
-as this distinction should facilitate learning.
+as this distinction should facilitate learning.%
+~\footnote{
+    This take is still up for empirical validation.
+    An alternative take may be that the unknown type for a function argument,
+    resulting in reduced operator confidence,
+    would simply lead a synthesizer to prefer filling a different hole.
+
+    Moreover, the \emph{unrolled} grammar approach implies upfront known arities of functions' argument and return types%
+    % ~\footnote{
+    %     For in as far as one may speak of arities in a language based on the lambda calculus
+    %     using a synthesizer grammar specifically modeled after the lambda calculus.
+    % }
+    ,
+    which is not in fact the case for such generic functions as the \emph{identity function},
+    which may take and return e.g. numbers yet also other functions,
+    and more importantly, for functions such as the \emph{argument flipping} combinator
+    as well as for the \emph{function composition combinator},
+    both of which may operate on functions of any arity.
+
+    This poses a significant limitation for the \emph{unrolled} approach:
+    it essentially means such arity-agnostic combinators are not supported,
+    which in the context of functional programming feels like an undesirable limitation.
+
+    While we acknowledge the limitations of this present approach,
+    considering the operator set we would like to use in our experiments,
+    which we will introduce in section \ref{sec:datagen},
+    we will consider this as sufficient for the purpose of our present paper.
+
+}
 
 As an example, let's say our operator list again contains the two operators from above,
 one operator \emph{and} as a curried function taking at most two arguments,
@@ -1585,15 +1613,16 @@ expr = "false";
 As with the above-mentioned grammars,
 EBNF notation should alternatively allow us to express
 this same grammar using only a single production rule,
-a disjunction of the different options.
+a disjunction of the different options.%
+~\footnote{
+    These should in fact be equivalent,
+    and the ability to express our grammar as such should demonstrate its elegance,
+    only requiring the single left-hand side symbol of \emph{expression}.
 
-These should in fact be equivalent,
-and the ability to express our grammar as such should demonstrate its elegance,
-only requiring the single left-hand side symbol of \emph{expression}.
-
-For the purpose of our synthesizer, however,
-we prefer thinking of these as production rules that merit distinction,
-as we will have our synthesizer learn of these as distinct options.
+    For the purpose of our synthesizer, however,
+    we prefer thinking of these as production rules that merit distinction,
+    as we will have our synthesizer learn of these as distinct options.
+}
 
 It must be noted that context-free grammars
 as the above
@@ -1638,7 +1667,7 @@ from type information is subject to empirical investigation,
 we will further expand on different operator sets used
 and their respective results in section \ref{sec:experiment}.
 
-\subsection{Dataset generation}
+\subsection{Dataset generation} \label{sec:datagen}
 
 % benchmark task:
 % - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
@@ -1726,7 +1755,7 @@ it is not the primary focus of this paper.
 
 % genBlockVariants
 First off, we generate variants to \emph{unroll} each operator in the dataset
-as described in section \ref{sec:subset},
+as described in section \ref{sec:unroll},
 using a different number of holes corresponding to any applicable arity.
 % By our control variable \emph{maxWildcardDepth} we allow imposing a maximum
 % level of functions to imagine in a wildcard for function generation.
@@ -1853,6 +1882,11 @@ we are able to apply such a limit during task function generation as well.
 For the sake of simplicity, we have opted to share this limit,
 specified during dataset generation,
 with our synthesizer as well.
+This presently disregards any synthesized programs of
+correct behavior but exceeding our complexity limit.
+While the primary intention here is to prevent synthesis
+from diverging into ever-expanding programs,
+one might imagine a better compromise here instead.
 
 While the paper follows a \emph{strongly supervised} training method,
 this is not as straight-forward in the field of AST-based neural program synthesis as it using sequence-based generative methods.
@@ -1924,32 +1958,43 @@ uniform exploration of our program search space.
 
 % \subsubsection{Changes}
 
-\subsubsection{Functional program domain}
+\subsubsection{Functional program domain} \label{sec:fp}
 
-Aside from the grammar we have described in section \ref{sec:subset},
+Aside from the grammar we have described in section \ref{sec:unroll},
 translating \citet{nsps}'s synthesizer from its original \emph{FlashFill}~\citep{prose} domain to our domain of \emph{functional programs},
 we have had to make the following adjustments to their original algorithm:
-\begin{itemize}
-    \item While the input-output samples used by \citet{nsps} were all \emph{strings},
+
+% \begin{itemize}
+    % \item
+    While the input-output samples used by \citet{nsps} were all \emph{strings},
     in our functional domain these could essentially comprise arbitrary \emph{expressions}.
     While ideally a synthesizer would respect the tree-like structure of such expressions as ASTs,
     our naive approach has been to simply perform \emph{sample serialization} here,
     taking string versions of our actual input/output expressions,
     then \emph{one-hot encode} these as \citet{nsps} did using \emph{their} string samples.
-    \item In our functional setup,
+
+    % \item
+    In our functional setup,
     we distinguished potentially multiple \emph{type instantiations} for each function,
     which may depend on its type signature's number of \emph{type variables},
     as well as on any potential \emph{type constraints} on these type variables.
+
     As we attempt to generate a similar number of input/output samples for each such type instantiation,
     this means we do not have similar upper bounds for the total number of input/output samples for functions with \emph{different} number of type instantiations.
+
     While this does not pose a problem for our sample \emph{encoder},
     it did actually end up problematic for the purpose of \citet{nsps}'s \emph{R3NN},
     which \emph{conditioned} programs on these sample features using an LSTM,
     which expected a \emph{fixed} number of embedded samples.
+
     To work around this and provide such a fixed number number of samples despite differing number of type instantiations,
     we perform \emph{feature sampling}.
-    For this end we have chosen to sample \emph{with replacement}.
-\end{itemize}
+    For this end we have chosen to sample \emph{with replacement},
+    which both exhibits a more consistent behavior across sample sizes,
+    while also seeming to match the spirit of mini-batching,
+    by providing more stochastic gradients.
+    However, this decision is still up for empirical evaluation.
+% \end{itemize}
 
 \subsubsection{Optimizations}
 
@@ -1971,7 +2016,7 @@ We have further made the following optimizations on top of \citet{nsps}'s approa
 \subsubsection{Design limitations}
 
 \begin{itemize}
-    \item Our implementation settled for \cite{nsps}'s \emph{baseline LSTM encoder} rather than its fancier \emph{cross-correlation} encoder variants.
+    \item Our implementation settled for \citet{nsps}'s \emph{baseline LSTM encoder} rather than its fancier \emph{cross-correlation} encoder variants.
     While such variants may improve synthesis quality,
     these come at an increased amount of \emph{computation} as well.
 \end{itemize}
@@ -2108,8 +2153,15 @@ One question we aim to answer here is whether our approach can meaningfully scal
 % TODO: check what claims NSPS made on this.
 
 \subsection{Topics for future research}
+
+As neural synthesis methods aimed at programming by example in the functional
+programming domain is a broad topic encompassing a variety of design decisions,
+we have had to leave quite some questions unanswered.
+We will here give an overview of the questions raised during our design process specifically:
+
 \begin{itemize}
-    \item How can we apply a more generalized program synthesis model to a specific problem? Can we take inspiration here from neural network pruning?
+    \item How can we apply a more generalized program synthesis model to a specific problem?
+    Can we take inspiration here from neural network pruning?
     \item While we have focused on types as features and compilation for masking purposes here,
     after each synthesis step,
     in languages featuring typed holes we may \emph{pre-compile} even partial programs such as to provide the synthesizer with immediate feedback;
@@ -2136,6 +2188,17 @@ One question we aim to answer here is whether our approach can meaningfully scal
     \item While we have presently let our synthesizer uniformly pick a hole, deterministically pick first hole to determine use of uniform hole sampling?
     \item Hole picking strategies to better approximate uniform search space exploration,
     as we have discussed in section \ref{sec:picking}, is still subject to further research.
+    \item As we touched upon in section \ref{sec:unroll},
+    the merits of our \emph{unrolled grammar} approach are still up for empirical evaluation.
+    As our present dataset allowed us to settle for this approach,
+    we decided to regard this question as out of scope for our present paper.
+    \item In section \ref{sec:fp} we briefly discussed our decision to use
+    \emph{sampling with replacement} as a strategy to ensure we could fix
+    the number of embedded samples used when conditioning our programs
+    with input/output samples.
+    However, we have not yet empirically evaluated the relative merits of
+    sampling with versus without for this purpose,
+    and this too would be a question of interest for future research.
 \end{itemize}
 
 % \pagebreak
