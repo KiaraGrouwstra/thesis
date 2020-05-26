@@ -375,23 +375,17 @@ which in AST-based neural program synthesis may help supervise each incremental 
     \emph{Research question \#1: can neural program synthesis methods benefit from using types as additional features?}
 \end{displayquote}
 
-This hypothesis gives rise to an additional question:
-\begin{displayquote} % \label{hyp:feats}
-    \emph{Research question \#2: what dataset features are conducive to benefiting from type info?}
+An alternative approach would be to enumerate any possible options for a given node,
+then filtering this list of options based on such compiler feedback.%
+~\footnote{One potential concern here is the scalability of such enumeration as the number of valid options grows.}
+
+This is indeed done for type-based program synthesis~\citep{myth},
+and we hypothesize neural synthesis approaches may benefit from such pre-filtering as well,
+reducing synthesis to a ranking problem of (partial) candidate programs.
+
+\begin{displayquote} \label{hyp:filter}
+    \emph{Research question \#2: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
 \end{displayquote}
-
-% An alternative approach would be to enumerate any possible options for a given node,
-% then filtering this list of options based on such compiler feedback.%
-% ~\footnote{One potential concern here is the scalability of such enumeration as the number of valid options grows.}
-
-% This is indeed done for type-based program synthesis~\citep{myth},
-% and we hypothesize neural synthesis approaches may benefit from such pre-filtering as well,
-% reducing synthesis to a ranking problem of (partial) candidate programs.
-% % TODO: figure out if this is really innovation
-
-% \begin{displayquote} % \label{hyp:filter}
-%     \emph{Research question \#3: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
-% \end{displayquote}
 
 % \pagebreak
 
@@ -829,7 +823,7 @@ like \emph{conflict-driven} learning~\citep{feng2018program}),
 a \emph{statistical model} judging generalization,
 and a controller deciding which of the model's suggested branches
 to explore (branch-and-bound~\citep{kalyan2018neural}, beam search%
-~\citep{polosukhin2018neural}, A\*~\citep{lee2018accelerating}).
+~\citep{polosukhin2018neural}, $A^{*}$~\citep{lee2018accelerating}).
 The statistical model mentioned here is where other
 neural synthesis methods would fit into this approach.
 Also of importance here is deciding when to \emph{prune} branches,
@@ -1860,7 +1854,75 @@ For the sake of simplicity, we have opted to share this limit,
 specified during dataset generation,
 with our synthesizer as well.
 
-\subsubsection{Changes}
+While the paper follows a \emph{strongly supervised} training method,
+this is not as straight-forward in the field of AST-based neural program synthesis as it using sequence-based generative methods.
+In the latter, one would generate e.g. one character at a time,
+meaning after comparing predictions to the next character used in the \emph{task function},
+one may simply take \emph{that} next character,
+and repeat the process on predictions based on this new longer sequence.
+However, when we are filling holes in an AST,
+there is no longer an evident equivalent to the 'next character' we in our sequence-based scenario:
+we could potentially fill \emph{any} of our holes based on our task program.
+While \citet{nsps} did not go into the workings of their training supervision method,
+we have here settled for the naive approach of \emph{randomly} picking a hole to fill using a \emph{uniform distribution}.
+The reason we picked against \emph{deterministically} choosing a hole to fill is
+we would like to offer our synthesizer an equal opportunity to learn about different scenarios.
+
+As in the original paper,
+our evaluation on the test set involves sampling the synthesizer for 100 programs (which may include duplicates),
+and considering the trial a success if any of these demonstrates the desired program behavior.
+A more sophisticated alternative here might be to use a controller such as \emph{beam search}~\citep{polosukhin2018neural}
+as we have discussed in the context of \emph{neural-guided deductive search}~\citep{deepcoder} in section \ref{sec:ngs}.
+
+\paragraph{Picking holes} \label{sec:picking}
+
+We have not empirically verified our decision to pick a hole to fill during training using a \emph{uniform random} distribution,
+and one might well compare this to synthesizer performance when e.g. deterministically picking a hole to fill.
+
+While we believe such uniform sampling beats deterministic hole picking to more uniformly explore our potential program space during training,
+there is arguably still room for improvement here over uniform sampling.
+
+While sophisticated learning algorithms may use \emph{weighted sampling}~\citep{chen1994weighted}
+methods in order to place more emphasis on e.g. parts of our program space that our learner is not performing well on yet,
+our current paper will settle for a naive approximation of uniform exploration of our \emph{search space}.
+
+The key here to note is that uniform sampling of \emph{holes} is not necessarily equivalent to uniformly exploring our \emph{search space}.
+This goes even for the sequence-based example, where such hole picking does not apply:
+in order to explore sequences 'aa' and 'ab',
+a sequential approach while \emph{necessarily} go through just 'a' in both cases.
+
+As a result, such intermediate smaller programs are sampled more than their larger 'child' programs \emph{by definition}.
+Weighted sampling may help to alleviate this.
+However, in our AST-based synthesis scenario,
+the hole picking gives this problem an extra dimension,
+causing this decrepancy between uniform hole sampling and uniform exploration of our search space.
+
+Let us illustrate this with a lambda calculus task function \verb|(a (b c))|.%
+~\footnote{
+    While for the purpose of this illustration we will stick to lambda calculus
+    rather than our \emph{unrolled} version thereof,
+    this does not actually affect the example.
+    The only difference would be we may substitute $(\_\quad\_)$ with e.g. $(f\quad\_\quad\_)$.
+}
+Starting from our base program of just a hole, \verb|_|,
+our only initial expansion is to \verb|(_ _)|.
+Our second expansion toward \verb|(a (b c))| however,
+can go two ways: either \verb|(a _)| or \verb|(_ (_ _))|.
+Now, while \verb|(a _)| could only expand into \verb|(a (_ _))|,
+\verb|(_ (_ _))| could go to either that same \verb|(a (_ _))|,
+\verb|(_ (b _))|, or \verb|(_ (_ c))|.
+
+As such, uniform sampling does not lead to uniform exploration:
+our nodes near to the root, in this program filled with $a$,
+on the basis of going through more synthesis rounds,
+is explored more easily than our leaves further away from the root,
+in our program eventually filled with $b$ and $c$, respectively.
+Therefore, it would be more ideal for a hole sampling method to inhibit
+bias toward the more \emph{deeply-situated} holes in our program,
+such as to offset this inherent imbalance and better approximate
+uniform exploration of our program search space.
+
+% \subsubsection{Changes}
 
 \subsubsection{Functional program domain}
 
@@ -1956,11 +2018,14 @@ Using this information should improve our search,
 as per our research hypothesis \#1.
 % \ref{hyp:types}.
 
-% \subsubsection{Type filter}
+% \paragraph{Type filter}
 
-% However, in the simple case, the implications of this info do not require much computation:
-% one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar,
-% as per our research hypothesis \ref{hyp:filter}.
+However, in the simple case, the implications of this info do not require much computation:
+one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar,
+as per our research hypothesis \#2.
+% \ref{hyp:filter}
+We achieve this by simply masking the predicted scores of uncompiling programs
+(before calculating actual probabilities by softmax) to have any probability, i.e. $p=0.0$.
 
 % \pagebreak
 
@@ -2045,16 +2110,32 @@ One question we aim to answer here is whether our approach can meaningfully scal
 \subsection{Topics for future research}
 \begin{itemize}
     \item How can we apply a more generalized program synthesis model to a specific problem? Can we take inspiration here from neural network pruning?
-    \item While we have focused on types as features here,
+    \item While we have focused on types as features and compilation for masking purposes here,
     after each synthesis step,
-    in languages featuring typed holes we may pre-compile even partial programs such as to provide the synthesizer with immediate feedback;
+    in languages featuring typed holes we may \emph{pre-compile} even partial programs such as to provide the synthesizer with immediate feedback;
     as with types, we similarly hypothesize neural program synthesis methods can benefit from using compilation checks as additional features.
     However, this would require a \emph{weakly supervised} neural synthesizer,
     i.e. using \emph{reinforcement learning},
     whereas our present synthesizer is based on the simpler \emph{strongly supervised} setup.
     As such, this was unfortunately out of scope for our current paper.
-    \item Lastly, we hypothesize that these added features still offer added value over deduction-based approaches aiming to push input-output examples through the grammar (investigate separately for datasets without and with many functions that are not invertible) and using type-based filters. This question, again, unfortunately required an architecture significantly different from our own.
-    % \item 
+    \item Lastly, we hypothesize that these added features still offer added value over
+    deduction-based approaches aiming to push input-output examples through the grammar
+    (investigate separately for datasets without and with many functions that are not invertible)
+    and using type-based filters.
+    This question, again, unfortunately required an architecture significantly different from our own.
+    \item While we have looked into the added value of types as features,
+    this gives rise to an additional question:
+    what operator features are most conducive to benefiting from type info?
+    While we have briefly conjectured this to involve having few yet generically applicable operators,
+    this question has fallen out of scope for our paper,
+    and remains a question for future research.
+    \item While we have investigated the use of type info in neural programming by example,
+    one could allocate such extra compute to just the existing information as well.
+    This implies there may be an ideal split between features allocated to expressions versus types.
+    Investigating this ideal split would be a topic for future research.
+    \item While we have presently let our synthesizer uniformly pick a hole, deterministically pick first hole to determine use of uniform hole sampling?
+    \item Hole picking strategies to better approximate uniform search space exploration,
+    as we have discussed in section \ref{sec:picking}, is still subject to further research.
 \end{itemize}
 
 % \pagebreak
