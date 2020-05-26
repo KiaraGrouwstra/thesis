@@ -380,13 +380,6 @@ This hypothesis gives rise to an additional question:
     \emph{Research question \#2: what dataset features are conducive to benefiting from type info?}
 \end{displayquote}
 
-% Furthermore, in an incremental node-based synthesis approach, we hypothesize that after each synthesis step,
-% in languages featuring typed holes we may pre-compile even partial programs such as to provide the synthesizer with immediate feedback.
-
-% \begin{displayquote} % \label{hyp:compile}
-%     \emph{Research question \#3: can neural program synthesis methods benefit from using compilation checks as additional features?}
-% \end{displayquote}
-
 % An alternative approach would be to enumerate any possible options for a given node,
 % then filtering this list of options based on such compiler feedback.%
 % ~\footnote{One potential concern here is the scalability of such enumeration as the number of valid options grows.}
@@ -397,13 +390,7 @@ This hypothesis gives rise to an additional question:
 % % TODO: figure out if this is really innovation
 
 % \begin{displayquote} % \label{hyp:filter}
-%     \emph{Research question \#4: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
-% \end{displayquote}
-
-% Lastly, we hypothesize that these added features still offer added value over deduction-based approaches aiming to push input-output examples through the grammar (investigate separately for datasets without and with many functions that are not invertible) and using type-based filters:
-
-% \begin{displayquote} % \label{hyp:both}
-%     \emph{Research question \#5: can deduction-based neural program synthesis methods benefit from using types and compilation checks as additional features?}
+%     \emph{Research question \#3: can neural program synthesis methods benefit from type-based filters by reframing the problem to learning-to-rank?}
 % \end{displayquote}
 
 % \pagebreak
@@ -1867,6 +1854,66 @@ The reason we picked this as our benchmark in particular is that there have been
 This is important for us because we can apply types to an AST containing holes,
 which we may not be able to do for any given \emph{sequence} representing a partial program.
 
+While \citet{nsps} used a limit of 13 operations for their synthesized programs,
+we are able to apply such a limit during task function generation as well.
+For the sake of simplicity, we have opted to share this limit,
+specified during dataset generation,
+with our synthesizer as well.
+
+\subsubsection{Changes}
+
+\subsubsection{Functional program domain}
+
+Aside from the grammar we have described in section \ref{sec:subset},
+translating \citet{nsps}'s synthesizer from its original \emph{FlashFill}~\citep{prose} domain to our domain of \emph{functional programs},
+we have had to make the following adjustments to their original algorithm:
+\begin{itemize}
+    \item While the input-output samples used by \citet{nsps} were all \emph{strings},
+    in our functional domain these could essentially comprise arbitrary \emph{expressions}.
+    While ideally a synthesizer would respect the tree-like structure of such expressions as ASTs,
+    our naive approach has been to simply perform \emph{sample serialization} here,
+    taking string versions of our actual input/output expressions,
+    then \emph{one-hot encode} these as \citet{nsps} did using \emph{their} string samples.
+    \item In our functional setup,
+    we distinguished potentially multiple \emph{type instantiations} for each function,
+    which may depend on its type signature's number of \emph{type variables},
+    as well as on any potential \emph{type constraints} on these type variables.
+    As we attempt to generate a similar number of input/output samples for each such type instantiation,
+    this means we do not have similar upper bounds for the total number of input/output samples for functions with \emph{different} number of type instantiations.
+    While this does not pose a problem for our sample \emph{encoder},
+    it did actually end up problematic for the purpose of \citet{nsps}'s \emph{R3NN},
+    which \emph{conditioned} programs on these sample features using an LSTM,
+    which expected a \emph{fixed} number of embedded samples.
+    To work around this and provide such a fixed number number of samples despite differing number of type instantiations,
+    we perform \emph{feature sampling}.
+    For this end we have chosen to sample \emph{with replacement}.
+\end{itemize}
+
+\subsubsection{Optimizations}
+
+We have further made the following optimizations on top of \citet{nsps}'s approach:
+\begin{itemize}
+    \item While \citet{nsps} did not expand on this,
+    for the \emph{one-hot encoding} process in their encoder,
+    we initially included any characters in the ASCII character set,
+    which seemed to cover any character conceivably used in our serialization of input/output samples (or their types, for that matter).
+    However, as we realized this potentially gave our encoder an encoding space larger than necessary,
+    we instead started to track for our datasets which characters they would \emph{actually require} for serialization,
+    such that we could limit our one-hot encodings to the smallest space possible.
+    \item While \citet{nsps}'s \emph{R3NN} ends using a \emph{softmax} operation,
+    calculating the actual estimated probability of any potential hole expansion,
+    we \emph{delay} this until our \emph{cross-entropy} loss calculation to combine these for the purpose of the \emph{log-sum-exp} trick~\citep{eisele2016log},
+    aiding numerical stability.
+\end{itemize}
+
+\subsubsection{Design limitations}
+
+\begin{itemize}
+    \item Our implementation settled for \cite{nsps}'s \emph{baseline LSTM encoder} rather than its fancier \emph{cross-correlation} encoder variants.
+    While such variants may improve synthesis quality,
+    these come at an increased amount of \emph{computation} as well.
+\end{itemize}
+
 \subsubsection{Types}
 
 % why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
@@ -1909,16 +1956,6 @@ Using this information should improve our search,
 as per our research hypothesis \#1.
 % \ref{hyp:types}.
 
-% \subsubsection{Compiler feedback}
-
-% % \citep{bunel2018leveraging} condition on syntax to generate only correct programs, see their section 5.
-% While we would like to also condition on \emph{compiler feedback},
-% as per our research hypothesis \ref{hyp:compile}.
-% this would require a \emph{weakly supervised} neural synthesizer,
-% i.e. using \emph{reinforcement learning},
-% whereas our present synthesizer is based on the simpler \emph{strongly supervised} setup.
-% As such, this is unfortunately out of scope for our current paper.
-
 % \subsubsection{Type filter}
 
 % However, in the simple case, the implications of this info do not require much computation:
@@ -1929,37 +1966,62 @@ as per our research hypothesis \#1.
 
 \section{Experiment} \label{sec:experiment}
 
-\subsection{Benchmark task}
+% \subsection{Benchmark task}
+
+\subsection{Hyperparameters}
+
+\subsubsection{Hyperparameters used for dataset generation}
+
+The hyperparameters we have used in our dataset generation have been as follows:
+\begin{description}
+    \item[crashOnError (false)] when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
+    \item[nestLimit (0)] max number of levels of nesting for generated types. high values make for big logs while debugging...
+    \item[maxInstances (5)] max number of instantiations to generate for any type containing type variables. may get less after deduplicating type instances.
+    \item[numInputs (10)] max number of inputs to generate. may get less after nub filters out duplicates.
+    % cf. NSPS: for all results, the program tree generation is conditioned on a set of 10 input/output string pairs.
+    \item[maxWildcardDepth (2)] the maximum level of functions to imagine in a wildcard for function generation
+    \item[maxHoles (1)] the maximum number of holes to allow in a generated expression
+    \item[numMin (-20)] the minimum value for numbers to generate
+    \item[numMax (20)] the maximum value for numbers to generate
+    \item[listMin (0)] the minimum number of elements to generate for list types
+    \item[listMax (5)] the maximum number of elements to generate for list types
+    % figure out a sensible split. NSPS mentions training/test tho not validation.
+    % We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
+    \item[splits] train (0.35) / validation (0.35) / test (0.3)
+\end{description}
+
+\subsubsection{Hyperparameters fixed in our synthesizer}
+
+\begin{description}
+    % \item[seed] 
+    \item[numEpochs (1000)] the number of epochs to train for 
+%     \item[encoderBatch (8)] the encoder batch size i.e. number of samples to process in one go
+%     \item[r3nnBatch (8)] the R3NN batch size i.e. number of i/o samples to sample per invocation
+    \item[bestOf (100)] Number of functions to sample from the model for each latent function and set of input/output examples that we test on, determining success based on the best from this sample.
+    \item[evalFreq (5)] the number of epochs for which to run on train test before evaluating on the test set again.
+    \item[learningRate (0.001)] initial learning rate used in ML optimizer.
+    \item[checkWindow (1)] the window of evaluations to check over to verify convergence.
+    \item[convergenceThreshold (0.000001)] the minimum loss increment we consider as indicating convergence.
+    \item[learningDecay (5)] by how much to divide the learning rate when accuracy decreases.
+    % \item[maxHoles] the maximum number of holes to allow in a generated expression
+\end{description}
 
 
-Generation config:
+\subsubsection{Hyperparameters optimized in a search}
 
-crashOnError: when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
+Hyperparameters we \emph{search} over include
+dropout rate~\citep{baldi2014dropout},
+% L2 regularization rate~\citep{zhang2018three},
+the number of features \emph{M} used in our symbol and expansion rule embeddings as per \citet{nsps}'s \emph{R3NN},
+the number of features \emph{H} used per input or output per LSTM direction as per \citet{nsps}'s \emph{baseline LSTM encoder},
+the number of hidden units for the first and second hidden layers (presently fixed to 2 hidden layers) used in the \emph{recursive} and \emph{reverse-recursive} passes of \citet{nsps}'s \emph{R3NN}.
 
-nestLimit (0): max number of levels of nesting for generated types. high values make for big logs while debugging...
-
-maxInstances (5): max number of instantiations to generate for any type containing type variables. may get less after deduplicating type instances.
-
-numInputs (10): max number of inputs to generate. may get less after nub filters out duplicates.
-cf. NSPS: for all results, the program tree generation is conditioned on a set of 10 input/output string pairs.
-
-maxWildcardDepth (2): the maximum level of functions to imagine in a wildcard for function generation
-
-maxHoles (1): the maximum number of holes to allow in a generated expression
-
-numMin (-20): the minimum value for numbers to generate
-
-numMax (20): the maximum value for numbers to generate
-
-listMin (0): the minimum number of elements to generate for list types
-
-listMax (5): the maximum number of elements to generate for list types
-
-figure out a sensible split. NSPS mentions training/test tho not validation.
-We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
-
-train (0.45) / validation (0.1) / test (0.45)
-
+This search is performed by a genetic algorithm~\citep{koza1994genetic},
+used a 20\% \emph{mutation} rate,
+an 80\% \emph{cross-over} rate,
+a \emph{population} size fixed to the square root of the total number of hyper-parameter configurations (rounded up),
+and the \emph{4th root} of the total number of hyper-parameter configurations (again rounded up)
+used as the maximum number of \emph{generations} and as the number of \emph{best entities} to keep track of.
 
 % TODO: EXPERIMENT
 % TODO: elaborate how to supervise existing methods with type info
@@ -1983,7 +2045,16 @@ One question we aim to answer here is whether our approach can meaningfully scal
 \subsection{Topics for future research}
 \begin{itemize}
     \item How can we apply a more generalized program synthesis model to a specific problem? Can we take inspiration here from neural network pruning?
-    % \item ...
+    \item While we have focused on types as features here,
+    after each synthesis step,
+    in languages featuring typed holes we may pre-compile even partial programs such as to provide the synthesizer with immediate feedback;
+    as with types, we similarly hypothesize neural program synthesis methods can benefit from using compilation checks as additional features.
+    However, this would require a \emph{weakly supervised} neural synthesizer,
+    i.e. using \emph{reinforcement learning},
+    whereas our present synthesizer is based on the simpler \emph{strongly supervised} setup.
+    As such, this was unfortunately out of scope for our current paper.
+    \item Lastly, we hypothesize that these added features still offer added value over deduction-based approaches aiming to push input-output examples through the grammar (investigate separately for datasets without and with many functions that are not invertible) and using type-based filters. This question, again, unfortunately required an architecture significantly different from our own.
+    % \item 
 \end{itemize}
 
 % \pagebreak
