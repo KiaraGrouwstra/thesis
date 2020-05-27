@@ -630,7 +630,7 @@ as our search space is typically discrete, meaning we cannot simply apply gradie
 
 This issue can be worked around in different ways:
 \begin{itemize}
-    \item Using a \emph{differentiable interpreter} to directly enable gradient-based optimization.~\citep{forth,terpret,houdini,feser2016differentiable,rocktaschel2017end}
+    \item Using a \emph{differentiable interpreter} to directly enable gradient-based optimization.~\citep{forth,terpret,houdini,feser2016differentiable,rocktaschel2017end,abadi2019simple}
         However, although unfortunately only empirical evidence is available to compare this approach, as per \citet{terpret} such purely SGD-based methods so far appear to have proven less effective than traditional or mixed methods.
     \item Using \emph{strong supervision}, i.e. create a differentiable loss signal
         to supervise synthesis training by checking if the synthesized program is \emph{identical} to the target program,
@@ -1685,74 +1685,6 @@ and their respective results in section \ref{sec:experiment}.
 
 \subsection{Dataset generation} \label{sec:datagen}
 
-% benchmark task:
-% - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
-% - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors. partial official code. allows recursion. components not listed in the paper~\citep{tamandu}.
-% - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num. permissive grammar involving pattern matching, recursion, and a flexible set of primitive operators and constants. seems to actually have been used by others before.
-% - [x] NPI/AlphaNPI: task is sequential :(
-% - [x] NSPS: flashfill so few parametric types :(, also tasks not publicized
-% - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare -- just rules, no trees or types :(
-% - [x] DeepCoder: dataset (/code) not published :(
-% - [x] Suggesting Valid Hole Fits: based on types, not examples :(
-% - [x] Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples :(
-% - [x] Scythe: no code :(, uses types + i/o examples. no (own) task! :(
-% - [x] Scout: no code, and only extended abstract available, with no info on task :(
-% - [x] Idris: based on types, not examples :(
-% - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
-% - [x] Terpret: 12 tasks (table 2), complex grammar (figure 3) incl constants on probabilistic language, so seems kinda different, plus quite binary so not very type-ey :(
-% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
-% https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
-
-% TODO: this isn't just about benchmark task it's about training dataset, which we can generate from their ops
-We had trouble finding a suitable benchmark task in the literature.
-
-On the one hand, especially benchmark tasks within \emph{non-neural} program synthesis methods have usually consisted of only a limited number of tasks%
-~\citep{myth,lambda2,typedmil,houdini,tamandu,dilp}~\cite{terpret},
-as such non-neural methods do not require an equivalent to the training set typically used in machine learning setups.
-
-On the other hand, benchmark tasks within \emph{neural} program synthesis have often remained somewhat simpler in nature,
-rendering them less fit for our purposes ---
-either being imperative in nature (and as such being less amenable to types),
-such as sorting tasks~\citep{npi,alphanpi},
-or otherwise focusing on a simple set of types --- such as strings~\citep{nsps} ---%
-or differently put, not including operators with parametric return types.
-
-As a third issue, it was also common for existing papers to keep their datasets unpublished~\citep{nsps,deepcoder}.
-
-As a result, it appears we would need to create a benchmark task,
-or at least a training dataset, ourselves.
-
-% we may simply ensure our test sets contain the benchmark tasks of existing papers.
-% To achieve this, we may increasingly add types, such as to support, in order of complexity:
-% \begin{itemize}
-%     \item list, bool~\citep{terpret}
-%     \item int~\citep{tamandu}
-%     \item char~\citep{typedmil}
-%     \item nat, tree~\citep{myth,lambda2}
-% \end{itemize}
-
-Now, while it seemed preferable to hook into existing operator sets to benchmark against other algorithms than \citet{nsps},
-it turned out tough to find potential comparisons there that would have a level playing field;
-while neural methods typically used synthesis domains outside of functional programs,
-or did not publish their datasets,
-non-neural methods did not need to deal with the engineering challenges of a neural synthesizer.
-
-For our purposes, this gap made it challenging to keep up in terms of synthesizer feature set.
-Other non-neural methods considered as potential benchmarks often featured more comprehensive grammars,
-typically incorporating function recursion~\citep{typedmil,myth},
-if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2},
-while our synthesizer has focused on keeping to a minimal feature set required to investigate our hypotheses.
-
-% To constrain the engineering scope of our experiment, it would seem reasonable to use a benchmark paper similarly limited in grammar, so as to reduce complexity not required for the experiment where possible.
-% By this reasoning, we would like to benchmark against \citet{tamandu}, which "[focuses] on the synthesis of purely functional programs without any lambda expressions, explicit recursion or conditionals (i.e., only function application is allowed)".
-% We will do this by taking libraries of basic operations in accordance with this paper,
-% then, in order to create a training set,
-% generating any possible functions using combinations thereof within a given complexity threshold.
-
-However, while comparing neural to non-neural methods is a topic of interest,
-given the present state of datasets and neural methods in the field of functional program synthesis,
-it is not the primary focus of this paper.
-
 % The process for generating task functions to train our synthesizer on is as follows:
 % \begin{itemize}
 %     \item we start using a body consisting of a hole, typed with a wildcard;
@@ -2216,9 +2148,108 @@ as well as the filter-based approach described in \ref{sec:filter}.
 
 \subsection{Benchmark task}
 
-% TODO: Tamandu
+% benchmark task:
+% - [x] typed MIL: Prolog/Python, types: poly list, mono int/char. allows recursion.
+% - [x] Myth: Haskell/OCaml, types: poly list/tree, mono bool/nat. third-party repo available but errors. partial official code. allows recursion. components not listed in the paper~\citep{tamandu}.
+% - [x] lambda^2: OCaml/Python, types: poly list/tree, mono bool/num. permissive grammar involving pattern matching, recursion, and a flexible set of primitive operators and constants. seems to actually have been used by others before.
+% - [x] NPI/AlphaNPI: task is sequential :(
+% - [x] NSPS: flashfill so few parametric types :(, also tasks not publicized
+% - DILP?: paper tests induction rather than synthesis, so adapting their benchmark makes it hard to compare -- just rules, no trees or types :(
+% - [x] DeepCoder: dataset (/code) not published :(
+% - [x] Suggesting Valid Hole Fits: based on types, not examples :(
+% - [x] Synquid / Polymorphic Succinct Types: based on refinement types instead of i/o examples :(
+% - [x] Scythe: no code :(, uses types + i/o examples. no (own) task! :(
+% - [x] Scout: no code, and only extended abstract available, with no info on task :(
+% - [x] Idris: based on types, not examples :(
+% - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
+% - [x] Terpret: 12 tasks (table 2), complex grammar (figure 3) incl constants on probabilistic language, so seems kinda different, plus quite binary so not very type-ey :(
+% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
+% https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
+
+% TODO: this isn't just about benchmark task it's about training dataset, which we can generate from their ops
+We went through the literature to find a suitable benchmark task and correspond training dataset.
+
+On the one hand, benchmark tasks within \emph{neural} program synthesis have often remained somewhat simpler in nature,
+rendering them less fit for our purposes ---
+either being imperative in nature (and as such being less amenable to types),
+such as sorting tasks~\citep{npi,alphanpi},
+otherwise focusing on a simple set of types --- such as strings~\citep{nsps} ---%
+or differently put, not including operators with parametric return types.
+
+Furthermore, it was also common for such existing papers to keep their datasets unpublished~\citep{nsps,deepcoder},
+meaning we would not be able to train and evaluate on the same data,
+preventing a fair comparison by using the same dataset.
+
+On the other hand, especially benchmark tasks within \emph{non-neural} program synthesis methods have usually consisted of only a limited number of tasks%
+~\citep{myth,lambda2,typedmil,houdini,tamandu,dilp,terpret},
+since such non-neural methods do not require an equivalent to the training set typically used in machine learning setups.
+
+This means that, while we would be able to use such a benchmark task as our \emph{test set} for the purpose of comparison,
+we would need to ourselves generate a corresponding \emph{training set}, and for the purpose of hyperparameter optimization, also a \emph{validation set}.
+
+% we may simply ensure our test sets contain the benchmark tasks of existing papers.
+% To achieve this, we may increasingly add types, such as to support, in order of complexity:
+% \begin{itemize}
+%     \item list, bool~\citep{terpret}
+%     \item int~\citep{tamandu}
+%     \item char~\citep{typedmil}
+%     \item nat, tree~\citep{myth,lambda2}
+% \end{itemize}
+
+% Now, while it seemed preferable to hook into existing operator sets to benchmark against other algorithms than \citet{nsps},
+% it turned out tough to find potential comparisons there that would have a level playing field;
+% while neural methods typically used synthesis domains outside of functional programs,
+% or did not publish their datasets,
+% non-neural methods did not need to deal with the engineering challenges of a neural synthesizer.
+
+% As such, while comparing neural to non-neural methods is a topic of interest,
+% given the present state of datasets and neural methods in the field of functional program synthesis,
+% it is not the primary focus of this paper.
+
+Now, in order to create a \emph{level playing field},
+our evaluation task must match the limitations of our own DSL and implementation.
+The challenge here is that non-neural methods typically do not need to deal with the engineering challenges of a neural synthesizer,
+for our purposes making it challenging to keep up with such methods in terms of synthesizer feature set.
+Such non-neural methods considered as potential benchmarks often featured more comprehensive grammars,
+typically incorporating function recursion~\citep{typedmil,myth},
+if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2},
+while our synthesizer has focused on keeping to a minimal feature set required to investigate our hypotheses.
+
+As such, to constrain the engineering scope of our experiment,
+it would seem desirable to use a benchmark paper similarly limited in grammar,
+so as to reduce complexity not required for the experiment where possible.
+By this reasoning, we would like to benchmark against \citet{tamandu}, which
+    "[focuses] on the synthesis of purely functional programs without any lambda expressions,
+    explicit recursion or conditionals (i.e., only function application is allowed)".
+We will do this by taking libraries of basic operations in accordance with this paper,
+then, in order to create training and validation sets,
+sample functions from the program space combining these operators,
+within a given complexity threshold.
+
+\citet{tamandu} reports using the following 37 operators or \emph{library components} for synthesis, many of which directly corresponding to Haskell's built-in \emph{Prelude} functions:
+\begin{description}
+    \item[general functions] \texttt{const, flip}
+    \item[booleans] \texttt{true, false, not}
+    \item[integer constructors] \texttt{zero, succ}
+    \item[integer destructors] \texttt{isZero}
+    \item[integer combinators] \texttt{foldNat, foldNatNat}
+    \item[arithmetics] \texttt{add, mul, div, max, eq, neq}
+    \item[list constructors] \texttt{nil, con}
+    \item[list destructors] \texttt{head, tail, isNil}
+    \item[list combinators] \texttt{map, foldr, foldl, filter}
+    \item[list functions] \texttt{length, append, reverse, replicate, concat}
+    \item[list of integers functions] \texttt{sum, prod, maximum, member, enumTo, enumFromTo}
+\end{description}
+
+Their task functions are as follows: 
+\texttt{drop, droplast, dropmax, factorial, isEven, last, mapAdd, mapDouble, multfirst, multlast, nth, stutter, append, concat, enumFromTo, enumTo, isNil, length, maximum, member, replicate, reverse, sum}
+
+We have based our reimplementation of their operators and task functions on their source repository~\citep{tamandurepo}.
 
 \subsection{Hyperparameters}
+
+  TODO: actually find good parameter values
+% TODO: actually find good parameter values
 
 \subsubsection{Hyperparameters used for dataset generation}
 
