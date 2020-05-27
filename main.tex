@@ -640,8 +640,9 @@ This issue can be worked around in different ways:
             In reality, we wish to condition our model to synthesize not just the known programs,
             but to generalize to learn to synthesize \emph{unknown} programs matching our task specification as well.
             Supervising by a given 'known correct' program instead tells our model that other programs matching our specification somehow do not qualify as correct.
-            As a result, such supervision requires that the training dataset provides a representative sample of our full program space.
-            Note that this assumption is broken for datasets much smaller than the program space,
+            As a result, such supervision requires that the training dataset provides a representative sample of our full program space:
+            training on the full program search space ensures that such bias from individual samples should be approximately averaged out.
+            This assumption is broken however for datasets much smaller than the program space,
             meaning that this approach does not scale well to bigger search spaces.
             % TODO: add references?
         }, but does make for a relatively simple setup.
@@ -1702,6 +1703,7 @@ and their respective results in section \ref{sec:experiment}.
 % - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
 % https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
 
+% TODO: this isn't just about benchmark task it's about training dataset, which we can generate from their ops
 We had trouble finding a suitable benchmark task in the literature.
 
 On the one hand, especially benchmark tasks within \emph{non-neural} program synthesis methods have usually consisted of only a limited number of tasks%
@@ -1818,7 +1820,7 @@ We generate a fixed number of concrete types we will use for instantiating type 
 Using a \emph{nestLimit} control variable here we dictate the maximum number of nesting,
 to prevent generating types like 'list of lists of booleans'.
 The maximum number of types generated is dictated by control variable \emph{maxInstances},
-although this may get less after deduplicating such generated type instances.
+although this may get less after deduplicating such sampled type instances.
 
 We then use these concrete types to instantiate any polymorphic
 (non-function) input types occurring in our task functions.
@@ -1870,9 +1872,6 @@ In other words, a \emph{partial function},
 i.e. a function that only works on certain inputs of the desired input types,
 may still constitute a valid program that we may wish to learn to synthesize.
 
-% TODO: ensure sets contains no fns w/ behavior identical to any in other sets to prevent cheating
-% dedupeFunctions: not in use; deduplicate functions by identical types + io, keeping the shortest
-
 Having generated input/output examples for our task functions,
 we finally filter out any programs for which we have somehow failed to generate such samples.
 At this point we:
@@ -1883,6 +1882,54 @@ At this point we:
     (for our type experiment also those used in the types),
     and assign them to indices for our one-hot encodings of examples (and their associated types).    
 \end{itemize}
+
+\subsubsection{Preventing \emph{cheating}}
+
+Now, in \emph{supervised learning} settings,
+one would typically ensure labeled samples would not be \emph{duplicated} across sets:
+if we train a classifier on a cat picture,
+then evaluate it on this same cat picture,
+we would essentially allow the classifier to 'cheat' by simply remembering the examples,
+rather than learning how to generalize in its task to \emph{unseen} samples.
+
+In \emph{programming by example} on the other hand,
+the equivalent isn't simply to ensure \emph{task functions} are deduplicated across sets.
+Imagine we had two distinct task functions exhibiting identical behavior:
+if one were allocated to our training set,
+another to the test set,
+then we have again created an opportunity for our synthesizer to cheat:
+it could remember the program from our training set,
+then synthesize it during evaluation.
+
+While this program would not be the \emph{same},
+for the purpose of synthesis \emph{evaluation} of accuracy,
+synthesizing a function exhibiting the correct behavior already qualifies as successful synthesis,
+as synthesizing \emph{one specific} function implementation is not the goal of programming by example.
+
+Now, one would then presume that as long as we then ensure
+that functions across different datasets
+would not share the same \emph{input-output pairs},
+this issue would be averted.
+
+However, the reality is slightly more complicated still:
+presume we have an \emph{increment} function mapping input $0$ to $1$,
+along with a \emph{successor} function mapping $0$ to $1$ and \emph{false} to \emph{true}.
+
+If we would simply deduplicate by identical input-output pairs,
+we would conclude these functions to behave differently,
+and would accept e.g. having the \emph{successor} function in our training set,
+the \emph{increment} function in our test set.
+
+This again leads us to a similar same problem however:
+our synthesizer could simply memorize how to synthesize our \emph{successor} function,
+then during evaluation use this knowledge to pass our \emph{increment} synthesis test.
+As such, the solution would be to ensure we cannot \emph{train} on task functions exhibiting all of the behaviors of a function we would \emph{evaluate} on.
+
+  TODO: clarify how I will tackle this
+% TODO: clarify how I will tackle this
+
+% TODO: ensure sets contains no fns w/ behavior identical to any in other sets to prevent cheating
+% dedupeFunctions: not in use; deduplicate functions by identical types + io, keeping the shortest
 
 \subsection{Search technique}
 
@@ -1899,19 +1946,6 @@ The reason we picked this as our benchmark in particular is that there have been
 This is important for us because we can apply types to an AST containing holes,
 which we may not be able to do for any given \emph{sequence} representing a partial program.
 
-While \citet{nsps} used a limit of 13 operations for their synthesized programs,
-we are able to apply such a limit during task function generation as well.
-For the sake of simplicity, we have opted to share this limit,
-specified during dataset generation,
-with our synthesizer as well.
-This presently disregards any synthesized programs of
-correct behavior but exceeding our complexity limit.
-While the primary intention here is to prevent synthesis
-from diverging into ever-expanding programs,
-one might imagine a better compromise here instead.
-This limit affects evaluation,
-but the limit has no effect on learning during training.
-
 While the paper follows a \emph{strongly supervised} training method,
 this is not as straight-forward in the field of AST-based neural program synthesis as it using sequence-based generative methods.
 In the latter, one would generate e.g. one character at a time,
@@ -1924,7 +1958,8 @@ we could potentially fill \emph{any} of our holes based on our task program.
 While \citet{nsps} did not go into the workings of their training supervision method,
 we have here settled for the naive approach of \emph{randomly} picking a hole to fill using a \emph{uniform distribution}.
 The reason we picked against \emph{deterministically} choosing a hole to fill is
-we would like to offer our synthesizer an equal opportunity to learn about different scenarios.
+we would like to offer our synthesizer an equal opportunity to learn about different scenarios,
+as we will further discuss in section \ref{sec:picking}.
 
 \citet{nsps} suggest conditioning programs on samples in the R3NN can use either a
 \emph{Multi-Layer Perceptron} (MLP)~\citep{rosenblatt1961principles} or a (bidirectional) LSTM,
@@ -1936,7 +1971,8 @@ As such, we have incorporated this addition as well.
 
 While not indicated in the paper itself,
 but only in a related patent~\citep{mohamed2017neural},
-it appears the synthesizer was trained using the \emph{Adam} optimizer~\citep{kingma2014adam},
+it appears the synthesizer was trained using the \emph{Adam} optimizer~\citep{kingma2014adam}.
+We follow this example,
 using the standard parameter values $\beta_1=0.9, \beta_2=0.999$ as suggested in \citet{kingma2014adam}.
 
 As in the original paper,
@@ -1949,11 +1985,6 @@ As explained in section \ref{sec:datagen},
 during generation we had discarded any programs not passing some basic \emph{sanity checks},
 of what we expect to be reasonable traits for programs in a synthesis setting.
 Following this example, during evaluation we similarly disregard any such programs not deemed 'sane' by this standard.
-
-Also of note is that our present implementation has yet to be optimized for run-time performance:
-our model can presently be run on CPU,
-and has yet to implement batching over task functions in the R3NN,
-an implementation detail that had not been given any attention in \citet{nsps}.
 
 For the purpose of calculating total loss for an epoch,
 we presently aggregate the loss over the different
@@ -2104,9 +2135,25 @@ We have further made the following optimizations on top of \citet{nsps}'s approa
     \item Our implementation settled for \citet{nsps}'s \emph{baseline LSTM encoder} rather than its fancier \emph{cross-correlation} encoder variants.
     While such variants may improve synthesis quality,
     these come at an increased amount of \emph{computation} as well.
+    \item Also of note is that our present implementation has yet to be optimized for run-time performance:
+    our model can presently be run on CPU,
+    and has yet to implement batching over task functions in the R3NN,
+    an implementation detail that had not been given any attention in \citet{nsps}.
+    \item While \citet{nsps} used a limit of 13 operations for their synthesized programs,
+    we are able to apply such a limit during task function generation as well.
+    For the sake of simplicity, we have opted to share this limit,
+    specified during dataset generation,
+    with our synthesizer as well.
+    This presently disregards any synthesized programs of
+    correct behavior but exceeding our complexity limit.
+    While the primary intention here is to prevent synthesis
+    from diverging into ever-expanding programs,
+    one might imagine a better compromise here instead.
+    This limit affects evaluation,
+    but the limit has no effect on learning during training.
 \end{itemize}
 
-\subsubsection{Types}
+\subsubsection{Types} \label{sec:typednsps}
 
 % why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
 % how to supervise with these? representation?
@@ -2148,7 +2195,7 @@ Using this information should improve our search,
 as per our research hypothesis \#1.
 % \ref{hyp:types}.
 
-% \paragraph{Type filter}
+\paragraph{Type filter} \label{sec:filter}
 
 However, in the simple case, the implications of this info do not require much computation:
 one will just restrict their search to those AST nodes allowed for the present hole as dictated by the grammar,
@@ -2161,7 +2208,15 @@ We achieve this by simply masking the predicted scores of uncompiling programs
 
 \section{Experiment} \label{sec:experiment}
 
-% \subsection{Benchmark task}
+To perform our experiment, we will first perform \emph{hyperparameter optimization} on our vanilla implementation of \emph{neuro-symbolic program synthesis},
+as we will describe in section \ref{sec:hparopt},
+then use these hyperparameters to evaluate three different models;
+this vanilla implementation, our type-based additions described in \ref{sec:typednsps},
+as well as the filter-based approach described in \ref{sec:filter}.
+
+\subsection{Benchmark task}
+
+% TODO: Tamandu
 
 \subsection{Hyperparameters}
 
@@ -2201,10 +2256,14 @@ The hyperparameters we have used in our dataset generation have been as follows:
     % \item[maxHoles] the maximum number of holes to allow in a generated expression
 \end{description}
 
+\subsubsection{Hyperparameters optimized in a search} \label{sec:hparopt}
 
-\subsubsection{Hyperparameters optimized in a search}
-
-Hyperparameters we \emph{search} over include
+Hyperparameters we \emph{search} over, rather than fixed up-front,
+% TODO: actually adjust hyperparameters to match this reasoning
+% have been picked based on the question of whether we expected them to have a 'sweet spot' in terms of optimum value,
+% rather than being an obvious case of 'higher is better';
+% these include
+include
 dropout rate~\citep{baldi2014dropout},
 % L2 regularization rate~\citep{zhang2018three},
 the number of features \emph{M} used in our symbol and expansion rule embeddings as per \citet{nsps}'s \emph{R3NN},
@@ -2217,9 +2276,6 @@ an 80\% \emph{cross-over} rate,
 a \emph{population} size fixed to the square root of the total number of hyper-parameter configurations (rounded up),
 and the \emph{4th root} of the total number of hyper-parameter configurations (again rounded up)
 used as the maximum number of \emph{generations} and as the number of \emph{best entities} to keep track of.
-
-% TODO: EXPERIMENT
-% TODO: elaborate how to supervise existing methods with type info
 
 % \pagebreak
 
