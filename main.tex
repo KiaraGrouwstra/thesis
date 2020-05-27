@@ -1474,11 +1474,17 @@ named \emph{HaskTorch}~\citep{hasktorch}%
     HaskTorch has an API essentially modeled after PyTorch, as it is wrapping the same C++ codebase.
     It additionally features a second parallel 'typed' API however,
     which offers extra static checks of tensor details such as dimensions.
+
     While the original API will limit learning curve for those coming from PyTorch,
     in implementing our (non-trivial) model we found it quite helpful
     to make use of the typed API for the extra compiler checks.
+
     We did run into some learning curve there as well,
-    which we aim to further lay out in a future blog post.
+    such as how to dynamically determine hyperparameters
+    which static tensor typing expects to know at compile-time,
+    e.g. to let users pass these as command-line flags,
+    or to search over these as part of hyperparameter optimization.
+    We aim to further lay these out in a future blog post.
 },
 turned out the significantly more active of the two,
 and along with its welcoming and helpful community solidified our choice.
@@ -1637,7 +1643,16 @@ we express the unresolved \emph{expr} symbols as
 For the purpose of running our synthesized programs,
 we must additionally ensure our whitelisted operators are in scope for our program.
 We then obtain our actual Haskell program to be interpreted
-by wrapping our synthesized program in a \emph{let}-expression
+by wrapping our synthesized program in a \emph{let}-expression%
+~\footnote{
+    Operators where the body is equal to their name we filter out from such let-expressions.
+    This is because, in Haskell,
+    a definition containing its own name would be taken as recursive,
+    causing non-termination.
+    As such, we first filter out those 'recursive' operators,
+    then for each remaining operator track
+    whether it has been used in any given program.
+}
 containing the relevant operator definitions, as follows:
 
 \begin{verbatim}
@@ -1787,7 +1802,14 @@ we had yet to expand on this practice:
 we presently use a Haskell interpreter to type-check our generated programs at run-time,
 filter out non-function programs,
 and check if program types look \emph{sane}:
-to weed out some programs we deem less commonly useful,
+to weed out some programs we deem less commonly useful%
+~\footnote{
+    Programs not passing these checks are not necessarily invalid,
+    but by our engineering judgement,
+    are much more circumstantial in their usage.
+    For this reason, we would currently prefer for our synthesizer to focus on
+    the region of our search space that we generally deem to be of higher interest.
+},
 we filter out types \emph{containing} functions (e.g. list of functions),
 as well as types with constraints that span more than a single type variable (e.g. \verb|(Eq (a -> Bool)) => a|).
 
@@ -1864,7 +1886,7 @@ At this point we:
 
 \subsection{Search technique}
 
-\subsubsection{Neuro-symbolic program synthesis}
+\subsubsection{Our adaptation of neuro-symbolic program synthesis} \label{sec:ournsps}
 
 Type-based approaches typically call for a \emph{top-down search strategy}.
 As such, we will need to build upon AST-based (or node-based) rather than sequential (or token-based) neural synthesis methods.
@@ -1887,6 +1909,8 @@ correct behavior but exceeding our complexity limit.
 While the primary intention here is to prevent synthesis
 from diverging into ever-expanding programs,
 one might imagine a better compromise here instead.
+This limit affects evaluation,
+but the limit has no effect on learning during training.
 
 While the paper follows a \emph{strongly supervised} training method,
 this is not as straight-forward in the field of AST-based neural program synthesis as it using sequence-based generative methods.
@@ -1902,11 +1926,51 @@ we have here settled for the naive approach of \emph{randomly} picking a hole to
 The reason we picked against \emph{deterministically} choosing a hole to fill is
 we would like to offer our synthesizer an equal opportunity to learn about different scenarios.
 
+\citet{nsps} suggest conditioning programs on samples in the R3NN can use either a
+\emph{Multi-Layer Perceptron} (MLP)~\citep{rosenblatt1961principles} or a (bidirectional) LSTM,
+where the LSTM could learn more about the relative position of each leaf node in the tree.
+As such, we have opted to use the LSTM for this purpose.
+
+They additionally note having found an improvement adding a bidirectional LSTM to process the global leaf representations, right before calculating the scores.
+As such, we have incorporated this addition as well.
+
+While not indicated in the paper itself,
+but only in a related patent~\citep{mohamed2017neural},
+it appears the synthesizer was trained using the \emph{Adam} optimizer~\citep{kingma2014adam},
+using the standard parameter values $\beta_1=0.9, \beta_2=0.999$ as suggested in \citet{kingma2014adam}.
+
 As in the original paper,
 our evaluation on the test set involves sampling the synthesizer for 100 programs (which may include duplicates),
 and considering the trial a success if any of these demonstrates the desired program behavior.
 A more sophisticated alternative here might be to use a controller such as \emph{beam search}~\citep{polosukhin2018neural}
 as we have discussed in the context of \emph{neural-guided deductive search}~\citep{deepcoder} in section \ref{sec:ngs}.
+
+As explained in section \ref{sec:datagen},
+during generation we had discarded any programs not passing some basic \emph{sanity checks},
+of what we expect to be reasonable traits for programs in a synthesis setting.
+Following this example, during evaluation we similarly disregard any such programs not deemed 'sane' by this standard.
+
+Also of note is that our present implementation has yet to be optimized for run-time performance:
+our model can presently be run on CPU,
+and has yet to implement batching over task functions in the R3NN,
+an implementation detail that had not been given any attention in \citet{nsps}.
+
+For the purpose of calculating total loss for an epoch,
+we presently aggregate the loss over the different
+task functions in our training set by taking their mean.
+Such losses for a task function in turn had separately aggregated
+over any holes encountered across the different synthesis steps,
+i.e. potentially covering a hole multiple times if it initially remains unfilled,
+and as such is encountered across various partial programs along the way.
+
+Again, this was a design decision we have not empirically research,
+and may be a relevant topic for future research.
+Alternate loss aggregations here would be to either
+skip the intermediate loss aggregation for a separate task function,
+or, instead e.g. consider reweighing losses for different holes,
+to compensate for certain holes, particularly those close to the AST root,
+ending up over-represented as a result of their multiple occurrences,
+as we will further discuss in section \ref{sec:picking}.
 
 \paragraph{Picking holes} \label{sec:picking}
 
@@ -1951,10 +2015,16 @@ our nodes near to the root, in this program filled with $a$,
 on the basis of going through more synthesis rounds,
 is explored more easily than our leaves further away from the root,
 in our program eventually filled with $b$ and $c$, respectively.
+
 Therefore, it would be more ideal for a hole sampling method to inhibit
 bias toward the more \emph{deeply-situated} holes in our program,
 such as to offset this inherent imbalance and better approximate
 uniform exploration of our program search space.
+
+Techniques such as active learning or Bayesian optimization may be able to find optimal sampling strategies for this purpose.
+However, one relevant question here is whether these techniques under all circumstances justify the extra calculation power to improve this decision-making,
+and whether there would be any reasonable compromises available.
+These questions are still subject to future research.
 
 % \subsubsection{Changes}
 
@@ -1994,6 +2064,21 @@ we have had to make the following adjustments to their original algorithm:
     while also seeming to match the spirit of mini-batching,
     by providing more stochastic gradients.
     However, this decision is still up for empirical evaluation.
+
+    It should be noted that this sampling,
+    while intended to normalize sample size stemming from different numbers of type instantiations,
+    it simultaneously addresses different sample sizes \emph{within} type instantiations.
+    Under normal circumstances, the \emph{boolean} type, for example,
+    could not have generated more examples than merely \emph{false} and \emph{true}.
+    By using sampling, this sample set could be normalized to a fixed size as well.
+
+    Moreover, while fixing such a sample size satisfies the constraints of our LSTM used in sample conditioning,
+    this is essentially an unfortunate compromise;
+    if a function is significantly more general in its function,
+    allowing for a wider variety of input types,
+    then being forced to pick a fixed sample size means simpler programs with few types may potentially be learned more easily than programs with e.g. a greater number of type instances.
+    It would likely be preferable to offset this sample size fixing by e.g. giving more weight to hard programs (or samples, for that matter).
+    
 % \end{itemize}
 
 \subsubsection{Optimizations}
@@ -2185,9 +2270,24 @@ We will here give an overview of the questions raised during our design process 
     one could allocate such extra compute to just the existing information as well.
     This implies there may be an ideal split between features allocated to expressions versus types.
     Investigating this ideal split would be a topic for future research.
-    \item While we have presently let our synthesizer uniformly pick a hole, deterministically pick first hole to determine use of uniform hole sampling?
-    \item Hole picking strategies to better approximate uniform search space exploration,
-    as we have discussed in section \ref{sec:picking}, is still subject to further research.
+    \item While we have presently let our synthesizer pick a hole using a \emph{uniform random} distribution,
+    as we have discussed in section \ref{sec:picking},
+    this approach is still subject to further research.
+    For one, the use of this approach could be empirically tested by deterministically picking a hole to verify the added value of uniform hole sampling.
+    As discussed, we believe there to be hole picking strategies better approximating uniform search space exploration than uniform hole sampling as well.
+    \item In section \ref{sec:ournsps}, we have discussed our aggregation of
+    the loss function over the different task functions in the training set.
+    We had not empirically verified our present configuration on this,
+    and offered different alternatives there.
+    These too would merit further research.
+    \item We briefly discussed dynamic sample sizes,
+    how our sample-conditioning LSTM expected a fixed sample size,
+    how we worked around this using \emph{sampling with replacement},
+    and how this was an unfortunate compromise that failed to assign more complex functions,
+    supporting multiple type instantiations,
+    the additional attention they would intuitively require in order to properly learn their behavior.
+    This would likely require \emph{weighted sampling} of task functions (if not samples as well),
+    and this too remains a topic of interest for future research.
     \item As we touched upon in section \ref{sec:unroll},
     the merits of our \emph{unrolled grammar} approach are still up for empirical evaluation.
     As our present dataset allowed us to settle for this approach,
