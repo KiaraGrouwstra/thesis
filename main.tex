@@ -94,7 +94,9 @@ Moreover, recent applications of AI to this field have led to the more recent te
 
 \subsubsection{Supervised Learning}
 
-The above definition of program synthesis as explicitly returning a program is helpful to explain how it differs from \emph{supervised learning},
+The above definition of program synthesis as explicitly returning a program,
+% particularly in its \emph{programming by example} (PBE) variant of learning from input-output examples,
+is helpful to explain how it differs from \emph{supervised learning},
 the machine learning task of learning a function that maps an input to an output based on example input-output pairs~\citep{russell2002artificial}.
 
 Neural learning methods may be applied to any branch of program synthesis,
@@ -902,7 +904,7 @@ To (1) reduce ambiguity, (2) increase result quality, and (3) speed up synthesis
     \item additional features describing properties of the function~\citep{odena2020learning}.
 \end{itemize}
 
-Of interest here is the realization here that, in modern programming languages, even without explicit type annotations may types be \emph{inferred}.
+Of interest here is the realization here that, in modern programming languages, even without explicit type annotations types may be \emph{inferred}.
 % TODO: implication: language preferably should have type inference
 This is then a hidden benefit of synthesis from input-output examples:
 if the types of input-output example pairs may be \emph{inferred}, then we may regard this as free additional information we can incorporate in our synthesis process.%
@@ -958,7 +960,7 @@ brings the additional advantage of helping reduce the
 risk of potentially costly software failures.%
 ~\citep{miller2018smart,leveson2001systemic}
 
-\paragraph{Types versus grammar: generics}
+\paragraph{Types versus grammar: generics} \label{sec:generics}
 
 However, one might note here that traditionally,
 search spaces in program synthesis have been restricted not using types,
@@ -1014,7 +1016,6 @@ then using source-to-source translation methods as discussed in section
 \ref{sec:synthtypes}
 (e.g. neural machine translation~\citep{kalchbrenner2013recurrent}),
 using the synthesized program as input to obtain a program translated into the target language.
-% TODO: make into experiment hypothesis?
 
 \paragraph{Types versus expressiveness}
 
@@ -1677,11 +1678,14 @@ In fact, adding new operators largely concerns dataset generation, and is only a
     \item actually training our synthesizer using our updated dataset including our new operators.
 \end{itemize}
 
-% TODO: which operators and why
-As the actual set of operators most conducive to benefiting
-from type information is subject to empirical investigation,
-we will further expand on different operator sets used
-and their respective results in section \ref{sec:experiment}.
+% % TODO: which operators and why
+% As the actual set of operators most conducive to benefiting
+% from type information is subject to empirical investigation,
+% we will further expand on different operator sets used
+% and their respective results in section \ref{sec:experiment}.
+
+We will further expand on our operator set
+in section \ref{sec:experiment}.
 
 \subsection{Dataset generation} \label{sec:datagen}
 
@@ -2166,7 +2170,6 @@ as well as the filter-based approach described in \ref{sec:filter}.
 % - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
 % https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
 
-% TODO: this isn't just about benchmark task it's about training dataset, which we can generate from their ops
 We went through the literature to find a suitable benchmark task and correspond training dataset.
 
 On the one hand, benchmark tasks within \emph{neural} program synthesis have often remained somewhat simpler in nature,
@@ -2315,14 +2318,15 @@ used as the maximum number of \emph{generations} and as the number of \emph{best
 Having added our type-level supervision during training, we expect synthesis success rates to rise and required evaluations to drop compared to the baseline algorithm.
 This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
+  TODO: RESULT
 % TODO: RESULT
 
 % \pagebreak
 
 \section{Discussion} % \label{sec:discussion}
 
-One question we aim to answer here is whether our approach can meaningfully scale to program sizes not explicitly train on.
-% TODO: check what claims NSPS made on this.
+% One question we aim to answer here is whether our approach can meaningfully scale to program sizes not explicitly trained on,
+% a challenge that our baseline model of \citet{nsps} had yet to overcome.
 
 \subsection{Topics for future research}
 
