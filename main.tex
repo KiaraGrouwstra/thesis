@@ -1730,10 +1730,16 @@ which we may then use when adding new sub-expressions.
 If such a new sub-expression would expect a type constraint on this type variable,
 the constraint is then automatically propagated up to our root type signature.
 
-Thus, whereas \citet{nsps} uniformly sample programs from the DSL,
-we presently reserve sampling for the generation of
-concrete types (for instantiating type variables) and of sample values,
-while program permutations we exhaustively generate given the imposed limitations.
+Like \citet{nsps} we uniformly sample programs from our DSL,
+based on a maximum determined by a control variable \emph{maxDataset}%
+~\footnote{
+    Note that due to performance considerations during dataset generation,
+    sampling is performed before further filters and deduplication,
+    meaning our final dataset size may in fact differ.
+},
+while still respecting the above complexity limits.
+We similarly use sampling for the generation of
+concrete types (for instantiating type variables) and of sample values.
 
 While we quickly mentioned type-checking programs to filter out bad ones,
 we had yet to expand on this practice:
@@ -2272,6 +2278,7 @@ The hyperparameters we have used in our dataset generation have been as follows:
     % figure out a sensible split. NSPS mentions training/test tho not validation.
     % We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
     \item[splits] train (0.35) / validation (0.35) / test (0.3)
+    \item[maxDataset (10000)] the maximum number of programs we will consider for use in our dataset (before further filtering)
 \end{description}
 
 \subsubsection{Hyperparameters fixed in our synthesizer}
