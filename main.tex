@@ -2406,6 +2406,36 @@ We will here give an overview of the questions raised during our design process 
     The point here is to trade in one more \emph{open-ended} problem (in terms of search space size) for three more close-ended ones.
     This idea has to our knowledge not been empirically verified yet however,
     and as such, little is known as to under which circumstances this might hold yet either. 
+    \item For supervising with types, we have so far used the types we were able to infer from sample inputs and outputs.
+    However, for each such different type,
+    these make up type \emph{instantiations} of the task function's type signature:
+    when synthesizing an \emph{identity} function,
+    the sample mappings $0 \rightarrow 0$ and $true \rightarrow true$
+    might give us the instantiated type signatures
+    $Int \rightarrow Int$ or $Bool \rightarrow Bool$,
+    yet the \emph{true} underlying type signature of this task function is $\forall a . a \rightarrow a$.
+    One might then conclude that, in order to synthesize the intended function,
+    knowing its \emph{true} type signature would be more valuable than the sum of (knowing) its parts.
+    This poses some challenges however:
+    What can we learn about the true type signature from its instantiations?
+    Is a given type variable shared between multiple parameters?
+    That is, how do we know it should be $\forall a . a \rightarrow a$ over say $\forall a b . a \rightarrow b$?
+    How much can we infer of type constraints on such type variables?
+    That is, do we know the function should be as general as $\forall a . a \rightarrow a$, as opposed to say having some type constraint e.g. $\forall a . Enum a => a \rightarrow a$?
+    Now, for either question, we could err in either direction, toward \emph{common denominator} upper and lower bounds.
+    Suppose we cannot guarantee the type variable is shared across its two parameters,
+    and we consider $\forall a b . a \rightarrow b$ the minimum requirement that a function type signature must satisfy.
+    Now, while this might be a bare minimum requirement,
+    trying the more specific variants such as $\forall a . a \rightarrow a$,
+    while potentially not \emph{guaranteed} to cover all cases,
+    would nevertheless still be a useful type signature to consider during our synthesis,
+    as its additional constraint may well make for some welcome search space reduction.
+    Instead, we could also consider the case in which we don't need to infer the type signature from out input/output samples,
+    but it is simply given to us as additional information for our (modified) PBE exercise.
+    It would be interesting to investigate to what extent such \emph{true} type signatures
+    might aid synthesis, and furthermore, to what extent these may be \emph{inferred}.
+    However, given all these questions surrounding the use of such type signatures,
+    we have opted to leave this as a topic for future research.
 \end{itemize}
 
 % \pagebreak
