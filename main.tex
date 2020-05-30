@@ -2390,6 +2390,15 @@ We will here give an overview of the questions raised during our design process 
     However, we have not yet empirically evaluated the relative merits of
     sampling with versus without for this purpose,
     and this too would be a question of interest for future research.
+    \item In section \ref{sec:generics} we had briefly posed the idea that types might make some languages more suited to synthesis than others,
+    and posed that under some circumstances,
+    particularly for non-trivial problems,
+    it could potentially end up more efficient 
+    to \emph{first} translate the synthesis problem to a better-suited language,
+    then \emph{after} synthesis translate the result program back to the intended language again.
+    The point here is to trade in one more \emph{open-ended} problem (in terms of search space size) for three more close-ended ones.
+    This idea has to our knowledge not been empirically verified yet however,
+    and as such, little is known as to under which circumstances this might hold yet either. 
 \end{itemize}
 
 % \pagebreak
