@@ -26,6 +26,11 @@
 
 \pagebreak
 
+\begin{abstract}
+    TODO: abstract
+    % For reproducibility, we release our code publicly.
+\end{abstract}
+
 \section{Research Direction} % \label{sec:research-direction}
 
 \subsection{Program Synthesis}
@@ -1258,6 +1263,8 @@ Other languages such as OCaml, Idris and Agda follow a similar pattern.
 In other words, even if we want our DSL to support e.g. arithmetic operations,
 we may just express these using our existing concept of \emph{functions},
 rather than adding such functionality at the \emph{grammar} level.
+For our purposes, we will therefore use such operators simply as functions,
+rather than using them in infix notation.
 
 % conditionals
 
@@ -2173,7 +2180,7 @@ as well as the filter-based approach described in \ref{sec:filter}.
 % - [x] Idris: based on types, not examples :(
 % - [x] Houdini: tasks mostly involve neural networks so suck to evaluate :(
 % - [x] Terpret: 12 tasks (table 2), complex grammar (figure 3) incl constants on probabilistic language, so seems kinda different, plus quite binary so not very type-ey :(
-% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. allows recursion. types so simple I can't add value. :(
+% - [x] Tamandu: PBE with type-based pruning, but non-neural, so only evaluated on 23 functions. types so simple I can't add value. :(
 % https://docs.google.com/spreadsheets/d/1uDA9suwASDzllxJZDt--wZ0ci7q4eJIfPcAw9qr18-U/edit?usp=sharing
 
 We went through the literature to find a suitable benchmark task and correspond training dataset.
@@ -2193,8 +2200,8 @@ On the other hand, especially benchmark tasks within \emph{non-neural} program s
 ~\citep{myth,lambda2,typedmil,houdini,tamandu,dilp,terpret},
 since such non-neural methods do not require an equivalent to the training set typically used in machine learning setups.
 
-This means that, while we would be able to use such a benchmark task as our \emph{test set} for the purpose of comparison,
-we would need to ourselves generate a corresponding \emph{training set}, and for the purpose of hyperparameter optimization, also a \emph{validation set}.
+% This means that, while we would be able to use such a benchmark task as our \emph{test set} for the purpose of comparison,
+% we would need to ourselves generate a corresponding \emph{training set}, and for the purpose of hyperparameter optimization, also a \emph{validation set}.
 
 % we may simply ensure our test sets contain the benchmark tasks of existing papers.
 % To achieve this, we may increasingly add types, such as to support, in order of complexity:
@@ -2215,45 +2222,66 @@ we would need to ourselves generate a corresponding \emph{training set}, and for
 % given the present state of datasets and neural methods in the field of functional program synthesis,
 % it is not the primary focus of this paper.
 
-Now, in order to create a \emph{level playing field},
-our evaluation task must match the limitations of our own DSL and implementation.
-The challenge here is that non-neural methods typically do not need to deal with the engineering challenges of a neural synthesizer,
-for our purposes making it challenging to keep up with such methods in terms of synthesizer feature set.
-Such non-neural methods considered as potential benchmarks often featured more comprehensive grammars,
-typically incorporating function recursion~\citep{typedmil,myth},
-if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2},
-while our synthesizer has focused on keeping to a minimal feature set required to investigate our hypotheses.
+While we \emph{would} be able to use such a benchmark task as our \emph{test set} for the purpose of comparison,
+our present neural architecture differs in design and intent from \emph{search-based methods}.
 
-As such, to constrain the engineering scope of our experiment,
-it would seem desirable to use a benchmark paper similarly limited in grammar,
-so as to reduce complexity not required for the experiment where possible.
-By this reasoning, we would like to benchmark against \citet{tamandu}, which
-    "[focuses] on the synthesis of purely functional programs without any lambda expressions,
-    explicit recursion or conditionals (i.e., only function application is allowed)".
-We will do this by taking libraries of basic operations in accordance with this paper,
-then, in order to create training and validation sets,
-sample functions from the program space combining these operators,
-within a given complexity threshold.
+Search methods would typically \emph{backtrack} in case of errors such as to systematically traverse the rest of the search space,
+involving e.g. the use of a \emph{beam search}.
+They are typically evaluated in terms of average \emph{time to solution} on a given task function.
+Our present neural method has yet to be incorporated into such a search method,
+e.g. the \emph{neural-guided deductive search}~\citep{deepcoder} discussed in section \ref{sec:ngs}.
 
-\citet{tamandu} reports using the following 37 operators or \emph{library components} for synthesis, many of which directly corresponding to Haskell's built-in \emph{Prelude} functions:
-\begin{description}
-    \item[general functions] \texttt{const, flip}
-    \item[booleans] \texttt{true, false, not}
-    \item[integer constructors] \texttt{zero, succ}
-    \item[integer destructors] \texttt{isZero}
-    \item[integer combinators] \texttt{foldNat, foldNatNat}
-    \item[arithmetics] \texttt{add, mul, div, max, eq, neq}
-    \item[list constructors] \texttt{nil, con}
-    \item[list destructors] \texttt{head, tail, isNil}
-    \item[list combinators] \texttt{map, foldr, foldl, filter}
-    \item[list functions] \texttt{length, append, reverse, replicate, concat}
-    \item[list of integers functions] \texttt{sum, prod, maximum, member, enumTo, enumFromTo}
-\end{description}
+In its present design, lacking such back-tracking,
+our neural synthesizer is instead used for \emph{sampling},
+where evaluation for a given task function typically involves accuracy given a fixed number of training samples~\citep{npi} and (optionally) number of sampled programs~\citep{nsps}.%
+~\footnote{
+    % Now, in order to create a \emph{level playing field},
+    % our evaluation task would need to match the limitations of our own DSL and implementation.
+    An additional challenge here is that non-neural methods typically do not need to deal with the engineering challenges of a neural synthesizer,
+    for our purposes making it challenging to keep up with such methods in terms of synthesizer feature set.
+    Such non-neural methods considered as potential benchmarks often featured more comprehensive grammars,
+    typically incorporating function recursion~\citep{typedmil,myth},
+    if not also pattern matching and a flexible set of primitive operators and constants~\citep{lambda2},
+    while our synthesizer has focused on keeping to a minimal feature set required to investigate our hypotheses.
+}
 
-Their task functions are as follows: 
-\texttt{drop, droplast, dropmax, factorial, isEven, last, mapAdd, mapDouble, multfirst, multlast, nth, stutter, append, concat, enumFromTo, enumTo, isNil, length, maximum, member, replicate, reverse, sum}
+% As such, to constrain the engineering scope of our experiment,
+% it would seem desirable to use a benchmark paper similarly limited in grammar,
+% so as to reduce complexity not required for the experiment where possible.
+% By this reasoning, we would like to benchmark against \citet{tamandu}, which
+%     "[focuses] on the synthesis of purely functional programs without any lambda expressions,
+%     explicit recursion or conditionals (i.e., only function application is allowed)".
+% We will do this by taking libraries of basic operations in accordance with this paper,
+% then, in order to create training and validation sets,
+% sample functions from the program space combining these operators,
+% within a given complexity threshold.
 
-We have based our reimplementation of their operators and task functions on their source repository~\citep{tamandurepo}.
+% \citet{tamandu} reports using the following 37 operators or \emph{library components} for synthesis, many of which directly corresponding to Haskell's built-in \emph{Prelude} functions:
+% \begin{description}
+%     \item[general functions] \texttt{const, flip}
+%     \item[booleans] \texttt{true, false, not}
+%     \item[integer constructors] \texttt{zero, succ}
+%     \item[integer destructors] \texttt{isZero}
+%     \item[integer combinators] \texttt{foldNat, foldNatNat}
+%     \item[arithmetics] \texttt{add, mul, div, max, eq, neq}
+%     \item[list constructors] \texttt{nil, con}
+%     \item[list destructors] \texttt{head, tail, isNil}
+%     \item[list combinators] \texttt{map, foldr, foldl, filter}
+%     \item[list functions] \texttt{length, append, reverse, replicate, concat}
+%     \item[list of integers functions] \texttt{sum, prod, maximum, member, enumTo, enumFromTo}
+% \end{description}
+
+% Their task functions are as follows: 
+% \texttt{drop, droplast, dropmax, factorial, isEven, last, mapAdd, mapDouble, multfirst, multlast, nth, stutter, append, concat, enumFromTo, enumTo, isNil, length, maximum, member, replicate, reverse, sum}
+
+% We have based our reimplementation of their operators and task functions on their source repository~\citep{tamandurepo}.
+
+As such, while comparing neural to non-neural methods is a topic of interest,
+it does not directly help answer our core questions,
+and given
+% the present state of datasets and neural methods in the field of functional program synthesis,
+these differences hindering a straight-forward comparison,
+it is not the primary focus of this paper.
 
 \subsection{Hyperparameters}
 
@@ -2436,6 +2464,21 @@ We will here give an overview of the questions raised during our design process 
     might aid synthesis, and furthermore, to what extent these may be \emph{inferred}.
     However, given all these questions surrounding the use of such type signatures,
     we have opted to leave this as a topic for future research.
+    \item An additional question is that of how one should \emph{use} type-based features in program synthesis.
+    While we have established the use of such type-based features,
+    in practice one is faced with the challenge of how to distribute calculation resources among traditional versus type-based features.
+    While typically one might answer such a question using e.g. a grid search,
+    varying the percentage of features between the two categories,
+    on a closer look this unfortunately seems less straight-forward:
+    as our present approach only incorporates type-based features by the end of \citet{nsps}'s \emph{R3NN} score calculation,
+    this makes such features less than equivalent to its traditional \emph{sample-based} features,
+    which originally get \emph{conditioned} on using an LSTM operation,
+    sharply reducing its original number of features,
+    only to then be incorporated into their \emph{R3NN}'s \emph{recursive} and \emph{reverse-recursive} passes,
+    which additionally are variable in their calculation cost depending on the \emph{program size},
+    none of which applies to our type-based features.
+    As such, as we did not find straight-forward approach to comparing such sample-based versus type-based features,
+    we have left this as another question for future research.
 \end{itemize}
 
 % \pagebreak
