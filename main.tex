@@ -1847,7 +1847,7 @@ In \emph{programming by example} on the other hand,
 the equivalent isn't simply to ensure \emph{task functions} are deduplicated across sets.
 Imagine we had two distinct task functions exhibiting identical behavior:
 if one were allocated to our training set,
-another to the test set,
+the other to the test set,
 then we have again created an opportunity for our synthesizer to cheat:
 it could remember the program from our training set,
 then synthesize it during evaluation.
@@ -1855,7 +1855,8 @@ then synthesize it during evaluation.
 While this program would not be the \emph{same},
 for the purpose of synthesis \emph{evaluation} of accuracy,
 synthesizing a function exhibiting the correct behavior already qualifies as successful synthesis,
-as synthesizing \emph{one specific} function implementation is not the goal of programming by example.
+as synthesizing \emph{one specific} function implementation is not the goal of programming by example.%
+~\footnote{Unfortunately, under the \emph{strong supervision} used in our implementation, these two are conflated for the purpose of calculating the loss.}
 
 Now, one would then presume that as long as we then ensure
 that functions across different datasets
@@ -1864,7 +1865,7 @@ this issue would be averted.
 
 However, the reality is slightly more complicated still:
 presume we have an \emph{increment} function mapping input $0$ to $1$,
-along with a \emph{successor} function mapping $0$ to $1$ and \emph{false} to \emph{true}.
+along with a \emph{successor} function mapping $0$ to $1$ and \emph{False} to \emph{True}.
 
 If we would simply deduplicate by identical input-output pairs,
 we would conclude these functions to behave differently,
@@ -1876,11 +1877,13 @@ our synthesizer could simply memorize how to synthesize our \emph{successor} fun
 then during evaluation use this knowledge to pass our \emph{increment} synthesis test.
 As such, the solution would be to ensure we cannot \emph{train} on task functions exhibiting all of the behaviors of a function we would \emph{evaluate} on.
 
-  TODO: clarify how I will tackle this
-% TODO: clarify how I will tackle this
-
-% TODO: ensure sets contains no fns w/ behavior identical to any in other sets to prevent cheating
-% dedupeFunctions: not in use; deduplicate functions by identical types + io, keeping the shortest
+The way we tackle this in our implementation is to identify any such function pairs where either would fully subsume the behavior of the other.
+For the sake of simplicity, we presently ensure that only one of any such semi-duplicate set is kept in our dataset,
+rather than still allowing less general versions in our training set.
+When deciding which function of a similar pair to keep,
+we first look for the more general function (i.e. operating across more type intances as used in our dataset),
+otherwise look for the task function with the shortest implementation (in terms of number of nodes),
+or finally, as a tiebreaker, arbitrarily keep either of the two.
 
 \subsection{Search technique}
 
