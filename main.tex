@@ -1680,7 +1680,7 @@ In fact, adding new operators largely concerns dataset generation, and is only a
 \begin{itemize}
     \item adding the actual operators, together with their definitions;
     \item updating the list of used types for randomized type instantiation;
-    \item updating random generation to ensure it incorporates used types;
+    \item updating random value generation to ensure it incorporates used types;
     \item running the dataset generation to ensure our synthesizer has data from which to learn about our new operators;
     \item actually training our synthesizer using our updated dataset including our new operators.
 \end{itemize}
@@ -2282,6 +2282,107 @@ and given
 % the present state of datasets and neural methods in the field of functional program synthesis,
 these differences hindering a straight-forward comparison,
 it is not the primary focus of this paper.
+
+Instead, we pick our own set of types and operators to generate a dataset as described in section \ref{sec:datagen}.
+For this purpose we have gone over Haskell's \emph{base} package to find a limited set of operators widely applicable over the types used.
+To this end, we focus on functions operating on \emph{typeclasses} based on categories taken from \emph{category theory}.
+As our scalar types we pick \emph{Bool}, \emph{Int}, and \emph{Char}.
+For data structures we use \emph{List}, \emph{Maybe}, \emph{Tuple2}, \emph{Set}, and \emph{HashMap}.
+Typeclasses we will use with these types include \emph{Enum}, \emph{Ord}, \emph{Foldable}, \emph{Traversable}, \emph{Functor}, \emph{Monad}, \emph{Applicative},
+% \emph{Alternative},
+\emph{Monoid}, \emph{Semigroup}, and \emph{Show}.
+% \emph{Bifunctor}, \emph{Bifoldable}, \emph{Bitraversable}
+
+In order to pick our operator set from this \emph{base} package,
+we had to use a number of heuristics to filter down the operators (comprising either functions or \emph{data constructors}) offered:
+\begin{itemize}
+    % IO
+    \item avoiding \emph{side-effects}, alongside intentional throwing of \emph{run-time errors}, as this category is not a great match for \emph{programming by example};
+    % map/Nothing
+    \item avoiding unnecessarily \emph{type-specific} operators, as we would like to keep our operator set small yet reusable;
+    \item focusing on different \emph{inter-type} over using various similar \emph{intra-type} operators, as the former are helps make our operator set more amenable to reducing the search space using type information;
+    % take/takeWhile
+    \item avoiding \emph{infinite lists}, which are relatively circumstantial in their usage, as these would crash evaluation unless specifically converted back to finite lists;
+    % take/!! taking an Int
+    \item functions that, in order to be useful, should take \emph{specific values} as inputs, such as an arbitrary integer, as our synthesizer in its present design has left this functionality out of scope for simplicity;
+    % `== 5` / `< 5`
+    \item functions taking \emph{predicates}, i.e. functions returning \emph{boolean} values, as we have few predicate functions we can use to this end given the previous point, as many of these require concrete values as parameters;
+    % foldl/forM
+    \item function variants using a parameter order less amenable to \emph{currying};
+    % mapM_/void
+    \item functions \emph{discarding values}, as these mostly make for redundant programs;
+    % id
+    \item ideally avoiding functions otherwise likely to induce redundancy, such as the \emph{identity function}, as this clashes with strong supervision;
+    \item reducing \emph{redundancy}, i.e. preferably not including operators that can already be constructed from existing ones;
+    \item preferably reducing the number of functions with \emph{similar type signatures}.
+\end{itemize}
+
+Inspired by this list of heuristics,
+we have picked the following set of operators for our chosen types:
+\emph{zero}, % "0"  -- did I need this in like foldr?
+% Maybe
+\emph{just}, % "Just"
+\emph{maybe}, % "maybe"
+% List
+\emph{(:)}, % "(:)"
+\emph{null}, % "null"
+\emph{length}, % "length"
+% (,)
+\emph{(,)}, % "(,)"
+\emph{zip}, % "zip"
+\emph{unzip}, % "unzip"
+% Set
+\emph{insertSet}, % "Set.insert"
+% HashMap
+\emph{insertHashMap}, % "HashMap.insert"
+% Enum
+\emph{succ}, % "succ"  -- modifies any of our scalars
+\emph{toEnum}, % "toEnum"  -- from Int to any of our scalars
+\emph{fromEnum}, % "fromEnum"  -- from any of our scalars to Int
+% Foldable
+\emph{foldMap}, % "foldMap"
+\emph{foldr}~\footnote{Prime candidates for its aggregator parameter are the \emph{insert} functions for \emph{List} (\emph{(:)}), \emph{Set}, and \emph{HashMap}, enabling us to effectively convert between different data structures.}, % "foldr"
+\emph{foldr1}~\footnote{A prime candidate for its aggregator parameter is \emph{(<>)}.}, % "foldr1"
+\emph{elem}, % "elem"
+% Traversable
+\emph{traverse}, % "traverse"
+\emph{sequenceA}, % "sequenceA"
+\emph{mapM}, % "mapM"
+\emph{sequence}, % "sequence"
+% Functor
+\emph{fmap}, % "fmap"
+% Monad
+\emph{(>>=)}, % "(>>=)"
+% Applicative
+\emph{pure}, % "pure"
+\emph{(<*>)}~\footnote{A prime candidate for its \emph{Applicative} structure is the \emph{Maybe} type.}, % "(<*>)"
+% % Alternative
+% \emph{empty}, % "empty"  -- may replace [], Nothing
+% Monoid
+\emph{mempty}, % "mempty"  -- may replace [], Nothing, HashMap.empty, Set.empty
+% Semigroup
+\emph{(<>)}, % "(<>)"
+% Show
+\emph{show}~\footnote{The \emph{show} function may serve as the function argument to \emph{foldMap}, \emph{traverse}, and \emph{mapM}.}, % "show"
+% % Bifunctor
+% \emph{bimap}, % "bimap"
+% \emph{first}, % "first"
+% % Bifoldable
+% \emph{bifold}, % "bifold"
+% \emph{bifoldMap}, % "bifoldMap"
+% \emph{bifoldr}, % "bifoldr"
+% % Bitraversable
+% \emph{bitraverse}, % "bitraverse"
+% misc
+\emph{const}% % "const"
+~\footnote{
+    While we aim to avoid operators likely to induce redundancy,
+    we have opted to include the \emph{const} function,
+    since combined with \emph{foldr1} it helps to emulate \emph{head} and \emph{snd}.
+},
+and \emph{(.)}~\footnote{
+    Functions resulting from the function composition combinator \emph{(.)} under our \emph{unrolled} grammar cannot be further \emph{curried}, though for our current purposes this limitation is acceptable.
+}. % "(.)"
 
 \subsection{Hyperparameters}
 
