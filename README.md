@@ -5,8 +5,8 @@
 - [x] December: finish literature review
 - [x] January/February: implement dataset generation
 - [x] March: implement baseline
-- [ ] April: implement improvement
-- [ ] May: finish experiment design
+- [x] April: implement improvement
+- [x] May: finish experiment design
 - [ ] June: perform experiment, gather results
 - [ ] July: finalize write-up
 - [ ] August: uitloop
@@ -18,7 +18,7 @@
 # verify references with biber thru docker (optional)
 docker run -ti -v $PWD:/app konraifen88/biber-texlive biber --tool --validate-datamodel /app/references.bib
 # install latex packages (Arch Linux):
-pacman -S texlive-core texlive-latexextra
+pacman -S texlive-core texlive-latexextra texlive-science
 # compile
 latexmk
 ```

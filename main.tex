@@ -12,6 +12,8 @@
 \usepackage{textcomp}  % \textquotesingle
 % \usepackage{fontspec}
 % \setmainfont{Symbola}
+\usepackage{siunitx}
+\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
 
 \setcounter{secnumdepth}{4}
 
@@ -250,7 +252,7 @@ and as such may help provide features relevant for use in program repair.
 % \subsubsection{Source-to-source translation} \label{sec:source2source}
 
 Similar to program repair, \emph{source-to-source translation}%
-~\citep{loveman1977program,albrecht1980source,partsch1983program,waters1988program,visser2005survey,czarnecki2006feature,chen2018tree}
+~\citep{loveman1977program,albrecht1980source,partsch1983program,waters1988program,visser2005survey,czarnecki2006feature,chen2018tree,lachaux2020unsupervised}
 is a branch of synthesis where both the input and output are a program.
 However, rather than fixing an existing program,
 the task here is to learn a specific \emph{translation} task,
@@ -1730,8 +1732,11 @@ then step by step generate any type-checking permutation
 by filling a hole in such an expression using our above operator variants.
 % so as to just directly generate any functions in batch,
 % and see what types end up coming out.
-We use a control variable \emph{maxHoles} to set a limit on
-the number of holes to fill in a generated expression.
+We use a 
+% control variable \emph{maxHoles} to set a 
+user-defined
+limit on
+the maximum number of holes to fill in a generated expression.
 
 Note that as we add sub-expressions to our program,
 our total type signature may incur type variables,
@@ -1740,7 +1745,9 @@ If such a new sub-expression would expect a type constraint on this type variabl
 the constraint is then automatically propagated up to our root type signature.
 
 Like \citet{nsps} we uniformly sample programs from our DSL,
-based on a maximum determined by a control variable \emph{maxDataset}%
+based on a 
+% maximum determined by a control variable \emph{maxDataset}%
+user-defined maximum%
 ~\footnote{
     Note that due to performance considerations during dataset generation,
     sampling is performed before further filters and deduplication,
@@ -1768,10 +1775,13 @@ as well as types with constraints that span more than a single type variable (e.
 
 % genTypes
 We generate a fixed number of concrete types we will use for instantiating type variables.
-Using a \emph{nestLimit} control variable here we dictate the maximum number of nesting,
+% Using a \emph{nestLimit} control variable here we dictate the 
+We define a
+maximum level of nesting,
 to prevent generating types like 'list of lists of booleans'.
-The maximum number of types generated is dictated by control variable \emph{maxInstances},
-although this may get less after deduplicating such sampled type instances.
+We further specify a maximum number of types generated,
+% dictated by control variable \emph{maxInstances},
+although the actual number may decrease after deduplicating such sampled type instances.
 
 We then use these concrete types to instantiate any polymorphic
 (non-function) input types occurring in our task functions.
@@ -1783,11 +1793,13 @@ we ensure to only instantiate such type variables using our concrete types that 
 % instantiateTypes
 This yields us a set of concrete potential input types,
 for which we proceed to generate sample values,
-up to a given maximum number as indicated by our control variable \emph{numInputs},
+up to a given maximum number,
+% as indicated by our control variable \emph{numInputs},
 although this may get less after filtering out duplicates.
 We use control parameters to indicate range restrictions for different types here;
 \emph{numMin} and \emph{numMax} for integer values,
-\emph{listMin} and \emph{listMax} for the possible number of elements in a generated list.
+\emph{charMin} and \emph{charMax} for character values,
+\emph{listMin} and \emph{listMax} for the possible number of elements in a generated list, set, or hashmap.
 
 For any given given task function type signature,
 we then check for the types of each of their input parameters,
@@ -1922,6 +1934,7 @@ As such, we have opted to use the LSTM for this purpose.
 
 They additionally note having found an improvement adding a bidirectional LSTM to process the global leaf representations, right before calculating the scores.
 As such, we have incorporated this addition as well.
+Like them we also use the \emph{hyperbolic tangent} activation function in the \emph{multi-layer perceptrons} part of the \emph{R3NN}.
 
 While not indicated in the paper itself,
 but only in a related patent~\citep{mohamed2017neural},
@@ -2091,7 +2104,7 @@ We have further made the following optimizations on top of \citet{nsps}'s approa
     these come at an increased amount of \emph{computation} as well.
     \item Also of note is that our present implementation has yet to be optimized for run-time performance:
     our model can presently be run on CPU,
-    and has yet to implement batching over task functions in the R3NN,
+    and has yet to implement batching over task functions,
     an implementation detail that had not been given any attention in \citet{nsps}.
     \item While \citet{nsps} used a limit of 13 operations for their synthesized programs,
     we are able to apply such a limit during task function generation as well.
@@ -2162,11 +2175,15 @@ We achieve this by simply masking the predicted scores of uncompiling programs
 
 \section{Experiment} \label{sec:experiment}
 
-To perform our experiment, we will first perform \emph{hyperparameter optimization} on our vanilla implementation of \emph{neuro-symbolic program synthesis},
-as we will describe in section \ref{sec:hparopt},
-then use these hyperparameters to evaluate three different models;
+To perform our experiment, we will
+% first perform \emph{hyperparameter optimization} on our vanilla implementation of \emph{neuro-symbolic program synthesis},
+% as we will describe in section \ref{sec:hparopt},
+% then use these hyperparameters 
+take the \emph{hyperparameters} values described in section \ref{sec:hpar}
+to evaluate three different models;
 this vanilla implementation, our type-based additions described in \ref{sec:typednsps},
 as well as the filter-based approach described in \ref{sec:filter}.
+To reduce variance, we run each model to convergence using $3$ different seeds.
 
 \subsection{Benchmark task}
 
@@ -2411,68 +2428,216 @@ and \emph{(.)}~\footnote{
     Functions resulting from the function composition combinator \emph{(.)} under our \emph{unrolled} grammar cannot be further \emph{curried}, though for our current purposes this limitation is acceptable.
 }. % "(.)"
 
-\subsection{Hyperparameters}
-
-  TODO: actually find good parameter values
-% TODO: actually find good parameter values
+\subsection{Hyperparameters} \label{sec:hpar}
 
 \subsubsection{Hyperparameters used for dataset generation}
 
-The hyperparameters we have used in our dataset generation have been as follows:
-\begin{description}
-    \item[crashOnError (false)] when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
-    \item[nestLimit (0)] max number of levels of nesting for generated types. high values make for big logs while debugging...
-    \item[maxInstances (5)] max number of instantiations to generate for any type containing type variables. may get less after deduplicating type instances.
-    \item[numInputs (10)] max number of inputs to generate. may get less after nub filters out duplicates.
-    % cf. NSPS: for all results, the program tree generation is conditioned on a set of 10 input/output string pairs.
-    \item[maxWildcardDepth (2)] the maximum level of functions to imagine in a wildcard for function generation
-    \item[maxHoles (1)] the maximum number of holes to allow in a generated expression
-    \item[numMin (-20)] the minimum value for numbers to generate
-    \item[numMax (20)] the maximum value for numbers to generate
-    \item[listMin (0)] the minimum number of elements to generate for list types
-    \item[listMax (5)] the maximum number of elements to generate for list types
-    % figure out a sensible split. NSPS mentions training/test tho not validation.
-    % We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
-    \item[splits] train (0.35) / validation (0.35) / test (0.3)
-    \item[maxDataset (10000)] the maximum number of programs we will consider for use in our dataset (before further filtering)
-\end{description}
+% The hyperparameters we have used in our dataset generation have been as follows:
+% \begin{description}
+%     \item[crashOnError (default false, for experiment specify true)] when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
+%     \item[nestLimit (1)] max number of levels of nesting for generated types. high values make for big logs while debugging...
+%     \item[maxInstances (5)] max number of instantiations to generate for any type containing type variables. may get less after deduplicating type instances.
+%     \item[numInputs (10)] max number of inputs to generate. may get less after nub filters out duplicates.%
+%     ~\footnote{This setting directly follows \citet{nsps}.}
+%     \item[maxHoles (6)] the maximum number of holes to allow in a generated expression
+%     \item[numMin (-20)] the minimum value for numbers to generate
+%     \item[numMax (20)] the maximum value for numbers to generate
+%     \item[charMin ('0')] the minimum value for characters to generate
+%     \item[charMax ('9')] the maximum value for characters to generate%
+%     ~\footnote{
+%         The decision to restrict characters to digits was made with the intent to let their characters overlap
+%         with those of digits for the purpose of helping reduce characters used in the encoder,
+%         in turn reducing the size of its one-hot embedding.
+%         This arbitrary constraint serves no other purpose than to constrain required compute.
+%     } 
+%     \item[listMin (0)] the minimum number of elements to generate for list types
+%     \item[listMax (5)] the maximum number of elements to generate for list types
+%     % figure out a sensible split. NSPS mentions training/test tho not validation.
+%     % We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
+%     \item[splits] train (0.35) / validation (0.35) / test (0.3)
+%     \item[maxDataset (10000)] the maximum number of programs we will consider for use in our dataset (before further filtering)
+% \end{description}
+
+In this section we will describe the hyperparameter values we have used in our dataset generation.
+% \item[crashOnError (default false, for experiment specify true)] when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
+% nestLimit
+We generate types to substitute into \emph{type variables} using a maximum of only \emph{one} level of nesting,
+i.e. allowing type \emph{list of booleans} though not type \emph{list of lists of booleans}.
+
+% maxInstances
+For any parameter type containing type variables used in task functions,
+we generate a maximum of $5$ type \emph{instantiations}, before deduplication.
+% numInputs
+Whereas \citet{nsps} generated $10$ inputs for each task function,
+we instead generate up to $10$ for each \emph{type instantiation} of a task function, before deduplicating.
+
+% maxHoles
+While they limited functions to a maximum of $13$ operations,
+we instead limit ours to a maximum of $6$,
+given that our current operator set is considerably bigger than those of their \emph{FlashFill} domain.
+
+% numMin, numMax
+\emph{Numbers} we generate, all of them integers,
+we limit to the range from $-20$ to $20$.
+% charMin, charMax
+For \emph{characters} we stick to the range of digits, i.e. from '0' to '9',
+a decision made with the intent to let their characters overlap
+with those of digits for the purpose of helping reduce characters used in the encoder,
+in turn reducing the size of its one-hot embedding.
+This arbitrary constraint serves no other purpose than to constrain required compute.
+
+% listMin, listMax
+Data structures such as \emph{string}, \emph{list}, \emph{set}, and \emph{hashmap},
+we each generate using lengths in the range from $0$ to $5$.
+Of these, \emph{sets} might further deduplicate down,
+as this structure only holds unique items.
+
+% splits
+% NSPS mentions training/test tho not validation: We sample a subset of only 1000 training programs from the 5 million program set to report the training results in the tables. The test sets also consist of 1000 programs.
+Our dataset we split into training, validation and test sets
+using a ratio of $35\%$, $35\%$, and $30\%$, respectively.
+% TODO: ditch validation as I'm considering dropping hyperparameter optimization?
+% maxDataset
+Whereas \citet{nsps} sampled $1000$ training programs from the total function space,
+we instead sample up to a total number of $10000$ functions before further filtering,
+based on availability of samples, type checks,
+and our further sanity checks as described in section \ref{sec:datagen}.
 
 \subsubsection{Hyperparameters fixed in our synthesizer}
 
-\begin{description}
-    % \item[seed] 
-    \item[numEpochs (1000)] the number of epochs to train for 
-%     \item[encoderBatch (8)] the encoder batch size i.e. number of samples to process in one go
+In this section we will describe the hyperparameter values we have during the training and evaluation of our synthesizers.
+
+% \begin{description}
+%     \item[NumLayers (3)] the number of hidden layers used in the LSTMs in our sample encoder
+%     (for both input and output), for our type encoders (for rule expansions and holes),
+%     as well as for sample conditioning and scoring in \citet{nsps}'s \emph{R3NN}.
+%     The \emph{multi-layer perceptrons} in the \emph{recursive} and \emph{reverse-recursive}
+%     passes of the \emph{R3NN} are similarly fixed to using 3 layers.%
+%     ~\footnote{
+%         This value has been fixed statically, for both LSTMs and MLPs,
+%         rather than provided as a parameter by the user.
+%         % due to current limitations in their provided \emph{HaskTorch} implementations.
+%     } 
+%     % \item[seed] 
+%     \item[numEpochs (1000)] the maximum number of epochs to train for.
+%     % while these batch parameters were inspired by NSPS's, mine apply to batches of input/output samples, while theirs pertain to batches of task functions.
+%     \item[encoderBatch (8)] the encoder batch size i.e. number of samples to process in one go.
 %     \item[r3nnBatch (8)] the R3NN batch size i.e. number of i/o samples to sample per invocation
-    \item[bestOf (100)] Number of functions to sample from the model for each latent function and set of input/output examples that we test on, determining success based on the best from this sample.
-    \item[evalFreq (5)] the number of epochs for which to run on train test before evaluating on the test set again.
-    \item[learningRate (0.001)] initial learning rate used in ML optimizer.
-    \item[checkWindow (1)] the window of evaluations to check over to verify convergence.
-    \item[convergenceThreshold (0.000001)] the minimum loss increment we consider as indicating convergence.
-    \item[learningDecay (5)] by how much to divide the learning rate when accuracy decreases.
-    % \item[maxHoles] the maximum number of holes to allow in a generated expression
-\end{description}
+%     \item[bestOf (100)] Number of functions to sample from the model for each latent function and set of input/output examples that we test on, determining success based on the best from this sample.%
+%     ~\footnote{This setting directly follows \citet{nsps}.}
+%     \item[evalFreq (5)] the number of epochs for which to run on train set before evaluating on the validation set again.
+%     \item[learningRate (0.001)] initial learning rate used in ML optimizer.
+%     \item[checkWindow (default 1, for experiment specify 2)] the window of evaluations to check over to verify convergence.
+%     \item[convergenceThreshold (0.000001)] the minimum loss increment we consider as indicating convergence.
+%     \item[learningDecay (5)] by how much to divide the learning rate when accuracy decreases.
+%     % \item[maxHoles] the maximum number of holes to allow in a generated expression
+%     \item[evalRounds] the maximum number of rounds to evaluate for during hyperparameter optimization. by default all configurations are evaluated.
+%     \item[maskBad] when specified, compile any possible hole fill to mask out any predictions for non-compiling expressions (present implementation for this is slow but this could be improved).
+%     \item[useTypes] supervise synthesis using rule/hole types as additional features.
+%     %
+%     % \item[dropoutRate (0.0)] the \emph{dropout rate}~\citep{baldi2014dropout} used in any LSTMs.%
+%     % % for which we search over values [\num{0.0}, \num{3.125e-2}, \num{6.25e-2}, \num{0.125}, \num{0.25}, \num{0.5}];
+%     % ~\footnote{We saw no mention of this in \citet{nsps}'s original implementation, so figured this would be deemed optional.}
+%     % \item[regularization (0.0)] the L2 regularization rate~\citep{zhang2018three}, for which we search over values [\num{0.0}, \num{1.0e-4}, \num{1.0e-3}, \num{1.0e-2}, \num{0.1}],
+%     \item[M (32)] the number of features used in our symbol and expansion rule embeddings as per \citet{nsps}'s \emph{R3NN}.
+%     % for which we search over values [\num{8}, \num{16}, \num{32}, \num{64}, \num{128}],
+%     \item[H (32)] the number of features used per input or output per LSTM direction as per \citet{nsps}'s \emph{baseline LSTM encoder}.
+%     % for which we search over values [\num{8}, \num{16}, \num{32}, \num{64}, \num{128}],
+%     \item[hidden0 (16), hidden1 (16)] the number of hidden units for the 
+%     (respectively first and second) 
+%     hidden layers used in the \emph{MLP}s of \citet{nsps}'s \emph{R3NN}'s \emph{recursive} and \emph{reverse-recursive} passes.
+%     % for which we search over values [\num{4}, \num{8}, \num{16}, \num{32}, \num{64}].
+% \end{description}
 
-\subsubsection{Hyperparameters optimized in a search} \label{sec:hparopt}
+% NumLayers
+We use $3$ layers in our LSTMs, which are present in our sample encoder
+(for both input and output), our type encoders (for rule expansions and holes),
+as well as for sample conditioning and scoring in \citet{nsps}'s \emph{R3NN}.
+The \emph{multi-layer perceptrons} in the \emph{recursive} and \emph{reverse-recursive}
+passes of the \emph{R3NN} are similarly fixed to using 3 layers.%
+% ~\footnote{
+%     This value has been fixed statically, for both LSTMs and MLPs,
+%     rather than provided as a parameter by the user.
+%     % due to current limitations in their provided \emph{HaskTorch} implementations.
+% } 
+% seed
+% numEpochs
+We train for a maximum of 1000 epochs.
 
-Hyperparameters we \emph{search} over, rather than fixed up-front,
+% encoderBatch
+Our \emph{encoders} process items (either input-output samples or types) using a batch size of $8$.
+% r3nnBatch
+Our \emph{R3NN} must use a fixed number of embedded input-output pairs on the basis of its LSTM used for conditioning,
+and as such we have fixed this to use samples of $8$ embedded input-output pairs.
+% while these batch parameters were inspired by NSPS's, mine apply to batches of input/output samples, while theirs pertain to batches of task functions.
+% bestOf
+As \citet{nsps}, for synthesizer evaluation we sample $100$ functions from the model for each task function,
+determining success based on the best from this sample,
+i.e. considering the synthesis a success if any of these exhibits the desired behavior.
+
+% evalFreq
+% TODO: if hyperparam optimization, validation set?
+We evaluate performance on our test set once after every $5$ epochs of training.
+% learningRate
+For our Adam optimizer we use an \emph{initial learning rate} of \num{1e-3},
+% learningDecay
+subsequently further decreased by a factor of $5$ whenever accuracy is found to decrease during evaluation.
+% checkWindow
+During evaluation we similarly check for \emph{convergence} based on the \emph{loss},
+averaging over windows of $2$ evaluations,
+% convergenceThreshold
+% TODO: ditch this cuz honestly it doesn't do anything
+consider as an indication of convergence only loss increments of at least \num{1e-6}.
+% maxHoles
+We arbitrarily limit synthesized functions to the same complexity limit of $6$ operators as used during generation of task functions.
+% % evalRounds
+% While we allow a maximum number of hyperparameter configurations to evaluate during hyperparameter optimization, by default all configurations are evaluated.
+% maskBad
+% \item[maskBad] when specified, compile any possible hole fill to mask out any predictions for non-compiling expressions (present implementation for this is slow but this could be improved).
+% useTypes
+% \item[useTypes] supervise synthesis using rule/hole types as additional features.
+
+% dropoutRate
+% We use a \emph{dropout rate}~\citep{baldi2014dropout} in any LSTMs of $0\%$.%
+% % ~\footnote{We saw no mention of this in \citet{nsps}'s original implementation, so figured this would be deemed optional.}
+% regularization
+% We use an \emph{L2 regularization rate}~\citep{zhang2018three} of $0.0$.
+% M
+We allow $32$ features in our symbol and expansion rule embeddings, i.e. $M$ in \citet{nsps}'s \emph{R3NN}.
+% H
+We allow $32$ features per input or output per LSTM direction, i.e. $H$ in \citet{nsps}'s \emph{sample encoder}.
+% hidden0/hidden1
+Finally, we use $16$ hidden units in both hidden layers of the \emph{MLP}s,
+used in the \emph{recursive} and \emph{reverse-recursive} passes of \citet{nsps}'s \emph{R3NN}.
+
+% \subsubsection{Hyperparameters optimized in a search} \label{sec:hparopt}
+
 % TODO: actually adjust hyperparameters to match this reasoning
+
+% Hyperparameters we \emph{search} over, rather than fixed up-front,
 % have been picked based on the question of whether we expected them to have a 'sweet spot' in terms of optimum value,
 % rather than being an obvious case of 'higher is better';
-% these include
-include
-dropout rate~\citep{baldi2014dropout},
-% L2 regularization rate~\citep{zhang2018three},
-the number of features \emph{M} used in our symbol and expansion rule embeddings as per \citet{nsps}'s \emph{R3NN},
-the number of features \emph{H} used per input or output per LSTM direction as per \citet{nsps}'s \emph{baseline LSTM encoder},
-the number of hidden units for the first and second hidden layers (presently fixed to 2 hidden layers) used in the \emph{recursive} and \emph{reverse-recursive} passes of \citet{nsps}'s \emph{R3NN}.
+% these include:
+% \begin{itemize}
+%     \item dropout rate~\citep{baldi2014dropout},
+%     for which we search over values [\num{0.0}, \num{3.125e-2}, \num{6.25e-2}, \num{0.125}, \num{0.25}, \num{0.5}];
+%     % \item L2 regularization rate~\citep{zhang2018three}, for which we search over values [\num{0.0}, \num{1.0e-4}, \num{1.0e-3}, \num{1.0e-2}, \num{0.1}],
+%     \item the number of features \emph{M} used in our symbol and expansion rule embeddings as per \citet{nsps}'s \emph{R3NN},
+%     for which we search over values [\num{8}, \num{16}, \num{32}, \num{64}, \num{128}],
+%     \item the number of features \emph{H} used per input or output per LSTM direction as per \citet{nsps}'s \emph{baseline LSTM encoder},
+%     for which we search over values [\num{8}, \num{16}, \num{32}, \num{64}, \num{128}],
+%     \item the number of hidden units for the 
+%     % first and second 
+%     hidden layers used in the \emph{recursive} and \emph{reverse-recursive} passes of \citet{nsps}'s \emph{R3NN},
+%     for which we search over values [\num{4}, \num{8}, \num{16}, \num{32}, \num{64}].
+% \end{itemize}
 
-This search is performed by a genetic algorithm~\citep{koza1994genetic},
-used a 20\% \emph{mutation} rate,
-an 80\% \emph{cross-over} rate,
-a \emph{population} size fixed to the square root of the total number of hyper-parameter configurations (rounded up),
-and the \emph{4th root} of the total number of hyper-parameter configurations (again rounded up)
-used as the maximum number of \emph{generations} and as the number of \emph{best entities} to keep track of.
+% This search is performed by a genetic algorithm~\citep{koza1994genetic},
+% used a 20\% \emph{mutation} rate,
+% an 80\% \emph{cross-over} rate,
+% a \emph{population} size fixed to the square root of the total number of hyper-parameter configurations (rounded up),
+% and the \emph{4th root} of the total number of hyper-parameter configurations (again rounded up)
+% used as the maximum number of \emph{generations} and as the number of \emph{best entities} to keep track of.
 
 % \pagebreak
 
@@ -2481,8 +2646,7 @@ used as the maximum number of \emph{generations} and as the number of \emph{best
 Having added our type-level supervision during training, we expect synthesis success rates to rise and required evaluations to drop compared to the baseline algorithm.
 This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
-  TODO: RESULT
-% TODO: RESULT
+TODO: RESULT
 
 % \pagebreak
 
