@@ -35,6 +35,10 @@
 
 \begin{abstract}
     TODO: abstract
+
+    % https://twitter.com/tscholak/status/1279061409570213895?s=21
+    % synthesis is fun but probably not so much without unit tests or types.
+
     % For reproducibility, we release our code publicly.
 \end{abstract}
 
@@ -2264,11 +2268,11 @@ and considering the trial a success if any of these demonstrates the desired pro
 A more sophisticated alternative here might be to use a controller such as \emph{beam search}~\citep{polosukhin2018neural}.
 % as we have discussed in the context of \emph{neural-guided deductive search}~\citep{deepcoder} in Section \ref{sec:ngs}.
 
-As explained in Section \ref{sec:datagen},
-during generation we had discarded any programs not passing some basic \emph{sanity checks},
-of what we expect to be reasonable traits for programs in a synthesis setting.
-Following this example, during evaluation we similarly disregard any synthesized programs not deemed `sane' by this standard.
-% TODO: discuss Emile's comment: "I don't think you need to mention this. You already say you split based on the filtered result" -> sorry this is about synthesized not generated programs.
+% As explained in Section \ref{sec:datagen},
+% during generation we had discarded any programs not passing some basic \emph{sanity checks},
+% of what we expect to be reasonable traits for programs in a synthesis setting.
+% Following this example, during evaluation we similarly disregard any synthesized programs not deemed `sane' by this standard.
+% % TODO: discuss Emile's comment: "I don't think you need to mention this. You already say you split based on the filtered result" -> sorry this is about synthesized not generated programs.
 
 % TODO: discuss Emile's comment: "How is the loss defined? This is one of the most important equations in any deep learning paper, I think"
 For the purpose of calculating total loss for an epoch,
