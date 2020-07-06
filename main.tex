@@ -2081,6 +2081,7 @@ We further specify a maximum number of types generated.
 
 We then use these monomorphic types to instantiate any polymorphic
 (non-function) input types occurring in our task functions.
+To simplify things, we restrict ourselves to substituting only non-parametric types (e.g. boolean yet not list of boolean) for type variables contained in a larger type expression.
 In the event the type variables in our types involve \emph{type constraints},
 % matchesConstraints
 we ensure to only instantiate such type variables using our monomorphic types that satisfy the applicable type constraints.
