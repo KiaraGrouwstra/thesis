@@ -1966,15 +1966,14 @@ in our case built into Haskell, in order to calculate these types.
 
 Our synthesis approach itself is agnostic to the set of operators used,
 allowing for relatively straight-forward experimentation with different sets of operators.
-Adding new operators largely concerns dataset generation, and involves:
-% TODO: incorporate Emile's feedback: This can be written a lot shorter, just say that it's only needed to regenerate data + retrain model
-\begin{itemize}
-    \item adding the actual operators, together with their definitions;
-    \item updating the list of used types for randomized type instantiation;
-    \item updating random value generation to ensure it incorporates used types;
-    \item running the dataset generation to ensure our synthesizer has data from which to learn about our new operators;
-    \item actually training our synthesizer using our updated dataset including our new operators.
-\end{itemize}
+Adding new operators simply involves generating a new dataset then retraining the model.
+% \begin{itemize}
+%     \item adding the actual operators, together with their definitions;
+%     \item updating the list of used types for randomized type instantiation;
+%     \item updating random value generation to ensure it incorporates used types;
+%     \item running the dataset generation to ensure our synthesizer has data from which to learn about our new operators;
+%     \item actually training our synthesizer using our updated dataset including our new operators.
+% \end{itemize}
 
 % As the actual set of operators most conducive to benefiting
 % from type information is subject to empirical investigation,
@@ -1986,7 +1985,7 @@ in Section \ref{sec:experiment}.
 
 \subsection{Dataset generation} \label{sec:datagen}
 
-% TODO: incorporate Emile's feedback: Make sure to introduce the topic. The title of the section is not enough
+TODO: introduce the topic
 
 % The process for generating task functions to train our synthesizer on is as follows:
 % \begin{itemize}
