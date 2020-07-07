@@ -2831,16 +2831,19 @@ TODO: RESULT
 \subsection{Design limitations}
 
 \begin{itemize}
-    \item Our implementation settled for \citet{nsps}'s \emph{baseline LSTM encoder} rather than its more complex \emph{cross-correlation} encoder variants.
+    \item
+    Our implementation settled for \citet{nsps}'s \emph{baseline LSTM encoder} rather than its more complex \emph{cross-correlation} encoder variants.
     While such variants may improve synthesis quality,
     these come at an increased amount of computation as well.
 
-    \item Also of note is that our present implementation has yet to be optimized for run-time performance:
+    \item
+    Also of note is that our present implementation has yet to be optimized for run-time performance:
     our model can presently be run on CPU,
     and has yet to implement batching over task functions.
     % an implementation detail that had not been given any attention in \citet{nsps}.
 
-    \item \citet{nsps} used a limit of 13 operations for their synthesized programs.
+    \item
+    \citet{nsps} used a limit of 13 operations for their synthesized programs.
     In order to restrict ourselves to a finite subset of an otherwise potentially infinite search space,
     we apply such a limit during task function generation as well.
     For the sake of simplicity, we have opted to share this limit,
@@ -2854,9 +2857,20 @@ TODO: RESULT
     This limit affects evaluation,
     but the limit has no effect on learning during training.
 
-    \item Our present implementation unfortunately still defers full type inference in favor of \emph{local types} based on our unrolled grammar.
+    \item
+    Out of run-time performance considerations,
+    our dataset presently includes the input-output examples for each task function,
+    in fact additionally shared across instantiated parameter types.
+    A proper approach here would perhaps ensure different input-output pairs would be used across training epochs.
+    This could be achieved by either generating a greater variety upfront,
+    then sampling from these during training, or by generating these input-output pairs on the fly during training,
+    incurring an additional run-time performance cost.
 
-    \item Moreover, while fixing such a sample size satisfies the constraints of our LSTM used in sample conditioning,
+    \item
+    Our present implementation unfortunately still defers full type inference in favor of \emph{local types} based on our unrolled grammar.
+
+    \item
+    Moreover, while fixing such a sample size satisfies the constraints of our LSTM used in sample conditioning,
     % TODO: discuss Emile's comment: "changing the LSTM to accept a variable amount of inputs should be possible, right? It's a decision made because of how the model is built." -- I fear not, as the number of inputs doesn't land in the LSTM's batch size slot (which *is* variable), but in its 'number of input features' slot. now, as we would like to train a single R3NN model generalizing across different programs, with different numbers of inputs, I'm not sure how to address this other than by fixing the number of inputs as I did now.
     this is essentially an unfortunate compromise;
     if a function is significantly more general in its applicability,
