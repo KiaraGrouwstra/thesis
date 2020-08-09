@@ -497,7 +497,8 @@ in the event that multiple candidate programs
 fulfill the given input-output example pairs.%
 ~\citep{gulwani2017program}
 While we will come back to ambiguity resolution as it is
-alleviated by \emph{active learning}~\citep{settles2009active}, as we discuss in Section \ref{sec:active},
+alleviated by \emph{active learning}~\citep{settles2009active},
+%, as we discuss in Section \ref{sec:active},
 these two techniques are primarily used to complement
 other methods we will introduce here now.
 
@@ -998,7 +999,8 @@ They consider the synthesized program to have passed if any of these demonstrate
 
 % misc
 
-Some critiques of this model have included it being harder to \emph{batch} (i.e. enable parallel execution) over multiple task functions for larger programs due to its tree-based architectures,
+While we have chosen this model to build upon as it is AST-based rather than token-based,
+some critiques of the model have included it being harder to \emph{batch} (i.e. enable parallel execution) over multiple task functions for larger programs due to its tree-based architectures,
 as well as its pooling at the I/O encoding level being harder to reconcile with \emph{attention} than models using \emph{late pooling}.~\citep{devlin2017robustfill}
 
 For our purposes, by merit of the untyped Microsoft Excel \emph{FlashFill}~\citep{prose} domain this model was tested on,
@@ -1847,9 +1849,9 @@ For a type-based synthesizer, distinguishing these makes sense,
 as this distinction should facilitate learning.%
 ~\footnote{
     This view is still up for empirical validation.
-    An alternative view may be that a function argument with an unknown type,
-    resulting in reduced operator confidence,
-    would simply lead a synthesizer to prefer filling a different hole.
+    % An alternative view may be that a function argument with an unknown type,
+    % resulting in reduced operator confidence,
+    % would simply lead a synthesizer to prefer filling a different hole.
 
     Moreover, the \emph{unrolled} grammar approach implies upfront known arities of functions' argument and return types%
     % ~\footnote{
@@ -1909,11 +1911,8 @@ However,
 % As such,
 in \emph{partial programs},
 we express the \emph{holes} or unresolved \emph{expr} symbols as
-using the \emph{dummy variable} of \emph{undefined}:%
-~\footnote{
-    Given our Haskell context we represent holes as \emph{undefined} here
-    as unlike the built-in hole `\_' this passes compilation.
-}
+using the \emph{dummy variable} of \emph{undefined}
+(which in our Haskell context passes compilation unlike the built-in hole `\_'):
 
 \begin{verbatim}
     expr = "(and ", expr, " ", expr, ")";
@@ -2034,14 +2033,7 @@ disregarding any programs still containing holes after this point.
 Like \citet{nsps} we uniformly sample programs from our DSL,
 based on a 
 % maximum determined by a hyperparameter \emph{maxDataset}%
-user-defined maximum%
-% TODO: discuss Emile's comment: "Why? That seems strange and somewhat easy to fix? You can always sample more to make sure the max is reached right?" -- fixed now at the expense of run-time performance of dataset generation
-% ~\footnote{
-%     Note that due to performance considerations during dataset generation,
-%     sampling is performed before further filters and deduplication,
-%     meaning our final dataset size may in fact differ.
-% }%
-,
+user-defined maximum,
 while still respecting the above complexity limits.
 We similarly use sampling for the generation of sample input-output pairs and,
 for instantiating our type variables, monomorphic types,
@@ -2059,7 +2051,6 @@ as well as types with constraints that span more than a single type variable (e.
     Programs not passing these checks are not necessarily invalid,
     but by our engineering judgement,
     are much more circumstantial in their usage,
-    % TODO: discuss if this addresses Emile's comment: "This is a bit of an authorative argument ;) Why would your engineering judgement say so? They're hard to reason about?" - it's a thing about search space, and basically I wanna drop unnecessary complexity.
     making for only a smaller portion of valid programs,
     aggravating our search space problem.
     For this reason, we would currently prefer for our synthesizer to focus on
@@ -2108,7 +2099,6 @@ we may just take the previously generated sample input-output pairs for those ty
 Parameters with function types, however,
 we instead instantiate to function values by just taking
 any of our generated task functions corresponding to that type.
-% TODO: discuss Emile's comment: "Heh, smart! How often would you need this in practice, though?"
 
 % fnOutputs
 Based on these sample inputs, we would then like to generate corresponding outputs for our generated task functions.
@@ -2133,10 +2123,21 @@ i.e. a function that only works on a subset all inputs of the desired input type
 may still constitute a valid program that we may wish to learn to synthesize.
 
 Having generated input/output examples for our task functions,
-we finally filter out any programs for which we have somehow failed to generate such samples.
+we finally filter out any task function type instantiations for which we have somehow failed to generate such samples.
+We moreover limit our dataset to a given maximum.
+
+Now we may construct our dataset.
+As we found our task to be relatively challenging using a dataset based on distinct task functions,
+given our limited compute budget we chose to make our task easier by creating our dataset at the level of a task function type instance.
+
+In other words, while we wish to prevent leakage by simply having similar entries shared between our training and evaluation sets (see next section),
+we will accept having different type instantiations of the same task function over our training and evaluation sets,
+as this will still require our synthesizer to attain a certain level of generalization.
+We may sometimes still refer to just task functions however, as the distinction is not otherwise relevant.
+
 At this point we:
 \begin{itemize}
-    \item use a random split to divide our task functions over training, validation and test sets;
+    \item use a random split to divide our task function type instances over training, validation and test sets;
     \item calculate the longest input-output examples in our dataset (as string), when considering types (as per our experiment) also taking into account the length of the string representations of such types of inputs and outputs;
     \item track any characters used in string representations of the expressions in our dataset
     (for our type experiment also those used in string representations of the types),
@@ -2158,10 +2159,9 @@ the classifier could simply remember the examples,
 rather than learning how to generalize in its task to \emph{unseen} samples.
 
 In \emph{programming by example} on the other hand,
-the equivalent is not simply to ensure \emph{task functions} are deduplicated across sets.
-Imagine we had two distinct task functions exhibiting identical behavior:
-if one were allocated to our training set,
-the other to the test set,
+the equivalent is not simply to ensure \emph{task function} instances are deduplicated across sets.
+Imagine we had two distinct task function instances exhibiting identical behavior:
+if one were allocated to our training set, the other to the test set,
 then we have again created an opportunity for our synthesizer to cheat:
 it could remember the program from our training set,
 then synthesize it during evaluation.
@@ -2175,30 +2175,32 @@ as synthesizing one specific function implementation is not the goal of programm
     these two are conflated for the purpose of calculating the loss.
 % }
 
-Now, one would then presume that as long as we then ensure
-that functions across different datasets
-would not share the same \emph{input-output pairs},
-this issue would be averted.
+We avert this problem by ensuring no task function instances across different datasets share the same \emph{input-output pairs}.
 
-However, the reality is slightly more complicated still:
-presume we have an \emph{increment} function mapping input $0$ to $1$,
-along with a \emph{successor} function mapping $0$ to $1$ and \emph{False} to \emph{True}.
+% Now, one would then presume that as long as we then ensure
+% that functions across different datasets
+% would not share the same \emph{input-output pairs},
+% this issue would be averted.
 
-If we would simply deduplicate by identical input-output pairs,
-we would conclude these functions to behave differently,
-and would accept e.g. having the \emph{successor} function in our training set,
-the \emph{increment} function in our test set.
+% However, the reality is slightly more complicated still:
+% presume we have an \emph{increment} function mapping input $0$ to $1$,
+% along with a \emph{successor} function mapping $0$ to $1$ and \emph{False} to \emph{True}.
 
-This again leads us to a similar same problem however:
-our synthesizer could simply memorize how to synthesize our \emph{successor} function,
-then during evaluation use this knowledge to pass our \emph{increment} synthesis test.
-As such, the solution would be to ensure we cannot train on task functions exhibiting all of the behaviors of a function we would evaluate on.
+% If we would simply deduplicate by identical input-output pairs,
+% we would conclude these functions to behave differently,
+% and would accept e.g. having the \emph{successor} function in our training set,
+% the \emph{increment} function in our test set.
 
-The way we tackle this in our implementation is to identify any such function pairs where either would fully subsume the behavior of the other.
-For the sake of simplicity, we presently ensure that only one of any such semi-duplicate set is kept in our dataset,
-rather than still allowing less general versions in our training set.
+% This again leads us to a similar same problem however:
+% our synthesizer could simply memorize how to synthesize our \emph{successor} function,
+% then during evaluation use this knowledge to pass our \emph{increment} synthesis test.
+% As such, the solution would be to ensure we cannot train on task functions exhibiting all of the behaviors of a function we would evaluate on.
 
-When deciding which function of a similar pair to keep,
+% The way we tackle this in our implementation is to identify any such function pairs where either would fully subsume the behavior of the other.
+% For the sake of simplicity, we presently ensure that only one of any such semi-duplicate set is kept in our dataset,
+% rather than still allowing less general versions in our training set.
+
+When deciding which task function instance of a similar pair to keep,
 we first look for the more general function (i.e. operating across more type intances as used in our dataset),
 otherwise look for the task function with the shortest implementation (in terms of number of nodes),
 or finally, as a tiebreaker, arbitrarily keep either of the two.
@@ -2211,7 +2213,6 @@ Type-based approaches typically call for a \emph{top-down search strategy}.
 As such, we will need to build upon tree-based (or AST-based) rather than sequential (or token-based) neural synthesis methods.
 
 As a benchmark algorithm we will therefore use the neuro-symbolic program synthesis method introduced in \citet{nsps} and further explained in Section \ref{sec:nsps},
-% TODO: discuss with Emile: I think top-down still adds info in addition to autoregressive as for our purpose it implies we have the type of the whole program. I moved the autoregressive definition to the NPS section now.
 a top-down neural synthesis method which like other neural methods is not presently making use of type-level information,
 as it was originally designed for the \emph{FlashFill}~\citep{prose} domain.
 
@@ -2219,26 +2220,26 @@ The reason we picked NSPS as our benchmark algorithm in particular is that there
 This is important for us because we can apply types to an AST containing holes,
 which we cannot do for any given sequence representing a partial program.
 
-% hole picking
+% % hole picking
 
-While the paper follows a \emph{strongly supervised} training method,
-this is not as straight-forward in the field of AST-based neural program synthesis as it is when using sequence-based generative methods.
+% While the paper follows a \emph{strongly supervised} training method,
+% this is not as straight-forward in the field of AST-based neural program synthesis as it is when using sequence-based generative methods.
 
-In the latter, one would generate e.g. one character at a time,
-meaning after comparing predictions to the next character used in the \emph{task function},
-one may simply take \emph{that} next character,
-and repeat the process on predictions based on this new longer sequence.
+% In the latter, one would generate e.g. one character at a time,
+% meaning after comparing predictions to the next character used in the \emph{task function},
+% one may simply take \emph{that} next character,
+% and repeat the process on predictions based on this new longer sequence.
 
-However, when we are filling holes in an AST,
-there is no longer an evident equivalent to the `next character' in our sequence-based scenario:
-we could potentially fill any of our holes based on our task function.
+% However, when we are filling holes in an AST,
+% there is no longer an evident equivalent to the `next character' in our sequence-based scenario:
+% we could potentially fill any of our holes based on our task function.
 
-While \citet{nsps} did not go into the workings of their training supervision method,
-we have here settled for the naive approach of uniformly choosing a random hole to fill.
+% While \citet{nsps} did not go into the workings of their training supervision method,
+% we have here settled for the naive approach of uniformly choosing a random hole to fill.
 
-The reason we picked against deterministically choosing a hole to fill is
-we would like to offer our synthesizer an equal opportunity to learn about different scenarios,
-as we will further discuss in Section \ref{sec:picking}.
+% The reason we picked against deterministically choosing a hole to fill is
+% we would like to offer our synthesizer an equal opportunity to learn about different scenarios,
+% as we will further discuss in Section \ref{sec:picking}.
 
 % misc
 
@@ -2272,92 +2273,83 @@ A more sophisticated alternative here might be to use a controller such as \emph
 % during generation we had discarded any programs not passing some basic \emph{sanity checks},
 % of what we expect to be reasonable traits for programs in a synthesis setting.
 % Following this example, during evaluation we similarly disregard any synthesized programs not deemed `sane' by this standard.
-% % TODO: discuss Emile's comment: "I don't think you need to mention this. You already say you split based on the filtered result" -> sorry this is about synthesized not generated programs.
 
-% TODO: discuss Emile's comment: "How is the loss defined? This is one of the most important equations in any deep learning paper, I think"
+% TODO: handle Emile's comment: "How is the loss defined? This is one of the most important equations in any deep learning paper, I think"
 For the purpose of calculating total loss for an epoch,
 we presently aggregate the loss over the different
-task functions in our training set by taking their mean.
-Such losses for a task function in turn had separately aggregated
+task function instances in our training set by taking their mean.
+Such losses for a task function instance in turn had separately aggregated
 % TODO: discuss Emile's comment: "You mean in like an autoregressive loss way? Be more detailed, ideally using an equation. This is not reproducable"
 i.e. potentially covering a hole multiple times if it initially remains unfilled,
 and as such is encountered across various partial programs along the way.
 
-Again, this was a design decision we have not empirically research,
+Again, this was a design decision we have not empirically researched,
 and may be a relevant topic for future research.
 Alternate loss aggregations here would be to either
-skip the intermediate loss aggregation for a separate task function,
+skip the intermediate loss aggregation for a separate task function instance,
 or, instead e.g. consider reweighting losses for different holes,
 to compensate for certain holes, particularly those close to the AST root,
-ending up over-represented as a result of their multiple occurrences,
-as we will further discuss in Section \ref{sec:picking}.
+ending up over-represented as a result of their multiple occurrences.
+% as we will further discuss next. % Section \ref{sec:picking}.
 
-\paragraph{Picking holes} \label{sec:picking}
-% TODO: discuss Emile's comment: "I'd really try to define holes properly because it's such a central concept, although I know what it means it's hard to interpret it sitll" - handled this at the first mention now.
+% TODO: perform experiment then maybe rewrite following section based on Emile's autoregressive probability distribution view, where any order in which you sample is (mathematically) valid. see https://en.wikipedia.org/wiki/Chain_rule_(probability)
 
-We have not empirically verified our decision to pick a hole to fill during training using a \emph{uniform random} distribution,
-and one might well compare this to synthesizer performance when e.g. deterministically picking a hole to fill.
+% \paragraph{Picking holes} \label{sec:picking}
 
-% TODO: discuss if this rephrasing addresses Emile's comment: "Why?" -- I'm under the impression there has been some confusion here on trying to achieve uniform exploration of *partial program state* space vs. uniform prediction in *synthesized program* space.
-While we believe such uniform sampling beats deterministic hole picking,
-as it more uniformly explores our potential partial program state space during training,
-ensuring our synthesizer is trained on different scenarios rather than simply skipping part of the potential partial program state space,
-there is arguably still room for improvement here over uniform sampling.
+% We have not empirically verified our decision to pick a hole to fill during training using a \emph{uniform random} distribution,
+% and one might well compare this to synthesizer performance when e.g. deterministically picking a hole to fill.
 
-While sophisticated learning algorithms may use \emph{weighted sampling}~\citep{chen1994weighted}
-methods in order to place more emphasis on e.g. parts of our partial program state space that our learner is not performing well on yet,
-our current paper will settle for a naive approximation of uniform exploration of this state space.
-% TODO: discuss Emile's comment: "But it's never going to be uniform as your model will prefer some results above others. That's what you train it to do?" -- similar confusion as above. hopefully the adjusted wording addresses this confusion.
+% While we believe such uniform sampling beats deterministic hole picking,
+% as it more uniformly explores our potential partial program state space during training,
+% ensuring our synthesizer is trained on different scenarios rather than simply skipping part of the potential partial program state space,
+% there is arguably still room for improvement here over uniform sampling.
 
-% TODO: discuss Emile's comment: "Not getting this point at all. I'd argue in your example that 'aa'  and 'ab' is your search space, so uniform sampling would also unformly sample from that space? I don't see how it isn't uniform (ancestral!) sampling" -- sorry, as above.
-The key here to note is that uniform sampling of holes is not necessarily equivalent to uniformly exploring our partial program state space.
-This goes even for the sequence-based example, where such hole picking does not apply:
-in order to explore sequences `aa' and `ab',
-a sequential approach will \emph{necessarily} go through just `a' in both cases.
-As such, the model is trained with more experience on the state `a' than on the states `aa' and `ab'.
+% While sophisticated learning algorithms may use \emph{weighted sampling}~\citep{chen1994weighted}
+% methods in order to place more emphasis on e.g. parts of our partial program state space that our learner is not performing well on yet,
+% our current paper will settle for a naive approximation of uniform exploration of this state space.
 
-% TODO: discuss Emile's comment: "That shouldn't happen with uniform sampling? Unless you limit the depth of the sampling" -- as above
-As a result, such intermediate smaller partial program states are sampled more than their larger `child' partial programs \emph{by definition}.
-% TODO: discuss Emile's comment: "Well, you'd sample smaller programs because your training data contains smaller programs." -- as above
-Weighted sampling may help to alleviate this.
-However, in our AST-based synthesis scenario,
-the hole picking gives this problem an extra dimension,
-causing this discrepancy between uniform hole sampling and uniform exploration of our partial program state space.
-% TODO: discuss Emile's comment: "Why? The order in which you fill the holes is irrelevant, right? Or is that not the case for type-based synthesis" -- as above
-% TODO: discuss Emile's comment: "I can see why randomly sampling the order would impact the sampling process. (ie, taking the left hole would result in a different sampling process). But this doesn't mean that you're not uniformly sampling from your model, as the uniform sampling is a modeling choice. So is deterministic filling a hole. So your sampling process is determined by your choice of picking holes, but given that, all samples are proper samples as distributed by the model." -- as above
+% The key here to note is that uniform sampling of holes is not necessarily equivalent to uniformly exploring our partial program state space.
+% This goes even for the sequence-based example, where such hole picking does not apply:
+% in order to explore sequences `aa' and `ab',
+% a sequential approach will \emph{necessarily} go through just `a' in both cases.
+% As such, the model is trained with more experience on the state `a' than on the states `aa' and `ab'.
 
-Let us illustrate this with a lambda calculus task function \verb|(a (b c))|.%
-~\footnote{
-    While for the purpose of this illustration we will stick to lambda calculus
-    rather than our \emph{unrolled} version thereof,
-    this does not actually affect the example.
-    The only difference would be we may substitute $(\_\quad\_)$ with e.g. $(f\quad\_\quad\_)$.
-}
-Starting from our base program of just a hole, \verb|_|,
-our only initial expansion is to \verb|(_ _)|.
-Our second expansion toward \verb|(a (b c))| however,
-can go two ways: either \verb|(a _)| or \verb|(_ (_ _))|.
-% TODO: discuss Emile's empty comment
-Now, while \verb|(a _)| could only expand into \verb|(a (_ _))|,
-\verb|(_ (_ _))| could go to either that same \verb|(a (_ _))|,
-\verb|(_ (b _))|, or \verb|(_ (_ c))|.
+% As a result, such intermediate smaller partial program states are sampled more than their larger `child' partial programs \emph{by definition}.
+% Weighted sampling may help to alleviate this.
+% However, in our AST-based synthesis scenario,
+% the hole picking gives this problem an extra dimension,
+% causing this discrepancy between uniform hole sampling and uniform exploration of our partial program state space.
 
-As such, uniform sampling does not lead to uniform exploration of the partial program state space:
-our nodes near to the root, in this program filled with $a$,
-on the basis of going through more synthesis rounds,
-are explored more easily than our leaves further away from the root,
-in our program eventually filled with $b$ and $c$, respectively.
+% Let us illustrate this with a lambda calculus task function \verb|(a (b c))|.%
+% ~\footnote{
+%     While for the purpose of this illustration we will stick to lambda calculus
+%     rather than our \emph{unrolled} version thereof,
+%     this does not actually affect the example.
+%     The only difference would be we may substitute $(\_\quad\_)$ with e.g. $(f\quad\_\quad\_)$.
+% }
+% Starting from our base program of just a hole, \verb|_|,
+% our only initial expansion is to \verb|(_ _)|.
+% Our second expansion toward \verb|(a (b c))| however,
+% can go two ways: either \verb|(a _)| or \verb|(_ (_ _))|.
+% Now, while \verb|(a _)| could only expand into \verb|(a (_ _))|,
+% \verb|(_ (_ _))| could go to either that same \verb|(a (_ _))|,
+% \verb|(_ (b _))|, or \verb|(_ (_ c))|.
 
-Therefore, it would be more ideal for a hole sampling method to inhibit
-bias toward the more \emph{deeply-situated} holes in our program,
-such as to offset this inherent imbalance and better approximate
-uniform exploration of our partial program state space.
+% As such, uniform sampling does not lead to uniform exploration of the partial program state space:
+% our nodes near to the root, in this program filled with $a$,
+% on the basis of going through more synthesis rounds,
+% are explored more easily than our leaves further away from the root,
+% in our program eventually filled with $b$ and $c$, respectively.
 
-% TODO: discuss Emile's comment: "If you look at it as an autoregressive probability distribution, then any order in which you sample is (mathematically) valid. I'm just not sure why exactly this is an issue." -- as above
-Techniques such as active learning or Bayesian optimization may be able to find optimal sampling strategies for this purpose.
-However, one relevant question here is whether these techniques under all circumstances justify the extra calculation power to improve this decision-making,
-and whether there would be any reasonable compromises available.
-These questions are still subject to future research.
+% Therefore, it would be more ideal for a hole sampling method to inhibit
+% bias toward the more \emph{deeply-situated} holes in our program,
+% such as to offset this inherent imbalance and better approximate
+% uniform exploration of our partial program state space.
+
+% Techniques such as active learning or Bayesian optimization may be able to find optimal sampling strategies for this purpose.
+% However, one relevant question here is whether these techniques under all circumstances justify the extra calculation power to improve this decision-making,
+% and whether there would be any reasonable compromises available.
+% These questions are still subject to future research.
 
 % \subsubsection{Changes}
 
@@ -2374,8 +2366,7 @@ we have had to make the following adjustments to their original algorithm:
     While ideally a synthesizer would respect the tree-like structure of such expressions as ASTs,
     our naive approach has been to simply perform \emph{sample serialization} here,
     taking string versions of our actual input/output expressions,
-    % TODO: discuss Emile's comment: "one-hot encode the string versions? or one-hot encode the _tokens_ of the string versions?" -- what's the difference? just checking...
-    then \emph{one-hot encode} these as \citet{nsps} did using their string samples.
+    then \emph{one-hot encode} the strings' characters as \citet{nsps} did using their string samples.
 
     % \item
     In our functional setup,
@@ -2383,33 +2374,34 @@ we have had to make the following adjustments to their original algorithm:
     which may depend on its type signature's number of \emph{type variables},
     as well as on any potential \emph{type constraints} on these type variables.
 
-    As we attempt to generate a similar number of input/output samples for each such type instantiation,
-    this means we do not have similar upper bounds for the total number of input/output samples for functions with \emph{different} number of type instantiations.
+    % As we attempt to generate a similar number of input/output samples for each such type instantiation,
+    % this means we do not have similar upper bounds for the total number of input/output samples for functions with \emph{different} number of type instantiations.
 
     While this does not pose a problem for our sample encoder,
     it did actually end up problematic for the purpose of \citet{nsps}'s \emph{R3NN},
     which conditioned programs on these sample features using an LSTM,
     which expected a fixed number of embedded samples.
 
-    To work around this and provide such a fixed number number of samples despite differing number of type instantiations,
-    we sample embedded input-output example pairs.
-    For this end we have chosen to sample \emph{without replacement} for any sample sizes beyond the number of available items,
-    % TODO: discuss if this addresses Emile's comment: "Why? in case of the need of oversampling?" -- btw I haven't talked about sampling size greater than the size of the set to be sampled from as I'm not sure what the equivalent of sampling without replacement is called that would reset the set for such greater sampling size...
-    % which both exhibits a more consistent behavior across sample sizes,
-    % whereas sampling without replacement is stochastic for sample sizes under the size of the set to be sampled yet deterministic for a sample size equal to it,
-    % commented as per Emile's comment: "mini-batching is without replacement, though!"
-    % while also seeming to match the spirit of mini-batching,
-    % by providing more stochastic gradients.
+    To work around this, we need to provide such a fixed number number of samples despite differing number of type input-output pairs.
+    While this could be done at time of synthesis, we have chosen to fix these at the level of our dataset.
+    Whereas sampling or even generating input-output pairs at the time of synthesis means less overfitting on specific datapoints,
+    fixing this at the level of the dataset would bring faster convergence (be it at the cost of generalization).
+
+    We have chosen to sample \emph{without replacement} for any
+    sample sizes lower than the number of available input-output example pairs,
     which offers a lower stochasticity than sampling with replacement.
-    % TODO: discuss Emile's comment: "how is sampling with replacement being more stochastic a good thing? It only reduces approximation accuracy in this case." -- I changed this now, but is sampling without replacement really the right name for the over-sampling scenario?
     However, this decision is still up for empirical evaluation.
 
-    It should be noted that this sampling,
-    while intended to normalize sample size stemming from different numbers of type instantiations,
-    it simultaneously addresses different sample sizes \emph{within} type instantiations.
-    Under normal circumstances, the \emph{boolean} type, for example,
-    could not have generated more examples than merely \emph{false} and \emph{true}.
-    By using sampling, this sample set could be normalized to a fixed size as well.
+    In the event we have less pairs available (e.g. 4) than we would like to sample (e.g. 10),
+    we would first take each available pair while we still wish to sample more items than are available in the pool (i.e. first sample the 4 available pairs twice),
+    then finally use sampling without replacement to uniformly sample the remaining desired pairs (i.e. randomly pick 2 of the 4).
+
+    % It should be noted that this sampling,
+    % while intended to normalize sample size stemming from different numbers of type instantiations,
+    % it simultaneously addresses different sample sizes \emph{within} type instantiations.
+    % Under normal circumstances, the \emph{boolean} type, for example,
+    % could not have generated more examples than merely \emph{false} and \emph{true}.
+    % By using sampling, this sample set could be normalized to a fixed size as well.
 
 % \end{itemize}
 
@@ -2420,7 +2412,6 @@ We have further made the following optimizations on top of \citet{nsps}'s approa
     \item While \citet{nsps} did not expand on this,
     for the \emph{one-hot encoding} process in their encoder,
     we initially included any characters in the ASCII character set,
-    % TODO: discuss Emile's comment: "In other words, you use character-level embeddings, not token embeddings? Why?" -- dealing with numbers, characters and structures like lists, using characters was technically far simpler than using tokens.
     which seemed to cover any character conceivably used in our serialization of input/output samples (or their types, for that matter).
 
     However, as we realized this potentially gave our encoder an encoding space larger than necessary,
@@ -2439,10 +2430,10 @@ We have further made the following optimizations on top of \citet{nsps}'s approa
 
 To get the most out of our types, we will want to provide them for:
 \begin{itemize}
-    \item inputs and outputs%
-    ~\footnote{
-        These may span multiple instantiated types for any given task function exhibiting \emph{parametric polymorphism}.
-    },
+    \item inputs and outputs,
+    % ~\footnote{
+    %     These may span multiple instantiated types for any given task function exhibiting \emph{parametric polymorphism}.
+    % }
     which we simply incorporate as additional features in \citet{nsps}'s
     \emph{example encoder} as explained in Section \ref{sec:nsps},
     using one new LSTM for input types, a second for output types,
@@ -2450,7 +2441,6 @@ To get the most out of our types, we will want to provide them for:
     increasing the amount of features per sample under their baseline
     LSTM encoder by another $4HT$ making for a total of $8HT$ features;
 
-    % TODO: discuss Emile's comment: "General remark: You have a _lot_ of footnotes. These are often very difficult to read because they refer to things in the text, so the reader needs to cross-reference them to understand what is meant with the footnote (in this instance, quite difficult!). For the footnotes, ask yourself: What if I put it in the text? Is that too long? Do I really need to mention this?" -- I put a few short ones in the main text now, and commented a couple others to reduce clutter.
     \item expansion rule expressions $r$, i.e. any entry of our unrolled grammar
     (excluding hole expansion) introduced in Section \ref{sec:grammar};
     for these we may calculate types statically upfront%
@@ -2490,12 +2480,9 @@ To get the most out of our types, we will want to provide them for:
     These may be constructed using type inference based on the above-mentioned expansion rules $r=R(n)$.
 
     In the event of a PPT consisting of only a hole,
-    we may not have a type available.%
+    we may not have a type available from the PPT,
+    though its type may still simply be taken from the input-output examples.
     % TODO: check how I'm actually handling this
-    ~\footnote{
-        Specifically, we do not have a type available \emph{as derived from the PPT};
-        its type may still simply be taken from the input-output examples.
-    }
     Once the initial hole has been filled, however,
     for any further holes we may use the PPT to infer knowledge on the holes' types.
 
@@ -2689,20 +2676,14 @@ Typeclasses we will use with these types include \emph{Enum}, \emph{Ord}, \emph{
 Membership of the used types to our used typeclasses may be found in Figure \ref{typeclasses}.
 
 \begin{figure*}
-    \begin{tabular}{|c|c|c|c|c|c|c|c|c|} \hline
-        $\downarrow$ typeclass / dataclass $\rightarrow$ & Bool & Char & Int & Maybe & List & (,) & HashMap & Set \\ \hline
-        Show & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
-        Enum & \textbigcircle & \textbigcircle & \textbigcircle & & & & & \\ \hline
-        Foldable & & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
-        Traversable & & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \\ \hline
-        Functor & & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \\ \hline
-        Monad & & & & \textbigcircle & \textbigcircle & \textbigcircle & & \\ \hline
-        Applicative & & & & \textbigcircle & \textbigcircle & & & \\ \hline
-        Monoid & & & & \textbigcircle & \textbigcircle & & \textbigcircle & \textbigcircle \\ \hline
-        Semigroup & & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
-        Bifunctor & & & & & & \textbigcircle & & \\ \hline
-        Bifoldable & & & & & & \textbigcircle & & \\ \hline
-        Bitraversable & & & & & & \textbigcircle & & \\ \hline
+    \begin{tabular}{|c|c|c|c|c|c|c|} \hline
+        $\downarrow$ typeclass / dataclass $\rightarrow$ & Char & Int & Maybe & List & (,) & Either \\
+        Enum & \textbigcircle & \textbigcircle & & & & \\ \hline
+        Foldable & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
+        Traversable & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
+        Functor & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
+        Monoid & & & \textbigcircle & \textbigcircle & & \\ \hline
+        Semigroup & & & \textbigcircle & \textbigcircle & \textbigcircle & \textbigcircle \\ \hline
     \end{tabular}
     \caption{The types used in generating our synthesis dataset (column headers), along with their respective \emph{typeclass} memberships as marked by a `\textbigcircle'.}
     \label{typeclasses}
@@ -2715,7 +2696,7 @@ we had to use a number of heuristics to filter down the operators (comprising ei
     \item avoiding \emph{side-effects}, alongside intentional throwing of \emph{run-time errors}, as this category is not a great match for \emph{programming by example};
     % map/Nothing
     \item avoiding unnecessarily \emph{type-specific} operators, as we would like to keep our operator set small yet reusable;
-    \item focusing on different \emph{inter-type} over using various similar \emph{intra-type} operators, as the former are helps make our operator set more amenable to reducing the search space using type information;
+    \item focusing on different \emph{inter-type} over using various similar \emph{intra-type} operators, as the former helps make our operator set more amenable to reducing the search space using type information;
     % take/takeWhile
     \item avoiding \emph{infinite lists}, which are relatively circumstantial in their usage, as these would crash evaluation unless specifically converted back to finite lists;
     % take/!! taking an Int
@@ -2741,7 +2722,7 @@ we have picked the following set of operators for our chosen types:
 \emph{maybe}, % "maybe"
 % List
 \emph{(:)}, % "(:)"
-\emph{null}, % "null"
+% \emph{null}, % "null"
 \emph{length}, % "length"
 % (,)
 \emph{(,)}, % "(,)"
@@ -2750,32 +2731,32 @@ we have picked the following set of operators for our chosen types:
 % % Set
 % \emph{insertSet}, % "Set.insert"
 % HashMap
-\emph{insert}, % "HashMap.insert"
+% \emph{insert}, % "HashMap.insert"
 % Enum
-\emph{succ}, % "succ"  -- modifies any of our scalars
+% \emph{succ}, % "succ"  -- modifies any of our scalars
 \emph{toEnum}, % "toEnum"  -- from Int to any of our scalars
 \emph{fromEnum}, % "fromEnum"  -- from any of our scalars to Int
 % Foldable
 \emph{foldMap}, % "foldMap"
-\emph{foldr}%
+% \emph{foldr}%
 % ~\footnote{Prime candidates for \emph{foldr}'s aggregator parameter are the \emph{insert} functions for \emph{List} (\emph{(:)}), \emph{Set}, and \emph{HashMap}, enabling us to effectively convert between different data structures.}%
 , % "foldr"
-\emph{foldr1}%
+% \emph{foldr1}%
 % ~\footnote{A prime candidate for \emph{foldr1}'s aggregator parameter is \emph{($<>$)}.}%
 , % "foldr1"
 \emph{elem}, % "elem"
 % Traversable
-\emph{traverse}, % "traverse"
+% \emph{traverse}, % "traverse"
 \emph{sequenceA}, % "sequenceA"
-\emph{mapM}, % "mapM"
+% \emph{mapM}, % "mapM"
 \emph{sequence}, % "sequence"
 % Functor
 \emph{fmap}, % "fmap"
 % Monad
-\emph{($>>=$)}, % "(>>=)"
+% \emph{($>>=$)}, % "(>>=)"
 % Applicative
-\emph{pure}, % "pure"
-\emph{($<*>$)}%
+% \emph{pure}, % "pure"
+% \emph{($<*>$)}%
 % ~\footnote{A prime candidate for \emph{($<*>$)}'s \emph{Applicative} structure is the \emph{Maybe} type.}%
 , % "(<*>)"
 % % Alternative
@@ -2785,9 +2766,9 @@ we have picked the following set of operators for our chosen types:
 % Semigroup
 \emph{($<>$)}, % "(<>)"
 % Show
-\emph{show}%
+% \emph{show}%
 % ~\footnote{The \emph{show} function may serve as the function argument to \emph{foldMap}, \emph{traverse}, and \emph{mapM}.}%
-, % "show"
+% , % "show"
 % % Bifunctor
 % \emph{bimap}, % "bimap"
 % \emph{first}, % "first"
@@ -2798,13 +2779,13 @@ we have picked the following set of operators for our chosen types:
 % % Bitraversable
 % \emph{bitraverse}, % "bitraverse"
 % misc
-\emph{const}% % "const"
+% \emph{const}% % "const"
 % ~\footnote{
 %     While we aim to avoid operators likely to induce redundancy,
 %     we have opted to include the \emph{const} function,
 %     since combined with \emph{foldr1} it helps to emulate \emph{head} and \emph{snd}.
 % }%
-,
+% ,
 and \emph{(.)}%
 % ~\footnote{
 %     Functions resulting from the function composition combinator \emph{(.)} under our \emph{unrolled} grammar cannot be further \emph{curried}, though for our current purposes this limitation is acceptable.
@@ -2819,6 +2800,12 @@ Having added our type-level supervision during training, we expect synthesis suc
 This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
 TODO: RESULT
+
+maskBad doesn't same able to learn properly, barely improving in terms of loss, apparently having its learning signal get messed up by the masks.
+
+randomHole honestly doesn't seem to noticeably help.
+
+useTypes seems to end up better in terms of loss!
 
 % \pagebreak
 
@@ -2881,6 +2868,7 @@ TODO: RESULT
 
 \subsection{Topics for future research}
 % TODO: discuss Emile's comment: "Probeer hier meer een verhaal van te maken ipv een selectie ideeen in bullet points."
+% niet elk idee, belangrijke dingen meeste aandacht
 
 As neural synthesis methods aimed at programming by example in the functional
 programming domain is a broad topic encompassing a variety of design decisions,
@@ -2892,7 +2880,7 @@ We will give an overview in this section of the questions raised during our desi
     % One of our concerns pertains to the scalability of program synthesis models when we would like to apply a trained general model to more specific problem instances.
     % How can we apply a more generalized program synthesis model to a specific problem?
     % Can we take inspiration here from neural network pruning?
-    % % TODO: discuss with Emile: "Hmm? I'd answer such a question if you add it to your discussion (I don't immediately see the connection)" - the analogy here was about pruning out weights vs. pruning out operators. in retrospect tho, I guess for any problem instances we would already sort of know the available operators, while performance-wise the bottleneck is training, in which case training on a bigger general set of operators is not exactly helping...
+    % % in retrospect, for any problem instances we would already sort of know the available operators, while performance-wise the bottleneck is training, in which case training on a bigger general set of operators is not exactly helping...
 
     % \item 
     While we have focused on types as features and compilation for masking purposes here,
@@ -2922,19 +2910,18 @@ We will give an overview in this section of the questions raised during our desi
     this question has fallen out of scope for our paper,
     and remains a question for future research.
 
-    % \item 
-    While we have investigated the use of type info in neural programming by example,
-    one could allocate such extra compute to just the existing information as well.
-    % TODO: discuss Emile's comment: "what do you mean? what are you splitting?"
-    This implies there may be an ideal split between features allocated to expressions versus types.
-    Investigating this ideal split would be a topic for future research.
+    % % \item 
+    % While we have investigated the use of type info in neural programming by example,
+    % one could allocate such extra compute to just the existing information as well.
+    % This implies there may be an ideal split between features allocated to expressions versus types.
+    % Investigating this ideal split would be a topic for future research.
 
-    % \item 
-    While we have presently let our synthesizer pick a hole using a \emph{uniform random} distribution,
-    as we have discussed in Section \ref{sec:picking},
-    this approach is still subject to further research.
-    For one, the use of this approach could be empirically tested by deterministically picking a hole to verify the added value of uniform hole sampling.
-    As discussed, we believe there to be hole picking strategies better approximating uniform search space exploration than uniform hole sampling as well.
+    % % \item 
+    % While we have presently let our synthesizer pick a hole using a \emph{uniform random} distribution,
+    % as we have discussed in Section \ref{sec:picking},
+    % this approach is still subject to further research.
+    % For one, the use of this approach could be empirically tested by deterministically picking a hole to verify the added value of uniform hole sampling.
+    % As discussed, we believe there to be hole picking strategies better approximating uniform search space exploration than uniform hole sampling as well.
 
     % \item 
     In Section \ref{sec:ournsps}, we have discussed our aggregation of
@@ -2943,15 +2930,15 @@ We will give an overview in this section of the questions raised during our desi
     and offered different alternatives there.
     These too would merit further research.
 
-    % \item 
-    We briefly discussed dynamic sample sizes,
-    how our sample-conditioning LSTM expected a fixed sample size,
-    how we worked around this using \emph{sampling with replacement},
-    and how this was an unfortunate compromise that failed to assign more complex functions,
-    supporting multiple type instantiations,
-    the additional attention they would intuitively require in order to properly learn their behavior.
-    This would likely require \emph{weighted sampling} of task functions (if not samples as well),
-    and this too remains a topic of interest for future research.
+    % % \item 
+    % We briefly discussed dynamic sample sizes,
+    % how our sample-conditioning LSTM expected a fixed sample size,
+    % how we worked around this by sampling,
+    % and how this was an unfortunate compromise that failed to assign more complex functions,
+    % supporting multiple type instantiations,
+    % the additional attention they would intuitively require in order to properly learn their behavior.
+    % This would likely require \emph{weighted sampling} of task functions (if not samples as well),
+    % and this too remains a topic of interest for future research.
 
     % % \item 
     % in Section \ref{sec:fp} we briefly discussed our decision to use
@@ -2968,6 +2955,12 @@ We will give an overview in this section of the questions raised during our desi
     the merits of our \emph{unrolled grammar} approach are still up for empirical evaluation.
     As our present dataset allowed us to settle for this approach,
     we decided to regard this question as out of scope for our present paper.
+
+    % \item 
+    Whereas we have currently fixed our input-output sample pairs at the level of our dataset,
+    we had briefly posited that varying this across training epochs,
+    be it by sampling or by generation, should improve generalization.
+    The impact of this decision would make for a potential topic for future research.    
 
     % \item 
     In Section \ref{sec:statictyping} we had briefly posed the idea that types might make some languages more suited to synthesis than others,
@@ -3095,7 +3088,6 @@ We will give an overview in this section of the questions raised during our desi
 
 In this section we will describe the hyperparameter values we have used in our dataset generation.
 % \item[crashOnError (default false, for experiment specify true)] when specified just crash on error while calculating function outputs. otherwise perform an additional typecheck (slower).
-% TODO: discuss Emile's comment: "A better question because I find it confusing: Do you learn those partial functions like you specified or not? With the crashes on invalid inputs? I thought it was a nice idea, but if you don't use it then don't introduce it." -- nope cuz needed RL
 % nestLimit
 We generate types to substitute into \emph{type variables} using a maximum of only \emph{one} level of nesting,
 i.e. allowing type \emph{list of booleans} though not type \emph{list of lists of booleans}.
@@ -3212,7 +3204,6 @@ averaging over windows of $2$ evaluations,
 % convergenceThreshold
 % ditching this cuz honestly it doesn't do anything
 % consider as an indication of convergence only loss increments of at least \num{1e-6}.
-% % TODO: discuss Emile's comment: "It's possible that the loss goes up sometimes in SGD, which makes a threshold like this a bit hard to use." -- I thought it was hard to set a threshold here that wasn't super arbitrary, so instead I tried to address this problem not using this but using a wider checkWindow...
 % maxHoles
 We arbitrarily limit synthesized functions to the same complexity limit of $6$ operators as used during generation of task functions.
 % % evalRounds
@@ -3234,6 +3225,8 @@ We allow $32$ features per input or output per LSTM direction, i.e. $H$ in \cite
 % % hidden0/hidden1
 % Finally, we use $16$ hidden units in both hidden layers of the \emph{MLP}s,
 % used in the \emph{recursive} and \emph{reverse-recursive} passes of \citet{nsps}'s \emph{R3NN}.
+
+We clip gradients to stay within a range from $-1$ to $1$.
 
 % \subsection{Hyperparameters optimized in a search} \label{sec:hparopt}
 
@@ -3261,7 +3254,6 @@ We allow $32$ features per input or output per LSTM direction, i.e. $H$ in \cite
 % a \emph{population} size fixed to the square root of the total number of hyper-parameter configurations (rounded up),
 % and the \emph{4th root} of the total number of hyper-parameter configurations (again rounded up)
 % used as the maximum number of \emph{generations} and as the number of \emph{best entities} to keep track of.
-% % TODO: discuss with Emile: 4th root generations/champions cuz sqrt population size
 
 % learningRate
 The \emph{learning rate} for our Adam optimizer we search over
