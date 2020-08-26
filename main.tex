@@ -2626,6 +2626,8 @@ We further made an optimizations on top of \citet{nsps}'s approach.
 % why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
 % how to supervise with these? representation?
 
+Consistent with how we embed expressions, we similarly serialize types to strings,
+then one-hot encode their characters as we do for input/output expressions.
 To get the most out of our types, we will want to provide them for:
 \begin{itemize}
     \item inputs and outputs,
@@ -2634,10 +2636,11 @@ To get the most out of our types, we will want to provide them for:
     % }
     which we simply incorporate as additional features in \citet{nsps}'s
     \emph{example encoder} as explained in Section \ref{sec:nsps},
-    using one new LSTM for input types, a second for output types,
-    to be concatenated to the original $4HT$ features per sample,
+    % using one new LSTM for input types, a second for output types,
+    % to be concatenated to the original $4HT$ features per sample,
+    concatenating their one-hot embeddings to those of the input/output pairs before passing them through the input/output LSTMs,
     increasing the amount of features per sample under their baseline
-    LSTM encoder by another $4HT$ making for a total of $8HT$ features;
+    LSTM encoder by another $4HT$ making for a total of $8HT$ features per sample;
 
     \item expressions from expansion rules $r$; % based on our operators from Section \ref{sec:grammar};
     for these we may calculate types statically upfront%
@@ -2661,7 +2664,7 @@ To get the most out of our types, we will want to provide them for:
     representation $\omega(r) \in \mathbb{R}^M$,
     yielding $\omega'(r) \in \mathbb{R}^{M \cdot (T+1)}$.
 
-    \item AST nodes $c$ in any PPT.
+    \item (hole) AST nodes $c$ in any PPT.
     % While the nodes for which we directly need the types here are the hole nodes,
     % to obtain their types we will need the types of all nodes,
     % including both leaf nodes $l$ (variables and holes%
