@@ -1,17 +1,5 @@
 # UvA master thesis
 
-### planning 
-
-- [x] December: finish literature review
-- [x] January/February: implement dataset generation
-- [x] March: implement baseline
-- [x] April: implement improvement
-- [x] May: finish experiment design
-- [ ] June: perform experiment, gather results
-- [ ] July: finalize write-up
-- [ ] August: uitloop
-- [ ] Nov: defense
-
 ### building
 
 ```bash
@@ -22,15 +10,3 @@ pacman -S texlive-core texlive-latexextra texlive-science
 # compile
 latexmk
 ```
-
-### TODO
-
-1. shorten, e.g. implementation/process, announce structure
-
-2. - definitions
-   - reproducible (formulas)
-   - refs to introducing sections
-
-   - figures (wikisql?)
-   - examples
-
