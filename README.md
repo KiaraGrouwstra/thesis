@@ -22,3 +22,15 @@ pacman -S texlive-core texlive-latexextra texlive-science
 # compile
 latexmk
 ```
+
+### TODO
+
+1. shorten, e.g. implementation/process, announce structure
+
+2. - definitions
+   - reproducible (formulas)
+   - refs to introducing sections
+
+   - figures (wikisql?)
+   - examples
+

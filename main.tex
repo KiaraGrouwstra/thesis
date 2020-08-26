@@ -54,12 +54,15 @@
 \pagebreak
 
 \begin{abstract}
-    TODO: abstract
 
-    % https://twitter.com/tscholak/status/1279061409570213895?s=21
-    % synthesis is fun but probably not so much without unit tests or types.
+    Programming by example (PBE) has traditionally seen a split between formal versus neural approaches,
+    meaning programming types had yet to be used in neural program synthesis.
+    We propose a way to incorporate programming types into a neural program synthesis approach for programming by example.
+    We propose the Typed Neuro-Symbolic Program Synthesis (TNSPS) method based on this idea,
+    and test it in the functional programming context to empirically verify type information may help improve generalization in neural synthesizers on limited-size datasets.
+    Finally we discuss several topics of interest that may help take these ideas further.
+    For reproducibility, we release our code publicly.~\citep{code}
 
-    % For reproducibility, we release our code publicly.
 \end{abstract}
 
 \section{Research Direction} % \label{sec:research-direction}
@@ -2127,6 +2130,20 @@ then perhaps in our test set under another type instance like $Char \rightarrow 
 % as this will still require our synthesizer to attain a certain level of generalization.
 We may sometimes still refer to just task functions however, as the distinction is not otherwise relevant.
 
+An example showing what different components of our dataset items might look like may be found in Figure \ref{fig:datasample}.
+
+\begin{figure*}
+    \begin{tabular}{|l|l|} \hline
+        \textbf{task function} & \verb|let just = Just; compose = (.) in compose just unzip| \\ \hline
+        \textbf{type instance parameter input types} & \verb|[(Int, Char)]| \\ \hline
+        \textbf{type instance output type} & \verb|Maybe ([Int], [Char])| \\ \hline
+        \textbf{input expression} & \verb|([((17), '0'), ((20), '2')])| \\ \hline
+        \textbf{output expression} & \verb|Right (Just ([17, 20], "02"))| \\ \hline
+    \end{tabular}
+    \caption{An task function instance from our dataset with a corresponding sample input/output pair.}
+    \label{fig:datasample}
+\end{figure*}
+
 Our full generated dataset consists of the following elements:
 \begin{itemize}
     % dsl
@@ -2327,20 +2344,6 @@ At this point we:
     i.e. for a vocabulary of `a', `b' and `c', encode `b' as $010$,
     meaning the second option out of three.
 \end{itemize}
-
-An example showing what different components of our dataset items might look like may be found in Figure \ref{fig:datasample}.
-
-\begin{figure*}
-    \begin{tabular}{|l|l|} \hline
-        \textbf{task function} & \verb|let just = Just; compose = (.) in compose just unzip| \\ \hline
-        \textbf{type instance parameter input types} & \verb|[(Int, Char)]| \\ \hline
-        \textbf{type instance output type} & \verb|Maybe ([Int], [Char])| \\ \hline
-        \textbf{input expression} & \verb|([((17), '0'), ((20), '2')])| \\ \hline
-        \textbf{output expression} & \verb|Right (Just ([17, 20], "02"))| \\ \hline
-    \end{tabular}
-    \caption{An task function instance from our dataset with a corresponding sample input/output pair.}
-    \label{fig:datasample}
-\end{figure*}
 
 \subsubsection{Preventing data leakage}
 
@@ -3288,28 +3291,29 @@ We will give an overview in this section of some of the questions raised during 
     However, given all these questions surrounding the use of such type signatures,
     we have opted to leave this as a topic for future research.
 
-    % grid search
-    % \item 
-    While we have investigated the use of type info in neural programming by example,
-    one could allocate such extra compute to just the existing information as well.
-    This implies there may be an ideal split between features allocated to expressions versus types.
-    %
-    % While typically one might answer such a question using e.g. a grid search,
-    % varying the percentage of features between the two categories,
-    % on a closer look this unfortunately seems less straight-forward.
-    %
-    % As our present approach only incorporates type-based features by the end of \citet{nsps}'s \emph{R3NN} score calculation,
-    % this makes such features less than equivalent to its traditional \emph{sample-based} features,
-    % which originally get \emph{conditioned} on using an LSTM operation,
-    % sharply reducing its original number of features.
-    %
-    % Only then do these get incorporated into their \emph{R3NN}'s \emph{recursive} and \emph{reverse-recursive} passes,
-    % which additionally are variable in their calculation cost depending on the \emph{program size},
-    % none of which applies to our type-based features.
-    %
-    % As such, as we did not find straight-forward approach to comparing such sample-based versus type-based features,
-    % we have left this as another question for future research.
-    Investigating this ideal split would be a topic for future research.
+    % % grid search
+    % % \item 
+    % While we have investigated the use of type info in neural programming by example,
+    % one could allocate such extra compute to just the existing information as well.
+    % This implies there may be an ideal split between features allocated to expressions versus types.
+    % %
+    % % While typically one might answer such a question using e.g. a grid search,
+    % % varying the percentage of features between the two categories,
+    % % on a closer look this unfortunately seems less straight-forward.
+    % %
+    % % As our present approach only incorporates type-based features by the end of \citet{nsps}'s \emph{R3NN} score calculation,
+    % % this makes such features less than equivalent to its traditional \emph{sample-based} features,
+    % % which originally get \emph{conditioned} on using an LSTM operation,
+    % % sharply reducing its original number of features.
+    % %
+    % % Only then do these get incorporated into their \emph{R3NN}'s \emph{recursive} and \emph{reverse-recursive} passes,
+    % % which additionally are variable in their calculation cost depending on the \emph{program size},
+    % % none of which applies to our type-based features.
+    % %
+    % % As such, as we did not find straight-forward approach to comparing such sample-based versus type-based features,
+    % % we have left this as another question for future research.
+    % While we have demonstrated that on our dataset and hyperparameters a 50-50 split out-performed a model not using types,
+    % investigating such an ideal split would be a topic for future research.
 
     % % integration
     % % \item 
@@ -3320,6 +3324,16 @@ We will give an overview in this section of some of the questions raised during 
     % On the other hand, we may also hook into such existing completion logic to inform our synthesizer.
 
 % \end{itemize}
+
+\subsection{Conclusion}
+
+% Programming by example has traditionally seen a split between formal versus neural approaches,
+% meaning programming types had yet to be used in neural program synthesis.
+We presented a way to incorporate programming types into a neural program synthesis approach for programming by example.
+We generated a dataset in the functional programming context,
+and demonstrated type information to improve synthesis accuracy even given a comparable number of parameters.
+Finally, we suggest a number of topics of interest for future research in type-driven neural programming by example.
+
 
 \pagebreak
 
