@@ -183,7 +183,7 @@
 % DeepMind, seq2seq. tests on add/sort / canonicalizing 3d models. ops reset/bubble/rshift/lshift/compswap/ptr1l/ptr1r/ptr2l/ptr2r/swap/stop.
 
 % holes
-@inproceedings{hashimoto1997typed,
+inproceedings{hashimoto1997typed,
   title={A typed context calculus},
   author={Hashimoto, Masatomo and
           Ohori, Atsushi},
@@ -225,7 +225,7 @@ inproceedings{problog,
   organization={Hyderabad}
 }
 
-@article{dilp,
+article{dilp,
   title={Learning explanatory rules from noisy data},
   author={Evans, Richard and
           Grefenstette, Edward},
@@ -321,7 +321,7 @@ article{rnngrammars,
 }
 % supervised + RL to generate semantically correct programs. train to generate syntactically correct programs that fulfill the specification. only applies for sequence approach, which doesn't match the trees I want...
 
-@inproceedings{typedmil,
+inproceedings{typedmil,
   title={Typed meta-interpretive learning of logic programs},
   author={Morel, Rolf and
           Cropper, Andrew and
@@ -337,7 +337,7 @@ article{rnngrammars,
 % Prolog/Python [code](https://github.com/rolfmorel/jelia19-typedmil)
 % typed MIL (~= inductive logic programming (ILP)) reduces space by a cubic factor. tests on [list manipulation](https://github.com/rolfmorel/jelia19-typedmil/tree/master/experiments/03-evaluation). [ops](https://github.com/rolfmorel/jelia19-typedmil/blob/master/experiments/03-evaluation/nestedincr/gen_test_prolog.py#L43-L67). types: list<T>, int, char.
 
-@article{wang2018predicting,
+article{wang2018predicting,
   title={Predicting Haskell Type Signatures From Names},
   author={Wang, Bowen},
   journal = {Semantic Scholar},
@@ -347,7 +347,7 @@ article{rnngrammars,
 }
 % encode name/context, recursively select (non-)arrow
 
-@inproceedings{lambda2,
+inproceedings{lambda2,
   title={Synthesizing data structure transformations from input-output examples},
   author={Feser, John K and
           Chaudhuri, Swarat and
@@ -412,7 +412,7 @@ article{rnngrammars,
 % [code](https://bitbucket.org/nadiapolikarpova/synquid)
 % code from refinement types. synthesize Haskell-like Synquid by SMT-solver from modular refinement type reconstruction to allow type-checking partial programs using liquid types.
 
-@mastersthesis{tamandu,
+mastersthesis{tamandu,
   title={Top-Down Inductive Synthesis with Higher-Order Functions},
   author={Maximova, Alexandra},
   url={https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/155821/eth-49631-01.pdf},
@@ -645,7 +645,7 @@ article{combopt,
   year={1932}
 }
 
-@article{currying,
+article{currying,
   title={{\"U}ber die Bausteine der mathematischen Logik},
   author={Sch{\"o}nfinkel, Moses},
   journal={Mathematische annalen},
@@ -681,7 +681,7 @@ article{combopt,
 }
 % uses LSTM to synthesize ASTs from natural language
 
-@inproceedings{shen2019using,
+inproceedings{shen2019using,
   title={Using active learning to synthesize models of applications that access databases},
   author={Shen, Jiasi and Rinard, Martin C},
   editor={},
@@ -692,7 +692,7 @@ article{combopt,
   organization={ACM}
 }
 
-@article{shi2019frangel,
+article{shi2019frangel,
   title={FrAngel: component-based synthesis with control structures},
   author={Shi, Kensen and Steinhardt, Jacob and Liang, Percy},
   journal={Proceedings of the ACM on Programming Languages},
@@ -923,7 +923,7 @@ inproceedings{chen2019neural,
 }
 % new task: learn parser from input + parse trees. tackle by: (1) use non-differentiable machine to restrict search space; (2) recursion; (3) RL to operate the machine.
 
-@inproceedings{shin2019program,
+inproceedings{shin2019program,
   title={Program synthesis and semantic parsing with learned code idioms},
   author={Shin, Eui Chul and
           Allamanis, Miltiadis and
@@ -978,7 +978,7 @@ inproceedings{chen2019neural,
   publisher={Oxford University Press}
 }
 
-@book{koza1994genetic,
+book{koza1994genetic,
   title={Genetic programming II},
   author={Koza, John R and
           others},
@@ -988,7 +988,7 @@ inproceedings{chen2019neural,
   publisher={MIT press Cambridge}
 }
 
-@article{allamanis2017learning,
+article{allamanis2017learning,
   title={Learning to represent programs with graphs},
   author={Allamanis, Miltiadis and
           Brockschmidt, Marc and
@@ -998,7 +998,7 @@ inproceedings{chen2019neural,
   year={2017}
 }
 
-@article{brockschmidt2018generative,
+article{brockschmidt2018generative,
   title={Generative code modeling with graphs},
   author={Brockschmidt, Marc and
           Allamanis, Miltiadis and
@@ -1009,7 +1009,7 @@ inproceedings{chen2019neural,
   year={2018}
 }
 
-@inproceedings{looks2005learning,
+inproceedings{looks2005learning,
   title={Learning computer programs with the bayesian optimization algorithm},
   author={Looks, Moshe and
           Goertzel, Ben and
@@ -1021,7 +1021,7 @@ inproceedings{chen2019neural,
   year={2005}
 }
 
-@article{verma2018programmatically,
+article{verma2018programmatically,
   title={Programmatically interpretable reinforcement learning},
   author={Verma, Abhinav and
           Murali, Vijayaraghavan and
@@ -1077,7 +1077,7 @@ inproceedings{chen2019neural,
   year={2016}
 }
 
-@inproceedings{singh2015predicting,
+inproceedings{singh2015predicting,
   title={Predicting a correct program in programming by example},
   author={Singh, Rishabh and
           Gulwani, Sumit},
@@ -1255,7 +1255,7 @@ article{treelstm,
 }
 
 % use RL (Reinforce) to provide a seq2seq neural programmer with a differentiable signal on the evaluation of a Q&A task
-@article{nsm,
+article{nsm,
   title={Neural symbolic machines: Learning semantic parsers on freebase with weak supervision},
   author={Liang, Chen and
           Berant, Jonathan and
@@ -1355,7 +1355,7 @@ article{treelstm,
   year={2002}
 }
 
-@article{hierarchicalrl,
+article{hierarchicalrl,
   title={Recent advances in hierarchical reinforcement learning},
   author={Barto, Andrew G and
           Mahadevan, Sridhar},
@@ -1369,27 +1369,27 @@ article{treelstm,
   publisher={Springer}
 }
 
-@article{burstall1977design,
+article{burstall1977design,
   title={Design considerations for a functional programming language},
   author={Burstall, Rod M},
   journal={The software revolution},
   year={1977}
 }
 
-@article{dybjer1991logical,
+article{dybjer1991logical,
   title={Logical Frameworks: Inductive sets and families in Martin-L{\"o}f's type theory and their set-theoretic semantics},
   author={Dybjer, Peter},
   year={1991}
 }
 
-@phdthesis{blott1991type,
+phdthesis{blott1991type,
   title={Type classes},
   author={Blott, Stephen},
   year={1991},
   school={PhD thesis, Department of Computing Science, Glasgow University}
 }
 
-@inproceedings{haskellhistory,
+inproceedings{haskellhistory,
   author = {Hudak, Paul and Hughes, John and Peyton Jones, Simon and Wadler, Philip},
   title = {A History of Haskell: Being Lazy with Class},
   year = {2007},
@@ -1492,7 +1492,7 @@ article{treelstm,
   year={2017}
 }
 
-@article{shuman2013emerging,
+article{shuman2013emerging,
   title={The emerging field of signal processing on graphs: Extending high-dimensional data analysis to networks and other irregular domains},
   author={Shuman, David I and
           Narang, Sunil K and
@@ -1508,7 +1508,7 @@ article{treelstm,
   publisher={IEEE}
 }
 
-@article{wu2020comprehensive,
+article{wu2020comprehensive,
   title={A comprehensive survey on graph neural networks},
   author={Wu, Zonghan and
           Pan, Shirui and
@@ -1522,7 +1522,7 @@ article{treelstm,
   publisher={IEEE}
 }
 
-@article{multitasklearning,
+article{multitasklearning,
   author    = {Sebastian Ruder},
   title     = {An Overview of Multi-Task Learning in Deep Neural Networks},
   journal   = {CoRR},
@@ -1536,7 +1536,7 @@ article{treelstm,
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@article{pan2009survey,
+article{pan2009survey,
   title={A survey on transfer learning},
   author={Pan, Sinno Jialin and
           Yang, Qiang},
@@ -1550,7 +1550,7 @@ article{treelstm,
   publisher={IEEE}
 }
 
-@article{zhong2017seq2sql,
+article{zhong2017seq2sql,
   title={Seq2sql: Generating structured queries from natural language using reinforcement learning},
   author={Zhong, Victor and
           Xiong, Caiming and
@@ -1574,7 +1574,7 @@ article{treelstm,
   publisher={Wiley Online Library}
 }
 
-@inproceedings{demsky2006inference,
+inproceedings{demsky2006inference,
   title={Inference and enforcement of data structure consistency specifications},
   author={Demsky, Brian and
           Ernst, Michael D and
@@ -1589,7 +1589,7 @@ article{treelstm,
   year={2006}
 }
 
-@inproceedings{kaleeswaran2014minthint,
+inproceedings{kaleeswaran2014minthint,
   title={Minthint: Automated synthesis of repair hints},
   author={Kaleeswaran, Shalini and
           Tulsian, Varun and
@@ -1602,7 +1602,7 @@ article{treelstm,
   year={2014}
 }
 
-@article{louridas2006static,
+article{louridas2006static,
   title={Static code analysis},
   author={Louridas, Panagiotis},
   journal={Ieee Software},
@@ -1615,7 +1615,7 @@ article{treelstm,
   publisher={IEEE}
 }
 
-@article{albrecht1980source,
+article{albrecht1980source,
   title={Source-to-source translation: Ada to Pascal and Pascal to Ada},
   author={Albrecht, Paul F and
           Garrison, Philip E and
@@ -1633,7 +1633,7 @@ article{treelstm,
   publisher={ACM New York, NY, USA}
 }
 
-@article{loveman1977program,
+article{loveman1977program,
   title={Program improvement by source-to-source transformation},
   author={Loveman, David B},
   journal={Journal of the ACM (JACM)},
@@ -1646,7 +1646,7 @@ article{treelstm,
   publisher={ACM New York, NY, USA}
 }
 
-@article{czarnecki2006feature,
+article{czarnecki2006feature,
   title={Feature-based survey of model transformation approaches},
   author={Czarnecki, Krzysztof and
           Helsen, Simon},
@@ -1660,7 +1660,7 @@ article{treelstm,
   publisher={IBM}
 }
 
-@article{visser2005survey,
+article{visser2005survey,
   title={A survey of strategies in rule-based program transformation systems},
   author={Visser, Eelco},
   journal={Journal of symbolic computation},
@@ -1673,7 +1673,7 @@ article{treelstm,
   publisher={Elsevier}
 }
 
-@article{partsch1983program,
+article{partsch1983program,
   title={Program transformation systems},
   author={Partsch, Helmuth and
           Steinbr{\"u}ggen, Ralf},
@@ -1687,7 +1687,7 @@ article{treelstm,
   publisher={ACM New York, NY, USA}
 }
 
-@article{waters1988program,
+article{waters1988program,
   title={Program translation via abstraction and reimplementation},
   author={Waters, Richard C},
   journal={IEEE Transactions on Software Engineering},
@@ -1700,7 +1700,7 @@ article{treelstm,
   publisher={IEEE}
 }
 
-@incollection{chen2018tree,
+incollection{chen2018tree,
   title = {Tree-to-tree Neural Networks for Program Translation},
   author = {Chen, Xinyun and
             Liu, Chang and
@@ -1713,7 +1713,7 @@ article{treelstm,
   url = {http://papers.nips.cc/paper/7521-tree-to-tree-neural-networks-for-program-translation.pdf}
 }
 
-@inproceedings{kim2019translating,
+inproceedings{kim2019translating,
   title={Translating CUDA to OpenCL for hardware generation using neural machine translation},
   author={Kim, Yonghae and
           Kim, Hyesoon},
@@ -1725,7 +1725,7 @@ article{treelstm,
   organization={IEEE}
 }
 
-@article{cho2014nmt,
+article{cho2014nmt,
   author    = {KyungHyun Cho and
                Bart van Merrienboer and
                Dzmitry Bahdanau and
@@ -1742,7 +1742,7 @@ article{treelstm,
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@InProceedings{virtualassistant,
+InProceedings{virtualassistant,
   author={Tulshan, Amrita S. and
           Dhage, Sudhir Namdeorao},
   editor={Thampi, Sabu M. and
@@ -1763,7 +1763,7 @@ article{treelstm,
   isbn={978-981-13-5758-9}
 }
 
-@article{genie,
+article{genie,
   author    = {Giovanni Campagna and
                Silei Xu and
                Mehrad Moradshahi and
@@ -1782,7 +1782,7 @@ article{treelstm,
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@article{juang1991hidden,
+article{juang1991hidden,
   title={Hidden Markov models for speech recognition},
   author={Juang, Biing Hwang and Rabiner, Laurence R},
   journal={Technometrics},
@@ -1794,7 +1794,7 @@ article{treelstm,
   publisher={Taylor \& Francis}
 }
 
-@inproceedings{graves2013speech,
+inproceedings{graves2013speech,
   title={Speech recognition with deep recurrent neural networks},
   author={Graves, Alex and Mohamed, Abdel-rahman and Hinton, Geoffrey},
   booktitle={2013 IEEE international conference on acoustics, speech and signal processing},
@@ -1805,7 +1805,7 @@ article{treelstm,
   organization={IEEE}
 }
 
-@article{li2016deep,
+article{li2016deep,
   author    = {Jiwei Li and
                Will Monroe and
                Alan Ritter and
@@ -1824,7 +1824,7 @@ article{treelstm,
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@article{bordes2016goaldialogue,
+article{bordes2016goaldialogue,
   author    = {Bordes, Antoine and
                Weston, Jason},
   title     = {Learning End-to-End Goal-Oriented Dialog},
@@ -1839,7 +1839,7 @@ article{treelstm,
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@article{li2016taskdialogue,
+article{li2016taskdialogue,
   author    = {Li, Xiujun and
                Lipton, Zachary C. and
                Dhingra, Bhuwan and
@@ -1858,7 +1858,7 @@ article{treelstm,
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@book{eiben2003introduction,
+book{eiben2003introduction,
   title={Introduction to evolutionary computing},
   author={Eiben, Agoston E and
           Smith, James E and others},
@@ -1877,7 +1877,7 @@ article{treelstm,
   institution={University of Wisconsin-Madison Department of Computer Sciences}
 }
 
-@book{mockus2012bayesian,
+book{mockus2012bayesian,
   title={Bayesian approach to global optimization: theory and applications},
   author={Mockus, Jonas},
   volume={37},
@@ -1915,7 +1915,7 @@ article{treelstm,
   publisher={ACM New York, NY, USA}
 }
 
-@inproceedings{weimer2009automatically,
+inproceedings{weimer2009automatically,
   title={Automatically finding patches using genetic programming},
   author={Weimer, Westley and Nguyen, ThanhVu and Le Goues, Claire and Forrest, Stephanie},
   booktitle={2009 IEEE 31st International Conference on Software Engineering},
@@ -1925,7 +1925,7 @@ article{treelstm,
   organization={IEEE}
 }
 
-@inproceedings{forrest2009genetic,
+inproceedings{forrest2009genetic,
   title={A genetic programming approach to automated software repair},
   author={Forrest, Stephanie and Nguyen, ThanhVu and Weimer, Westley and Le Goues, Claire},
   booktitle={Proceedings of the 11th Annual conference on Genetic and evolutionary computation},
@@ -1951,7 +1951,7 @@ article{treelstm,
   organization={JMLR. org}
 }
 
-@techreport{rosenblatt1961principles,
+techreport{rosenblatt1961principles,
   title={Principles of neurodynamics. perceptrons and the theory of brain mechanisms},
   author={Rosenblatt, Frank},
   year={1961},
@@ -1976,7 +1976,7 @@ article{treelstm,
   urldate = {2020-05-18}
 }
 
-@article{eilenberg1945general,
+article{eilenberg1945general,
   title={General theory of natural equivalences},
   author={Eilenberg, Samuel and
           MacLane, Saunders},
@@ -1990,7 +1990,7 @@ article{treelstm,
   publisher={JSTOR}
 }
 
-@book{awodey2010category,
+book{awodey2010category,
   title={Category theory},
   author={Awodey, Steve},
   year={2010},
@@ -1998,25 +1998,25 @@ article{treelstm,
   publisher={Oxford University Press}
 }
 
-@online{holesagda,
+online{holesagda,
   title = {Quick Guide to Editing, Type Checking and Compiling Agda Code},
   url={https://agda.readthedocs.io/en/latest/getting-started/quick-guide.html},
   urldate = {2020-05-18}
 }
 
-@online{holesidris,
+online{holesidris,
   title = {Types and Functions - Idris 1.3.2 documentation},
   url={http://docs.idris-lang.org/en/latest/tutorial/typesfuns.html#holes},
   urldate = {2020-05-18}
 }
 
-@online{holeshaskell,
+online{holeshaskell,
   title = {GHC/Typed holes - HaskellWiki},
   url={https://wiki.haskell.org/GHC/Typed_holes},
   urldate = {2020-05-18}
 }
 
-@online{typedrivendev,
+online{typedrivendev,
   title = {Manning | Type-Driven Development with Idris},
   url={https://manning.com/books/type-driven-development-with-idris},
   urldate = {2020-05-18}
@@ -2077,7 +2077,7 @@ book{oliphant2006guide,
   publisher={Trelgol Publishing USA}
 }
 
-@inproceedings{miller2018smart,
+inproceedings{miller2018smart,
   title={Smart contracts and opportunities for formal methods},
   author={Miller, Andrew and
           Cai, Zhicheng and
@@ -2090,7 +2090,7 @@ book{oliphant2006guide,
   organization={Springer}
 }
 
-@inproceedings{leveson2001systemic,
+inproceedings{leveson2001systemic,
   title={Systemic factors in software-related spacecraft accidents},
   author={Leveson, Nancy},
   booktitle={AIAA Space 2001 Conference and Exposition},
@@ -2238,7 +2238,7 @@ article{boudol1998pi,
   publisher={Springer}
 }
 
-@article{gentzen1935untersuchungen,
+article{gentzen1935untersuchungen,
   title={Untersuchungen {\"u}ber das logische Schlie{\ss}en. I},
   author={Gentzen, Gerhard},
   journal={Mathematische zeitschrift},
@@ -2504,14 +2504,14 @@ article{baldi2014dropout,
 %  bibsource = {dblp computer science bibliography, https://dblp.org}
 %}
 
-@article{eisele2016log,
+article{eisele2016log,
   title={The log-sum-exp trick in machine learning},
   author={Eisele, R},
   journal={Systems Architect and DBA},
   year={2016}
 }
 
-@article{chen1994weighted,
+article{chen1994weighted,
   title={Weighted finite population sampling to maximize entropy},
   author={Chen, Xiang-Hui and
           Dempster, Arthur P and
@@ -2561,7 +2561,7 @@ article{baldi2014dropout,
   publisher={ACM New York, NY, USA}
 }
 
-@misc{lachaux2020unsupervised,
+misc{lachaux2020unsupervised,
     title={Unsupervised Translation of Programming Languages},
     author={Marie-Anne Lachaux and
             Baptiste Roziere and
@@ -2605,7 +2605,7 @@ article{baldi2014dropout,
   urldate = {2020-06-12}
 }
 
-@online{distillbo,
+online{distillbo,
   author = {Agnihotri, Apoorv and
             Batra, Nipun},
   title = {Exploring Bayesian Optimization},
