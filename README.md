@@ -9,4 +9,6 @@ docker run -ti -v $PWD:/app konraifen88/biber-texlive biber --tool --validate-da
 pacman -S texlive-core texlive-latexextra texlive-science
 # compile
 latexmk
+# compress
+tar -czvf arxiv.tar.gz *.tex *.sty *.bib *.bbl figures
 ```
