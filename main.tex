@@ -3005,7 +3005,8 @@ This demonstrates that the findings from traditional program synthesis methods a
     \label{fig:accuracy}
 \end{figure*}
 
-Accuracy results over training on our validation set can be found in Figure \ref{fig:accuracy}.
+Accuracy results over training on our validation set can be found in Figure \ref{fig:accuracy},
+while accuracy on the test set for the fully trained models may be found in Figure \ref{fig:finalacc}.
 We see that the simpler vanilla NSPS model is both more limited in variance while also learning to a more limited extent before converging.
 
 Our first observation here is that the task has turned out relatively challenging,
@@ -3024,6 +3025,26 @@ starts from sub-random accuracies, yet ends up able to learn more,
 after $20$ epochs out-performing both our baseline and enlarged models,
 indicating it is in fact worthwhile to distribute features between input/output pairs and types.
 
+\begin{figure*}
+    \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|} \hline
+        & \multicolumn{5}{|c|}{ \textbf{evaluated @ 20 samples} } & \multicolumn{5}{|c|}{ \textbf{evaluated @ 100 samples} } \\ \hline
+        & \multicolumn{2}{|c|}{ \textbf{accuracy} } & \multicolumn{3}{|c|}{ \textbf{acc mean @ x nodes} } & \multicolumn{2}{|c|}{ \textbf{accuracy} } & \multicolumn{3}{|c|}{ \textbf{acc mean @ x nodes} } \\ \hline
+        \textbf{experiment} & \textbf{mean} & \textbf{var} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{mean} & \textbf{var} & \textbf{1} & \textbf{2} & \textbf{3} \\ \hline
+        \textbf{vanilla NSPS} & 0.13 & 0.000 & 0.27 & 0.13 & 0.11 & 0.37 & 0.000 & 0.77 & 0.36 & 0.30 \\ \hline
+        \textbf{large} & 0.12 & 0.001 & 0.30 & 0.12 & 0.09 & 0.38 & 0.002 & 0.73 & 0.38 & 0.30 \\ \hline
+        \textbf{typed} & 0.22 & 0.002 & 0.55 & 0.24 & 0.12 & 0.48 & 0.003 & 0.77 & 0.55 & 0.34 \\ \hline
+        \textbf{uniform random} & 0.14 & 0.000 & 0.43 & 0.11 & 0.11 & 0.33 & 0.000 & 0.84 & 0.25 & 0.31 \\ \hline
+    \end{tabular}
+\caption{
+    Summary of final prediction accuracy on our test set over different models after training (4 seeds each),
+    for each selecting the best-performing epoch as per validation accuracy i.e. before overfit.
+    Results are separated by evaluation on 20 vs. 100 samples,
+    and metrics include mean accuracy, variance of accuracy,
+    as well as mean accuracy separated by programs of a given number of nodes.
+}
+\label{fig:finalacc}
+\end{figure*}
+
 We additionally attempted to look into whether we could find a correlation between this
 advantage gained by incorporating type information with the number of nodes in a program.
 However, the data we managed to gather was insufficient to demonstrate such a correlation.
@@ -3036,8 +3057,8 @@ Specifically, our task turned out hard,
 with none of the models significantly out-performing a random synthesizer
 on the task functions of 3 nodes.
 On the 1-node task functions at 100 samples,
-similarly none of the models outperformed the random synthesizer's 79\% accuracy,
-although at 20 samples the typed model out-performed it at 52\% vs. 39\%.
+similarly none of the models outperformed the random synthesizer's 84\% accuracy,
+although at 20 samples the typed model out-performed it at 55\% vs. 43\%.
 This means that most of the learning success for these models has been on the 2-node task functions,
 particularly for the typed model, achieving over double the random accuracy for either 20 or 100 samples.
 
@@ -3053,19 +3074,20 @@ results for which may be found in Figure \ref{fig:ttest}.
 
 Whereas we similarly compared such differences for accuracy as evaluated on 100 samples,
 we found the outcome for 20 samples to more clearly demonstrate the difference between models.
-Under 3 seeds each our typed model turns out to have only 5.2\%
-to stem from the same distribution as our baseline and enlarged models,
-indicating we should just run one additional seed to definitively prove the superiority of our model.
+Under 4 seeds each our typed model turns out to have only p=1.0\%
+to stem from the same distribution as our baseline model,
+indicating the improvement in performance is statistically significant.
 
 \begin{figure*}
-    \begin{tabular}{|l|c|c|c|c|c|} \hline
+    \begin{tabular}{|l|c|c|c|c|c|c|} \hline
         \textbf{p-values}
-        & \textbf{vanilla} & \textbf{fat} & \textbf{types} \\ \hline
-        \textbf{vanilla} & 1.000 & 0.457 & 0.052 \\ \hline
-        \textbf{fat} & 0.457 & 1.000 & 0.052 \\ \hline
-        \textbf{types} & 0.052 & 0.052 & 1.000 \\ \hline
+        & \textbf{vanilla} & \textbf{large} & \textbf{types} & \textbf{uniform} \\ \hline
+        \textbf{vanilla} & 1.000 & 0.859 & 0.010 & 0.013 \\ \hline
+        \textbf{large} & 0.859 & 1.000 & 0.024 & 0.065 \\ \hline
+        \textbf{types} & 0.010 & 0.024 & 1.000 & 0.001 \\ \hline
+        \textbf{uniform} & 0.013 & 0.065 & 0.001 & 1.000 \\ \hline
     \end{tabular}
-    \caption{P-values for different model combinations under the independent two-sample t-test comparing accuracy as evaluated on 20 samples per task function instance.}
+    \caption{P-values for different model combinations under the independent two-sample t-test comparing accuracy as evaluated on 100 samples per task function instance.}
     \label{fig:ttest}
 \end{figure*}
 
