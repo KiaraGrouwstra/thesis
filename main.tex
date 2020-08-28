@@ -2726,11 +2726,13 @@ first find an appropriate learning rate on our vanilla implementation of NSPS,
 % as we will describe in Section \ref{sec:hparopt},
 otherwise taking the hyperparameter values described in Section \ref{sec:hpar}.
 
-We will then evaluate on our task to evaluate three different models;
+We will then evaluate on our task to evaluate a few different models;
 our vanilla implementation of \citet{nsps}'s NSPS model,
 our type-based additions described in \ref{sec:typednsps},
-as well as the filter-based approach described in \ref{sec:filter}.
-To reduce variance, we run each model to convergence using $3$ different seeds.
+as well as an enlarged version of the vanilla model for fair comparison.
+% as well as the filter-based approach described in \ref{sec:filter}.
+To reduce variance, we run each model to convergence using $4$ different seeds.
+For final evaluation, we provide a uniform random synthesizer as a reference baseline as well.
 
 \subsection{Benchmark task} \label{sec:task}
 
