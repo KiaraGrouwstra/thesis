@@ -55,11 +55,26 @@
 
 \begin{abstract}
 
-    Programming by example (PBE) has traditionally seen a split between formal versus neural approaches,
-    meaning programming types had yet to be used in neural program synthesis.
-    We propose a way to incorporate programming types into a neural program synthesis approach for programming by example.
-    We propose the Typed Neuro-Symbolic Program Synthesis (TNSPS) method based on this idea,
-    and test it in the functional programming context to empirically verify type information may help improve generalization in neural synthesizers on limited-size datasets.
+    In this thesis we look into programming by example (PBE),
+    which is about finding a program mapping given inputs to given outputs.
+    PBE has traditionally seen a split between formal versus neural approaches,
+    where formal approaches typically involve deductive techniques such as SAT solvers and types,
+    while the neural approaches involve training on sample input-outputs with their corresponding program,
+    typically using sequence-based machine learning techniques such as LSTMs~\citep{lstm}.
+    As a result of this split, programming types had yet to be used in neural program synthesis techniques.
+
+    We propose a way to incorporate programming types into a neural program synthesis approach for PBE.
+    We introduce the Typed Neuro-Symbolic Program Synthesis (TNSPS) method based on this idea,
+    and test it in the functional programming context to empirically verify type information
+    may help improve generalization in neural synthesizers on limited-size datasets.
+
+    Our TNSPS model builds upon the existing Neuro-Symbolic Program Synthesis (NSPS)~\citep{nsps},
+    a tree-based neural synthesizer combining info from input-output examples plus the current program,
+    by further exposing information on types of those input-output examples,
+    of the grammar production rules, as well as of the hole that we wish to expand in the program.
+
+    We further explain how we generated a dataset within our domain,
+    which uses a limited subset of Haskell as the synthesis language.
     Finally we discuss several topics of interest that may help take these ideas further.
     For reproducibility, we release our code publicly.~\citep{code}
 
@@ -68,7 +83,7 @@
 \section{Research Direction} % \label{sec:research-direction}
 
 If \emph{AI} is software 2.0~\citep{software20},
-then \emph{program synthesis} lets us apply this to software development itself.
+then \emph{program synthesis} lets us apply software 2.0 to software development itself.
 
 \subsection{Program Synthesis}
 
@@ -89,11 +104,13 @@ This idea of machines producing software is called \emph{program synthesis}~\cit
 
 % synthesis
 
-Historically, program synthesis has been popularized by Microsoft Excel's \emph{FlashFill} feature,
-as well as by intelligent code completion tools, such as Microsoft's \emph{Intellisense},
-Google's \emph{ML Complete},
+Historically, program synthesis has been popularized by
+Microsoft Excel's \emph{FlashFill} feature~\citep{flashfill},
+as well as by intelligent code completion tools,
+such as Microsoft's \emph{Intellisense}~\citep{intellisense},
+Google's \emph{ML Complete}~\citep{mlcomplete},
 % Jetbrains's code completion in their IntelliJ IDE,
-as well as Codota's \emph{TabNine}.
+as well as Codota's \emph{TabNine}~\citep{tabnine}.
 
 Formally speaking, program synthesis is the task of automatically constructing a program
 % ~\footnote{
@@ -117,7 +134,7 @@ As such, program synthesis may bring \emph{hybrid intelligence}~\citep{sun1994co
 
 % synthesis promises
 
-For example, software engineering has seen rise to the idea of \emph{test-driven development},
+For example, software engineering has brought the idea of \emph{test-driven development},
 that is, the cycle of writing a test for your program to check if it does what it should,
 then iterating on an implementation of the program until it passes the test.
 Program synthesis may well help automate this second half.
@@ -125,15 +142,16 @@ Program synthesis may well help automate this second half.
 
 % gap -> this
 
-Computer science and artificial intelligence have remained largely disparate disciplines,
-not quite informing one another as much as they could:
-while machine learning practicioners have gradually expanded the use-cases of AI,
+% Computer science and artificial intelligence have remained largely disparate disciplines,
+% not quite informing one another as much as they could:
+While machine learning practicioners have gradually expanded the use-cases of AI,
 GitHub in 2018 already counted 100 million code repositories~\citep{github100m},
 still limited by human developers,
 demonstrating the potential impact of the single AI branch of neural program synthesis.
 
-Program synthesis itself has seen a similar discipline gap,
-typically having been split between formal (deductive, type-theoretic) vs. neural approaches.
+% Program synthesis itself has seen a similar discipline gap,
+% typically having been split between formal (deductive, type-theoretic) vs. neural approaches.
+Program synthesis itself has typically been split between formal (deductive, type-theoretic) vs. neural approaches.
 This thesis aims to contribute to narrowing this gap by exploring the intersection of these approaches.
 
 The idea of a program synthesizer utilizing a human feedback loop is not new,
@@ -146,7 +164,7 @@ Neural synthesis methods such as OpenAI's GPT-3~\citep{gpt3code}
 instead use sequence completion to provide the user with a likely candidate,
 allowing the user to intervene as deemed fit.
 This approach however has caused concern of a rise in generated code
-that is untested and ununderstood.~\citep{gpt3bugs}
+that is neither tested nor understood.~\citep{gpt3bugs}
 
 Synthesizer-human interaction has been further explored by the idea of \emph{type-driven development}~\citep{brady2017type},
 using type annotations to inform iteratively synthesizing completions to fill program \emph{holes},
@@ -168,7 +186,11 @@ we will briefly compare it to some other fields: program induction, supervised l
 
 Unfortunately the field of program induction suffers from competing definitions, blurring the distinction between what constitutes program \emph{synthesis} versus what constitutes program \emph{induction}. In short though, those in either field claim to be more general than the other branch.
 
-The field of \emph{inductive programming}~\citep{popplestone1969experiment,plotkin1970note,fogel1966intelligent}, primarily known for its sub-branch \emph{inductive logic programming}~\citep{muggleton1991inductive} focused on propositional logic, is simply automatic synthesis of inductive logic, and was coined to distinguish itself from the \emph{deductive} techniques used in \citet{church1957applications}'s synthesis of circuits. Under this definition, the term program synthesis is used to refer to its original scope of program generation using deductive techniques.
+The field of \emph{inductive programming}~\citep{popplestone1969experiment,plotkin1970note,fogel1966intelligent},
+primarily known for its sub-branch \emph{inductive logic programming}~\citep{muggleton1991inductive} focused on propositional logic,
+is simply automatic synthesis using inductive logic,
+and was coined to distinguish itself from the \emph{deductive} techniques used in \citet{church1957applications}'s synthesis of circuits.
+Under this definition, the term program synthesis is used to refer to its original scope of program generation using deductive techniques.
 
 Whereas in the original problem definition the desired behavior was fully specified, program \emph{induction} aimed to generalize the problem to also tackle automatic generation of programs for which the desired behavior had only partially been made explicit, through e.g. input/output examples or incomplete data.
 
@@ -191,7 +213,7 @@ The above definition of program synthesis as explicitly returning a program
 is helpful to explain how it differs from \emph{supervised learning},
 the machine learning task of learning a function that maps an input to an output based on example input-output pairs~\citep{russell2002artificial}.
 
-Deep neural learning methods may potentially be applied to different branches of program synthesis,
+Deep learning methods may potentially be applied to different branches of program synthesis,
 and several of these may in fact be tackled using setups involving supervised learning.
 Of particular note here however is a branch referred to as \emph{programming by example} (PBE),
 which like supervised learning is based on the question of how to reconstruct a mapping between input and output --- in the supervised learning context also referred to as \emph{features} and \emph{labels}, respectively.
@@ -205,9 +227,10 @@ forcing one to instantiate such a model from probabilistic data interpretations.
 % [(X,Y)] -> IO (X -> Y)
 
 This also explains the relative benefits of these two fields:
-supervised learning may stay in the continuous realm,
-characterized by differentiable models optimizable by backpropagation~\citep{backproprnn},
-and not limited in expressivity by the limitations of any particular grammar or set of operations.
+supervised learning enables differentiable evaluation
+without needing workarounds (see Section \ref{sec:neuralpbe}),
+allowing for optimization by backpropagation~\citep{backproprnn},
+and is not limited in expressivity by the limitations of any particular grammar or set of operations.
 This makes it well-positioned to solve problems deemed too complex for traditional programming, such as image recognition.
 
 Program synthesis techniques may instead construct a traditional program,
@@ -291,6 +314,11 @@ as is the goal in PBE.
 
 \subsection{Challenges}
 
+Having given a brief background on where the field of program synthesis fits in,
+we will now briefly outline some of the challenges in this field,
+with a focus on programming by example,
+as a backdrop informing our own research direction.
+
 \subsubsection{Challenge of program synthesis}
 % \subsubsection{Challenge of programming by example}
 
@@ -298,7 +326,7 @@ While considered a holy grail of computer science~\citep{gulwani2017program},
 program synthesis in general is a challenging task, characterized by large search spaces,
 e.g. a search space of $10^{5,943}$ programs to discover an expert implementation of the MD5 hash function.~\cite{gulwani2017program}
 
-\subsubsection{Challenges of type-theoretic programming by example} \label{sec:typepbe}
+\subsubsection{Challenge of type-theoretic programming by example} \label{sec:typepbe}
 
 One issue with type-theoretic approaches to PBE, later introduced in further detail,
 is that while such search methods are able to make use of both input/output examples and types in their search,
@@ -331,9 +359,11 @@ compensating for their lack of an inherently meaningful incremental state.
 
 \subsection{Research question}
 
-\subsubsection{Complementary strengths}
+% \subsubsection{Complementary strengths}
 
-Our key observation here is thus that input-output examples and types are quite complementary as specifications constraining our program behavior.
+Based on the previous section,
+our key observation here is thus that input-output examples and types are
+quite complementary as specifications constraining our program behavior.
 Input-output examples are relatively expressive,
 but may only help us to evaluate the quality of complete programs.
 Types, on the other hand, are by themselves not usually descriptive enough of our task,
@@ -341,9 +371,18 @@ but may help us to provide a less noisy summary of program behavior, hopefully a
 as well as to evaluate even incomplete programs still containing holes,
 and to inform further incremental synthesis steps.
 
+This brings us to the question:
+% \begin{displayquote} % \label{hyp:types}
+    % \emph{
+        % Research question:
+        can neural program synthesis methods benefit from using type information?
+    % }
+% \end{displayquote}
+
 \subsubsection{Hypothesis}
 
-We therefore hypothesize that program synthesizers may thus capitalize on this synergy by utilizing both kinds of information,
+Based on the complementary strengths mentioned above,
+we therefore hypothesize that program synthesizers may capitalize on this synergy by utilizing both kinds of information,
 rather than settling for only one of the two, as most existing methods have done.%
 ~\footnote{
     While one might wonder if this constrains our idea to the subset of PBE problems where type information is available,
@@ -361,13 +400,16 @@ rather than settling for only one of the two, as most existing methods have done
 %     then finally, (3) using a third algorithm, translate the full program back to the target language.
 % }
 
-Specifically, we hypothesize that the effectiveness of neural program synthesis may be improved by
-adding type information as additional features during training and testing,
-which in \emph{abstract syntax tree} (AST) based neural program synthesis may be calculated at each incremental prediction step.
-
+Specifically, we formulate the following hypothesis:
 \begin{displayquote} % \label{hyp:types}
-    \emph{Research question: can neural program synthesis methods benefit from using types as additional features?}
+    \emph{
+        Hypothesis:
+        the effectiveness of neural program synthesis may be improved by
+        adding type information as additional features.
+    }
 \end{displayquote}
+% during training and testing,
+% which in \emph{abstract syntax tree} (AST) based neural program synthesis may be calculated at each incremental prediction step.
 
 % An alternative approach would be to enumerate any possible options for a given node,
 % then filtering this list of options based on such compiler feedback.%
@@ -414,6 +456,10 @@ On types of synthesizers,
     \item the \emph{space} of programs over which it searches;
     \item the \emph{search technique} it employs, i.e. the synthesizer.
 \end{itemize}
+
+User intent in program synthesis can be expressed in various forms, including logical specification~\citep{temporalstreamlogic} (among which types~\citep{synquid}),
+input-output examples, traces, natural language~\citep{abstractsyntaxnetworks},
+partial programs, or even related programs.~\citep{gulwani2017program}
 
 While the common thread in program synthesis is that our intended output takes the form of a program,
 sub-branches of this field are primarily defined by the types of input we use to come to this output,
@@ -731,7 +777,7 @@ once a filled version turns out unviable due to a certain production rule used f
 other variants involving the faulty choice in question may be ruled out as well.
 
 This synthesis method has also spawned a solver-aided language
-\emph{designed} to facilitate this type of program synthesis~\citep{rosette},
+designed to facilitate this type of program synthesis~\citep{rosette},
 which generates satisfiability conditions for satisfactory programs
 based on failing input-output examples such as to synthesize program repairs.
 
@@ -750,7 +796,7 @@ Deductive techniques are based on theorem provers,
 and recursively reduce the synthesis problem into sub-problems,
 propagating constraints.
 These include approaches based on \emph{inverse semantics} of
-DSL operators and \emph{type-theoretic PBE}.
+domain-specific language (DSL) operators and \emph{type-theoretic PBE}.
 
 % \subparagraph{Inverse semantics}
 
@@ -762,15 +808,15 @@ and use its inverse logic to propagate our original
 input-output examples to its sub-expressions.
 This way we have obtained a simpler sub-problem to solve.
 
-For example, let's say we have the input-output mapping $1 \rightarrow 3$.
-We would then go over our potential grammar expansion rules to consider how to construct our program.
-If we would now have an expansion rule \emph{increment} taking one numerical parameter and returning it incremented by $1$,
-we could use its logical \emph{inverse} to propagate our input-output mapping to the inner expression of our \emph{increment} function:
-this teaches us that given this outer expression,
-the inner expression must satisfy the mapping $1 \rightarrow 2$.
-The generalization of such a function inverse to work with functions
-taking multiple parameters uses \emph{witness functions},
-each representing a function inverse for a given parameter.
+% For example, let's say we have the input-output mapping $1 \rightarrow 3$.
+% We would then go over our potential grammar expansion rules to consider how to construct our program.
+% If we would now have an expansion rule \emph{increment} taking one numerical parameter and returning it incremented by $1$,
+% we could use its logical \emph{inverse} to propagate our input-output mapping to the inner expression of our \emph{increment} function:
+% this teaches us that given this outer expression,
+% the inner expression must satisfy the mapping $1 \rightarrow 2$.
+% The generalization of such a function inverse to work with functions
+% taking multiple parameters uses \emph{witness functions},
+% each representing a function inverse for a given parameter.
 
 While this is a useful search technique however, its
 use is unfortunately limited to invertible operations,
@@ -840,19 +886,19 @@ it does not make sense to ask e.g. what program is half-way in between $x+x$ and
 
 As such, in discrete settings we lack this required notion of gradients:
 while we might evaluate the quality of different programs,
-we may not have \emph{intermediate} programs to evaluate the quality of a given optimization direction.
+we may not have intermediate programs to evaluate the quality of a given optimization direction.
 
 This problem can be worked around in different ways:
 \begin{itemize}
     \item Using a \emph{differentiable interpreter} to directly enable gradient-based optimization.~\citep{forth,terpret,houdini,feser2016differentiable,rocktaschel2017end,abadi2019simple}
         However, while only empirical evidence is available to compare this approach, as per \citet{terpret} such purely SGD-based methods so far appear to have proven less effective than traditional or mixed methods such as linear programming, Sketch~\citep{solar2008program} or SMT.
     \item Using \emph{strong supervision}, i.e. create a differentiable loss signal
-        to supervise synthesis training by checking if the synthesized program is \emph{identical} to the target program,
-        rather than if it has \emph{equivalent behavior}.
-        This approach unfortunately simplifies our problem \emph{too much}%
+        to supervise synthesis training by checking if the synthesized program is identical to the target program,
+        rather than if it has equivalent behavior.
+        This approach unfortunately simplifies our problem too much%
         ~\footnote{
             In reality, we wish to condition our model to synthesize not just the known programs,
-            but to generalize to learn to synthesize \emph{unknown} programs matching our task specification as well.
+            but to generalize to learn to synthesize unknown programs matching our task specification as well.
             Supervising by a given `known correct' program instead tells our model that other programs matching our specification somehow do not qualify as correct.
 
             As a result, such supervision requires that the training dataset provides a representative sample of our full program space:
@@ -863,7 +909,7 @@ This problem can be worked around in different ways:
     \item Using \emph{weak supervision}~\citep{mapo},
         which tends to address the problem of reward differentiability by using \emph{reinforcement learning} techniques to estimate a gradient to optimize by%
         ~\citep{chen2017towards,bunel2018leveraging,xu2019neural,camacho2019towards},
-        so as to learn to synthesize by \emph{trying} based on program performance rather than from direct supervision signals.
+        so as to learn to synthesize by trying based on program performance rather than from direct supervision signals.
         This approach solves the issues of supervised neural synthesis,
         but requires a more complex setup.
         This typically involves bootstrapping on strong supervision to overcome the \emph{cold start} problem of finding an initial reward gradient.
@@ -935,9 +981,9 @@ this feedback signal is much delayed if a synthesizer would gradually synthesize
 only learning about resulting program behavior once the program is complete.
 
 As such, sequence-based neural techniques must learn quite a lot:
-\emph{in addition to} (continuous logical equivalents of) the traditional compiler tasks of \emph{lexing} input into token categories,
+in addition to (continuous logical equivalents of) the traditional compiler tasks of \emph{lexing} input into token categories,
 \emph{parsing} these token sequences into hierarchical structures (ASTs),
-and interpreting these to \emph{execute} them as programs,
+and interpreting these to execute them as programs,
 these synthesizers must additionally learn how to construct and update a (memorized) state so as to ultimately,
 when the synthesizer considers its code complete, obtain a correct program.
 
@@ -967,13 +1013,23 @@ which we will introduce in more detail in the next section.
 
 \paragraph{Neuro-symbolic program synthesis} \label{sec:nsps}
 
-The \emph{neuro-symbolic} program synthesis (NSPS) model introduced in \citet{nsps} is named after the fact that it uses programming \emph{symbols} as neural features,
-allowing it to combine symbolic and neural approaches.
-NSPS improves on existing \emph{sequence-to-sequence}-based neural synthesis models by using a tree-based neural architecture they call the \emph{recursive-reverse-recursive neural network} (R3NN).
+The \emph{neuro-symbolic} program synthesis (NSPS) model introduced in \citet{nsps}
+is the model we will build upon for our own experiment, so we will explain it in more detail here.
+The reason we picked NSPS as our benchmark algorithm in particular is
+that there have been only few neural synthesizers out there
+based on abstract syntax trees (ASTs) rather than sequences.
 
-NSPS aims to make predictions on credible rule expansions to fill holes
+NSPS is named after the fact that it uses programming \emph{symbols} as neural features,
+allowing it to combine symbolic and neural approaches.
+NSPS improves on existing \emph{sequence-to-sequence}-based neural synthesis models
+by using a tree-based neural architecture they call the
+\emph{recursive-reverse-recursive neural network} (R3NN).
+
+NSPS then aims to make predictions on credible rule expansions to fill holes
 in \emph{partial program trees} (\emph{PPTs}) --- basically ASTs containing holes --- based on the program's content and structure.
 As usual in neural PBE NSPS also conditions on the (encoded) input/output examples, as seen in Figure \ref{nsps}.
+These hole expansions are based on a \emph{context-free grammar} describing the domain-specific language (DSL) to be synthesized.
+Such a grammar consists of sets of expansions rules from left-hand symbols to productions in the grammar (which may include further left-hand symbols).
 
 \begin{figure*}[h]
     \begin{tabular}{c|c}
@@ -987,12 +1043,14 @@ As usual in neural PBE NSPS also conditions on the (encoded) input/output exampl
         \\
         (a) Training Phase & (b) Test Phase
     \end{tabular}
-    \caption{overview of the Neuro-Symbolic Program Synthesis model~\citep{nsps}}
+    \caption{overview of the Neuro-Symbolic Program Synthesis model, taken from \citep{nsps}}
     \label{nsps}
 \end{figure*}
 
 \citet{nsps} try out different example encoders,
-each embedding into a continuous space a \emph{one-hot} representation of the input or output strings of their domain.
+each embedding into a continuous space a \emph{one-hot} representation of the input or output strings of their domain,
+i.e. for a vocabulary of `a', `b' and `c', encode `b' as $010$,
+meaning the second option out of three.
 They start out with a simple LSTM baseline,
 % but progressing through various versions of a \emph{cross-correlation encoder},
 then introduce different variants based on the \emph{cross-correlation}~\citep{bracewell1986fourier} between inputs and outputs.
@@ -1007,7 +1065,8 @@ one for inputs, one for outputs.
 For each I/O pair, it then concatenates the topmost hidden representation
 at every time step to produce a $4HT$-dimensional feature vector per I/O pair,
 where $T$ is the maximum string length for any input or output string,
-and $H$ is the topmost LSTM hidden dimension.
+and $H$ is the topmost LSTM hidden dimension controlling the amount
+of features we would like per one-hot encoded characters.
 It then concatenates the encoding vectors across all I/O pairs
 to get a vector representation of the entire I/O set.~\citep{nsps}
 
@@ -1028,32 +1087,33 @@ to get a vector representation of the entire I/O set.~\citep{nsps}
         \\
         (a) Recursive pass & (b) Reverse-Recursive pass
     \end{tabular}
-    \caption{(a) The initial recursive pass of the R3NN. (b) The reverse-recursive pass of the R3NN where the input is the output of the previous recursive pass.}
+    \caption{(a) The initial recursive pass of the R3NN. (b) The reverse-recursive pass of the R3NN where the input is the output of the previous recursive pass. Illustrations taken from \citep{nsps}.}
     \label{r3nn}
 \end{figure*}
 
 The workings of the R3NN are illustrated in Figure \ref{r3nn}.
-The R3NN utilizes two parallel sets of neural networks,
-both consisting of one neural net per grammar production rule $r \in R$,
-one set for each of its two passes through an AST: $f_r$ and $g_r$,
-in the diagram denoted by $W(r)$ and $G(r)$, respectively,
+The R3NN utilizes two parallel sets of neural networks, $f_r$ and $g_r$,
+both consisting of one neural net per grammar production rule $r \in R$.
+In the diagram these are denoted by $W(r)$ and $G(r)$, respectively,
 with $r$ calculated as production rule $R(n)$ of non-leaf node $n$.
-These neural networks use only a single layer with hyperbolic tangent activation function (denoted by $\sigma$).
+or determined by its symbol $s \in S$ at any leaf $l \in L$,
+where $s$ represents an operator in our grammar, calculated by $S(l)$.
+These two sets correspond to the R3NN's two passes through an AST (explained below).
+Their neural networks use a single layer with hyperbolic tangent activation function (denoted by $\sigma$).
 
-In addition to these, the R3NN has an embedded representation $\phi(s) \in \mathbb{R}^M$ for every operator or \emph{symbol} $s \in S$,
-and a representation $\omega(r) \in \mathbb{R}^M$ for every production rule $r \in R$.
+R3NN defines a hyperparameter $M$ indicating the number of features used in their embeddings.
+It uses this in an embedded representation $\phi(s) \in \mathbb{R}^M$
+for every operator in the DSL (e.g. \verb|+|), which they refer to as \emph{symbols} $s \in S$,
+as well as in a representation $\omega(r) \in \mathbb{R}^M$ for every production rule $r \in R$.
 
-The R3NN first makes a \emph{recursive pass} from the embeddings $\phi(l)$ of leaves $l \in L$ of the program tree through neural networks $f_r$ at each branch,
-mapping from $Q \cdot M$ to $M$ dimensions,
-i.e. from concatenated right-hand side (RHS) vectors to a left-hand side (LHS) vector,
-all the way to the root node of the partial program,
+The R3NN first makes a \emph{recursive pass} from the embeddings $\phi(l)$
+of leaves $l \in L$ of the program tree gradually toward the root node of the partial program,
 making for an embedding $\phi(root)$ of the full program so far.
-
-$Q$ here represents the number of child nodes of the branch in question
+Given a number of child nodes $Q$ of the branch in question
 (as dictated by the grammar expansion rule it represents),
-while $M$ indicates the number of features used per AST node.
-At any leaf $l \in L$, $r$ is determined by its symbol $s \in S$
-representing an operator in the DSL, calculated by $S(l)$.
+this recursive pass goes through neural networks $f_r$ at each branch,
+mapping from $Q \cdot M$ to $M$ dimensions,
+i.e. from concatenated right-hand side (RHS) vectors to a left-hand side (LHS) vector.
 
 It then performs a \emph{reverse recursive pass} from this root embedding $\phi(root)$,
 now passing back to the leaves through $g_r$,
@@ -1072,11 +1132,10 @@ Expansion scores of an expansion $e$ they define as the dot product of their res
 $z_e = \phi'(e.l) \cdot \omega(e.r)$.
 
 These scores are then normalized to probabilities using a \emph{softmax} operation.
-They find processing leaf embeddings $\phi'(l)$ by a bidirectional LSTM before the score calculation helped as well.
-
+They find processing leaf embeddings $\phi'(l)$ by a bidirectional LSTM%
+~\citep{huang2015bidirectional} before the score calculation helped as well.
 To condition R3NN expansion probabilities on the input-output examples specifying desired program behavior in PBE,
-they test different places in the R3NN to add these,
-but settle on concatenating them to the node features $\phi$ before the recursive pass.
+they concatenate them to the node features $\phi$ before the recursive pass.
 
 For the training phase they use the strong supervision (see start of Section \ref{sec:neuralpbe})
 setup of supervising by the \emph{task function},
@@ -1088,16 +1147,16 @@ As this is a strongly supervised model,
 the loss $J^{(task)}_{PPT}$ predicting one hole-expansion for a task function $task$ given a
 partial-program tree $PPT$ is defined as the cross-entropy between our predicted probability matrix
 $\mathbf{\hat{P}}_{PPT}$ (over holes $H$ and expansion rules $R$)
-versus the golden 'probabilities' $\mathbf{P}^{(task)}_{PPT}$ as per the task function we are supervising against,
+versus the golden `probabilities' $\mathbf{P}^{(task)}_{PPT}$ as per the task function we are supervising against,
 i.e. a matrix that for each hole is defined as a one-hot vector marking the chosen expansion rule as $1$,
 the remaining expansion rules as $0$:
 
 \begin{align*}
 J^{(task)}_{PPT} &= \operatorname{CE}(\mathbf{P}^{(task)}_{PPT},\mathbf{\hat{P}}_{PPT}) = -\operatorname{E}_{\mathbf{P}^{(task)}_{PPT}}[\log \mathbf{\hat{P}}_{PPT}] \\
-\mathbf{P}^{(task)}_{PPT} &= \begin{bmatrix} \mathbf{p}^T_0 \\ \vdots \\ \mathbf{p}^T_N \end{bmatrix} | N = \text{count of } H^{(PPT)} \\
-\mathbf{p}^T_n &= \begin{bmatrix} p_{n0} & \dots & p_{nk} & \dots & p_{nK} \end{bmatrix} | \sum^K_i p_{ni} = 1, \quad K = \text{count of R} \\
-&= \begin{bmatrix} 0 & \dots & 1 & \dots & 0 \end{bmatrix} | H^{(PPT)}_n = V_k \\
-\mathbf{\hat{P}}_{PPT} &= \operatorname{R3NN}(PPT, ioFeats) \\
+% \mathbf{P}^{(task)}_{PPT} &= \begin{bmatrix} \mathbf{p}^T_0 \\ \vdots \\ \mathbf{p}^T_N \end{bmatrix} | N = \text{count of } H^{(PPT)} \\
+% \mathbf{p}^T_n &= \begin{bmatrix} p_{n0} & \dots & p_{nk} & \dots & p_{nK} \end{bmatrix} | \sum^K_i p_{ni} = 1, \quad K = \text{count of R} \\
+% &= \begin{bmatrix} 0 & \dots & 1 & \dots & 0 \end{bmatrix} | H^{(PPT)}_n = V_k \\
+% \mathbf{\hat{P}}_{PPT} &= \operatorname{R3NN}(PPT, ioFeats) \\
 \end{align*}
 
 If the task function consists of more than a single node, then we will obtain such a loss for every such prediction step (each starting from their own $PPT$).
@@ -1108,7 +1167,9 @@ Informing our current prediction using previous predictions in such a way makes 
 
 % While we have chosen this model to build upon as it is AST-based rather than token-based,
 Some critiques of the model have included it being harder to batch (i.e. enable parallel execution) over multiple task functions for larger programs due to its tree-based architecture,
-as well as its pooling at the I/O encoding level being harder to reconcile with \emph{attention}~\citep{bahdanau2014neural} mechanisms than models using late pooling.~\citep{devlin2017robustfill}
+as well as its pooling at the I/O encoding level being harder to reconcile with
+\emph{attention}~\citep{bahdanau2014neural} mechanisms.~\citep{devlin2017robustfill}
+% than models using late pooling
 
 For our purposes, by merit of the untyped Microsoft Excel \emph{FlashFill}~\citep{prose} domain this model was tested on,
 it also shares a weakness with other neural synthesis models:
@@ -1119,10 +1180,11 @@ while existing type-theoretic synthesis approaches have shown this info to be hi
 \paragraph{Neural-guided search} \label{sec:ngs}
 
 \emph{Neural-guided search} is an another approach to \emph{hybrid} neural synthesis,
-like \citet{nsps}'s \emph{neuro-symbolic program synthesis} model combining symbolic and statistical synthesis methods.~\citep{nps}
+and like \citet{nsps}'s \emph{neuro-symbolic program synthesis} model
+combines symbolic and statistical synthesis methods~\citep{nps}.
 It employs neural components to indicate search order within traditional search methods
 such as enumerative search (possibly pruned using deduction),
-'sort-and-add' enumeration or sketch filling.~\citep{deepcoder}
+`sort-and-add' enumeration or sketch filling.~\citep{deepcoder}
 
 \citet{kalyan2018neural} built on this to extend the guidance to each search step,
 integrating \emph{deductive} search (e.g. a SAT/SMT solver, extensions
@@ -1133,16 +1195,16 @@ to explore (branch-and-bound~\citep{kalyan2018neural}, beam search%
 ~\citep{polosukhin2018neural}, $A^{*}$~\citep{lee2018accelerating}).
 The statistical model mentioned here is where other
 neural synthesis methods would fit into this approach.
-Another important decision here is when to \emph{prune} branches,
-although near the leaves this check may be slower
-than to just explore any that remain.~\citep{polozov}
+% Another important decision here is when to prune branches,
+% although near the leaves this check may be slower
+% than to just explore any that remain.~\citep{polozov}
 
 \citet{feng2018program} expanded on neural-guided deductive techniques
 like SMT solvers by \emph{conflict-driven} learning,
-ensuring that if e.g. a \emph{map} operation would yield an
+ensuring that if e.g. a \verb|map| operation would yield an
 output list length not corresponding to the desired length,
 other operations suffering from the same issue such as
-\emph{reverse} and \emph{sort} would be automatically ruled out as well.
+\verb|reverse| and \verb|sort| would be automatically ruled out as well.
 
 \citet{zhang2018leveraging} focus on incorporating deduced constraints
 into the statistical model, to allow taking this info into account
@@ -1255,40 +1317,23 @@ With this lambda calculus, we now have a solid basis for a simple expressive gra
     to address \citet{church1957applications}'s problem of synthesizing programs.
 }
 
-\subsection{Complementing synthesis grammars with \emph{static typing}} \label{sec:statictyping}
-
-% Of our goals of expressiveness versus a limited search space,
-\emph{Types} may help us limit our search space:
-we would like them to prune out any parts of the search space that are not sensible,
-i.e. would not pass a type-check.
-% As we have laid out above,
-These are nearly a \emph{free lunch} when it comes to restricting the synthesis search space,
-as per our hypothesis % \#1
-% \ref{hyp:types}
-thereby improving synthesis performance.
-% While static typing would therefore facilitate automation of programming,
-% % static typing, as one step toward formal verification,
-% this symbiosis works two ways:
-% by encouraging the use of statically typed languages,
-% type-driven synthesis
-% brings the additional advantage of helping reduce the
-% risk of potentially costly software failures.%
-% ~\citep{miller2018smart,leveson2001systemic}
+\subsection{Complementing synthesis grammars with static typing} \label{sec:statictyping}
 
 % \subsubsection{Types versus grammar: generics} \label{sec:generics}
 
-However, one might note here that traditionally,
-search spaces in program synthesis have been restricted not using types,
-but using \emph{context-free grammars},
+One might note here that traditionally,
+search spaces in program synthesis have been restricted
+primarily using the generally available \emph{context-free grammars},
 % an approach that is the subject of the
 as in the
-\emph{Syntax-Guided Synthesis competition} (SyGuS-Comp)~\citep{sygus}.
-One might wonder: how then would restrictions based on
-types compare to restrictions imposed by a grammar?
+\emph{Syntax-Guided Synthesis competition} (SyGuS-Comp)~\citep{sygus},
+rather than additionally doing so using types, which may only be available in certain DSLs.
+One might wonder: how then might adding restrictions based on types
+compare to solely relying on restrictions imposed by a grammar?
 
-In a type system consisting only of unparametrized types,
-such as \emph{boolean} or \emph{integer} but not \emph{list of booleans},
-restraining a search using types is in fact \emph{equivalent}
+In a type system consisting only of \emph{unparametrized types},
+such as \verb|boolean| or \verb|integer| but not \verb|list of booleans|,
+restraining a search using types is in fact equivalent
 to a grammar where types are used as left-hand symbols in the grammar.%
 % ~\footnote{
 %     One might note that this equivalence does not imply
@@ -1303,13 +1348,13 @@ However,
 what makes the use of types different from,
 and more powerful than grammars in restricting the search space,
 is the use of \emph{parametric polymorphism}, i.e. availability of \emph{type variables}:
-a function \emph{append} may work using either lists of numbers or lists of strings.
+a function \verb|append| may work using either lists of numbers or lists of strings.
 % ~\footnote{
 %     Left out of scope here are \emph{refinement types},
 %     which further aid synthesis based on conditions to express e.g. `natural numbers greater than $5$'.
 % }
 As such, its type signature may be made \emph{generic} such as to have its return type reflect the types of the parameters used.
-% Similarly, an \emph{identity} function could work on any type, simply returning its input values.
+% Similarly, an \verb|identity| function could work on any type, simply returning its input values.
 
 Having such information available at the type level may add additional information over what is used in the simpler case above.
 For example, a function to look up elements in a list based on their respective locations might take as its inputs one list containing any type of element, along with a second list of integers containing the indices.
@@ -1323,22 +1368,38 @@ such a grammar would quickly explode to the point of no longer remaining a reaso
 % would need to be duplicated at the left-hand-side (LHS) level of the grammar for every known type in the grammar,
 % including for potential parametric types (list of booleans, list of integers, list of lists of booleans, \dots).
 As such, one may regard the reliance of types over a grammar for the purpose of restricting the search space as a generalization of solely relying on a grammar for the purpose of restricting the search space.%
-~\footnote{
-    Nevertheless, it should be noted here that not all programs benefit from this,
-    but only those for which potential operators include statically typed functions
-    making use of parametric return types, i.e. return types containing type variables.
+% ~\footnote{
+%     Nevertheless, it should be noted here that not all programs benefit from this,
+%     but only those for which potential operators include statically typed functions
+%     making use of parametric return types, i.e. return types containing type variables.
 
-    As a result, this restriction limits our method from adding value in direct synthesis of programming languages that are \emph{dynamically typed},
-    e.g. the language Ruby, as well as those lacking \emph{parametric polymorphism}, e.g. the language Go.
+%     As a result, this restriction limits our method from adding value in direct synthesis of programming languages that are \emph{dynamically typed},
+%     e.g. the language Ruby, as well as those lacking \emph{parametric polymorphism}, e.g. the language Go.
 
-    However, this only partly hinders those wishing to synthesize programs in such languages:
-    rather than synthesizing in such languages directly, we would suggest synthesizing from the language that \emph{best constrains} the search space,
-    then using source-to-source translation methods as discussed in Section
-    % \ref{sec:source2source}
-    \ref{sec:synthtypes}
-    (e.g. neural machine translation~\citep{kalchbrenner2013recurrent}),
-    using the synthesized program as input to obtain a program translated into the target language.
-}
+%     However, this only partly hinders those wishing to synthesize programs in such languages:
+%     rather than synthesizing in such languages directly, we would suggest synthesizing from the language that \emph{best constrains} the search space,
+%     then using source-to-source translation methods as discussed in Section
+%     % \ref{sec:source2source}
+%     \ref{sec:synthtypes}
+%     (e.g. neural machine translation~\citep{kalchbrenner2013recurrent}),
+%     using the synthesized program as input to obtain a program translated into the target language.
+% }
+
+% Of our goals of expressiveness versus a limited search space,
+We may therefore use types to prune out additional programs
+that are not sensible, i.e. would not pass a type-check.
+% As we have laid out above,
+% These are nearly a \emph{free lunch} when it comes to restricting
+This way types may help us restrict the synthesis search space,
+as per our hypothesis thereby improving synthesis performance.
+% While static typing would therefore facilitate automation of programming,
+% % static typing, as one step toward formal verification,
+% this symbiosis works two ways:
+% by encouraging the use of statically typed languages,
+% type-driven synthesis
+% brings the additional advantage of helping reduce the
+% risk of potentially costly software failures.%
+% ~\citep{miller2018smart,leveson2001systemic}
 
 % \subsubsection{Types versus expressiveness}
 
@@ -1355,7 +1416,7 @@ As such, one may regard the reliance of types over a grammar for the purpose of 
 % which defines abstract categories based on their defining properties.
 
 % The implication of this is that functions often used on a list structure,
-% such as \emph{map} or \emph{traverse},
+% such as \verb|map| or \verb|traverse|,
 % would no longer be defined to take \emph{list}s,
 % but to instead operate on the more abstract categories of \emph{functor} and \emph{traversable},
 % both of which would the \emph{list} data structure would be a \emph{member} of,
@@ -1381,7 +1442,7 @@ As such, one may regard the reliance of types over a grammar for the purpose of 
 
 % Now, using most statically typed languages,
 % for the purpose of such a type-check we could simulate such holes by means of a \emph{dummy value}.
-% Many programming languages offer e.g. \emph{undefined} or \emph{null} values for this purpose,
+% Many programming languages offer e.g. \verb|undefined| or \verb|null| values for this purpose,
 % and these will allow us to write an incomplete functional program template,
 % yet at the same time pretend our partial program is in fact \emph{complete}.
 
@@ -1424,10 +1485,6 @@ what is the simplest way in which we might effectively test our hypothesis?
 
 \subsection{User intent}
 
-User intent in program synthesis can be expressed in various forms, including logical specification~\citep{temporalstreamlogic} (among which \emph{types}~\citep{synquid}),
-input-output examples, traces, natural language~\citep{abstractsyntaxnetworks},
-partial programs, or even related programs.~\citep{gulwani2017program}
-
 For our expression of user intent, we would like to use input-output examples,
 which may be considered a compromise between what is easier for the end-user,
 who may ideally prefer natural-language descriptions of program behavior,
@@ -1455,7 +1512,7 @@ To (1) reduce ambiguity, (2) increase result quality, and (3) speed up synthesis
 Of interest here is the realization that, in modern programming languages, types may be \emph{inferred} even without explicit type annotations.
 % implication: language preferably should have type inference
 This is then a hidden benefit of synthesis from input-output examples:
-if the types of input-output example pairs may be \emph{inferred},
+if the types of input-output example pairs may be inferred,
 then we may regard this as free additional information we can incorporate in our synthesis process.
 % ~\footnote{
     Optionally letting users explicitly clarify their desired function type
@@ -1518,7 +1575,7 @@ matching our synthesizer search space requirement of maintaining expressiveness 
 
 In addition, functional programming offers various general-purpose programming languages,
 which helps potentially make our synthesizer potentially applicable to a wide variety of domains.
-It is also well amenable to programming \emph{types},
+It is also well amenable to programming types,
 % allowing advanced constructs such as
 % algebraic datatypes (ADTs)~\citep{burstall1977design},
 % generalized algebraic datatypes (GADTs)~\citep{dybjer1991logical},
@@ -1575,9 +1632,9 @@ does not support the use of e.g. type-theoretic approaches,
 limiting the synthesis methods we might use there
 while giving us less means to constrain our search space.
 
-The functional programming paradigm started with \emph{Lisp},
-an implementation of the lambda calculus we introduced in Section \ref{sec:lambdacalc},
-and has formed the basis for other functional programming languages since.
+% The functional programming paradigm started with \emph{Lisp},
+% an implementation of the lambda calculus we introduced in Section \ref{sec:lambdacalc},
+% and has formed the basis for other functional programming languages since.
 
 We will next discuss 
 % how this fits into the language features we are looking for in a synthesis language,
@@ -1590,12 +1647,12 @@ followed by a further explanation on how we adapt lambda calculus for our own sy
 Our \emph{synthesis} language, or \emph{target} language,
 is the language we would like for our synthesizer to generate.
 This is as opposed to the \emph{host} language,
-i.e. the language that our synthesizer is implemented \emph{in}.
+i.e. the language that our synthesizer is implemented in.
 % While these are separate design decisions,
 % they are regarded as separate more so in some
 % branches of program synthesis than in others.
 
-Neural synthesis methods have often tended to implement custom DSLs as the target language,
+Neural synthesis methods have often used custom DSLs as the target language,
 while for the host language typically using \emph{Python}.
 % with deep learning frameworks such as \emph{PyTorch}~\citep{pytorch}.
 % \emph{Python}~\citep{rossum1995python},
@@ -1871,7 +1928,8 @@ though without function definition.
 % As we discussed in Section \ref{sec:holes},
 For the purpose of expressing \emph{partial} programs,
 one feature missing in the lambda calculus that we will need to add in our DSL is that of \emph{holes},
-ideally \emph{typed} (whether explicitly or implicitly) just as the rest of our programs.
+i.e. placeholder nodes in the AST to be filled by the synthesizer.
+% ideally \emph{typed} (whether explicitly or implicitly) just as the rest of our programs.
 
 % As a result, our Haskell-based grammar ends up looking as follows:
 % \begin{tabular}{ccccc}
@@ -1920,7 +1978,7 @@ expr = "(", expr, ") (", expr, ")";
 expr = <any variable contained in our whitelisted operators>;
 \end{verbatim}
 
-As such, given an operator list consisting of operators \emph{and} and \emph{false},
+As such, given an operator list consisting of operators \verb|and| and \verb|false|,
 we would then obtain the following EBNF:
 
 % paren = "(", expr, ")";
@@ -1942,9 +2000,9 @@ However, this simple grammar can unfortunately still generate some bad programs:
     \item programs where the argument of a function is not of the right type.
         This class of mistakes we are no longer able to reliably solve
         at the grammar level due to our polymorphic parametrism.
-        Instead, we wish to defer this kind of check to the \emph{type} level.
+        Instead, we wish to defer this kind of check to the type level.
     \item programs where the arity of a given operator is not respected, i.e.
-        by invoking more \emph{function applications} than we up-front know are supported.
+        by invoking more function applications than we up-front know are supported.
 \end{itemize}
 
 The latter problem we can deal with in either of two ways:
@@ -1959,38 +2017,40 @@ although this would expand the number of production rules in the grammar,
 different numbers of function application for a given operator yield different \emph{result types}.
 For a type-based synthesizer, distinguishing these makes sense,
 as this distinction should facilitate learning.%
-~\footnote{
-    This view is still up for empirical validation.
-    % An alternative view may be that a function argument with an unknown type,
-    % resulting in reduced operator confidence,
-    % would simply lead a synthesizer to prefer filling a different hole.
+% ~\footnote{
+    % This view is still up for empirical validation.
+    % % An alternative view may be that a function argument with an unknown type,
+    % % resulting in reduced operator confidence,
+    % % would simply lead a synthesizer to prefer filling a different hole.
 
-    Moreover, the \emph{unrolled} grammar approach implies upfront known arities of functions' argument and return types%
-    % ~\footnote{
-    %     For in as far as one may speak of arities in a language based on the lambda calculus
-    %     using a synthesizer grammar specifically modeled after the lambda calculus.
-    % }
-    ,
-    which is not in fact the case for generic functions like the \emph{identity function},
-    which may take and return e.g. numbers but also other functions,
-    and more importantly, for functions such as the \emph{argument flipping} combinator
-    as well as for the \emph{function composition combinator},
-    both of which may operate on functions of any arity.
+    % Moreover, the \emph{unrolled} grammar approach implies upfront known arities of functions' argument and return types%
+    % % ~\footnote{
+    % %     For in as far as one may speak of arities in a language based on the lambda calculus
+    % %     using a synthesizer grammar specifically modeled after the lambda calculus.
+    % % }
+    % ,
+    % which is not in fact the case for generic functions like the \emph{identity function},
+    % which may take and return e.g. numbers but also other functions,
+    % and more importantly, for functions such as the \emph{argument flipping} combinator
+    % as well as for the \emph{function composition combinator},
+    % both of which may operate on functions of any arity.
 
-    This poses a significant limitation for the unrolled approach:
-    it essentially means such arity-agnostic combinators are not supported,
-    which in the context of functional programming feels like an undesirable limitation.
+    % This poses a significant limitation for the unrolled approach:
+    % it essentially means such arity-agnostic combinators are not supported,
+    % which in the context of functional programming feels like an undesirable limitation.
 
-    While we acknowledge the limitations of this present approach,
-    considering the operator set we would like to use in our experiments,
-    which we will introduce in Section \ref{sec:task},
+    % While we acknowledge the limitations of this present approach,
+    % considering the operator set we would like to use in our experiments,
+    % which we will introduce in Section \ref{sec:task},
+    While this poses limitations in terms of supporting arity-agnostic operators
+    such as the \emph{argument flipping} and \emph{function composition} combinators,
     we will consider this as sufficient for the purpose of our present paper.
 
-}
+% }
 
 As an example, let's say our operator list again contains the two operators from above,
 one operator false, a variable that does not describe a function, and thus takes no arguments,
-and one operator \emph{and} as a function as per lambda calculus \emph{curried} to take at most two arguments,
+and one operator \verb|and| as a function as per lambda calculus \emph{curried} to take at most two arguments,
 
 Such a \emph{curried} function allows arguments to be applied one at a time.
 The way this works is that, when an argument is applied to a curried form of a function taking two parameters,
@@ -2025,8 +2085,8 @@ However,
 % one rule expansion at a time.
 % As such,
 in \emph{partial programs},
-we express the \emph{holes} or unresolved \emph{expr} symbols as
-using the \emph{dummy variable} of \emph{undefined}
+we express \emph{holes} or unresolved \verb|expr| symbols as
+using the \emph{dummy variable} of \verb|undefined|
 (which in our Haskell context passes compilation unlike the built-in hole `\_'):
 
 \begin{verbatim}
@@ -2038,20 +2098,20 @@ using the \emph{dummy variable} of \emph{undefined}
 \end{verbatim}
 
 This grammar is not technically a valid EBNF,
-as we have deferred specifying the \emph{type}.
+as we have deferred specifying the type.
 This is not a coincidence: the type actually depends on the entire program tree.
-In other words, our grammar productions are \emph{dependent on context},
+In other words, our grammar productions are dependent on context,
 meaning our grammar is not actually \emph{context-free}.
 
 As such, context-free grammar notations such as EBNF cannot
 fully express our production rules inclusive of hole types.
-Any implementation however might use the synthesis language's \emph{type inference},
+Any implementation however might use the synthesis language's type inference,
 in our case built into Haskell, in order to calculate these types.
 
 % For the purpose of running our synthesized programs,
 % we must additionally ensure our whitelisted operators are in scope for our program.
 % We then obtain our actual Haskell program to be interpreted
-% by wrapping our synthesized program in a \emph{let}-expression%
+% by wrapping our synthesized program in a \verb|let|-expression%
 % ~\footnote{
 %     Operators where the body is equal to their name we filter out from such let-expressions.
 %     This is because, in Haskell,
@@ -2081,7 +2141,7 @@ in our case built into Haskell, in order to calculate these types.
 
 Our synthesis approach itself is agnostic to the set of operators used,
 allowing for relatively straight-forward experimentation with different sets of operators.
-Adding new operators simply involves generating a new dataset then retraining the model.
+Adding new operators simply involves generating a new dataset, then retraining the model.
 % \begin{itemize}
 %     \item adding the actual operators, together with their definitions;
 %     \item updating the list of used types for randomized type instance;
@@ -2104,14 +2164,14 @@ As we were unable to find existing datasets in the functional program synthesis 
 of a size appropriate for training a neural model,
 we have opted to instead generate a dataset of our own.
 
-As the potential space of viable programs is not limited inherently,
+As the potential space of viable programs is potentially unbounded,
 we instead opt to artifically limit the space to generate from.
 
 Our main goal in creating a dataset consists of generating the programs to be synthesized,
 alongside the input-output data we would like to use to synthesize them from (as per our PBE setting).
 Now, the inputs here are generated, whereas the outputs are obtained simply by running these inputs through our programs.
 
-However, as our programs may take parameters of parametric types, e.g. list of any given type $[a]$,
+However, as our programs may take parameters of parametric types, e.g. list of any given type \verb|[a]|,
 we take the intermediate step of instantiating such types to monomorphic types,
 i.e. types not containing type variables themselves,
 which we may then generate inputs for.
@@ -2140,7 +2200,7 @@ An example showing what different components of our dataset items might look lik
         \textbf{input expression} & \verb|([((17), '0'), ((20), '2')])| \\ \hline
         \textbf{output expression} & \verb|Right (Just ([17, 20], "02"))| \\ \hline
     \end{tabular}
-    \caption{An task function instance from our dataset with a corresponding sample input/output pair.}
+    \caption{A task function instance from our dataset with a corresponding sample input/output pair.}
     \label{fig:datasample}
 \end{figure*}
 
@@ -2160,9 +2220,9 @@ Our full generated dataset consists of the following elements:
     % variantTypes
     \item types of any expansion rules in our DSL; % operators, including of their curried variants, where some of their arguments would already have been filled;
     % longestExprString/longestString
-    \item the maximum length encountered among stringified (vanilla model:) input-output sets or (augmented model:) either input-output sets or types;
+    \item NSPS's maximum string length $T$, based on our stringified input-output examples (also taking into account types for the augmented model);
     % exprCharMap/ruleCharMap/bothCharMap
-    \item mappings to contiguous integers from characters, separated by those used in our input-output sets, in types, or in either;
+    \item mappings of characters to contiguous integers so we can construct one-hot encodings covering the minimum required range of characters (tracked separately for input-output, types, and either);
     % generationCfg
     \item the configuration used for data generation to make data reproducible, discussed further in Appendix section \ref{sec:gen-params};
     % generatedTypes
@@ -2179,27 +2239,27 @@ A brief overview of how to generate such a dataset to train our synthesizer on i
     \caption{dataset generation}
     \label{alg:gen}
     \begin{algorithmic}
-        \State given: expression space $E$, operators or symbols $s \in S \subset E$, expansion rules $r_s \in R \subset E$, programs $p \in E$, types $t \in T$, monomorphic types $t^{(m)} \in T^{(m)} \subset T$, input expressions $i \in E$, output expressions $o \in E$, parameters $a$;
-        % \State calculate the type $t_s$ of each symbol $s \in S$;
-        \State from $s \in S$ calculate expansion rules $r_s^{(1, \dots, n)}$ unrolling our grammar symbols; % into (partially) applied symbol variants;
-        \State generate any possible program $p$ given our expansion rules $\forall s : r_s^{(1, \dots, n)} \in R^n$ and maximum number of holes;
-        % \State calculate the type $t_p$ of each task function $p \in E$;
-        \State sample up to a maximum number of monomorphic types $t^{(m)} \in T^{(m)}$ within a given nesting limit;
-        % \State split the task functions' parameter types of $t_p$ into functions vs other;
-        \State generate instances $t^{(m)}_{a_p^{(1, \dots, n)}}$ of our generic non-function parameter types $\forall p : t_{a_p^{(1, \dots, n)}}$ using our sampled types $t^{(m)}$;
-        \State for each function type $\forall p \in E: t_p$, sample up to a number of type instances $t^{(m)}_p$;
-        \State generate sample expressions $i_{t^{(m)}_{a_p^{(1, \dots, n)}}}^{(1, \dots, n)}$ for each non-function parameter type instance $t^{(m)}_{a_p^{(1, \dots, n)}}$, up to a maximum each and within given value bounds;
-        \State map each instantiated function parameter type combination $\forall a_p : t^{(m)}_{a_p^{(1, \dots, n)}}$ to a filtered map of generated programs $p^{(1, \dots, n)} \in E$ matching its type to obtain samples $i_{t^{(m)}_{a_p^{(1, \dots, n)}}}^{(1, \dots, n)}$ for our function types;
-        % \State recombine our generated sample expressions for each type instances across functions and non-functions;
-        \State for each task function type instance $t^{(m)}_p$ calculate outputs $o_{t^{(m)}_p}^{(1, \dots, n)}$ using a sample of the generated inputs $i_{t^{(m)}}^{(1, \dots, n)}$;
-        \State filter out program type instances $t^{(m)}_p$ without i/o samples $(i,o)_{t^{(m)}_p}^{(1, \dots, n)}$;
-        % \State combine i/o lists across type instances;
-        \State filter out any functions instances $t^{(m)}_p$ with i/o behavior identical to others to prevent data leakage;
-        % \State filter out task function type instances with no i/o pairs;
+        \State \textbf{given}: expression space $E$, operators or symbols $s \in S \subset E$, expansion rules $r_s \in R \subset E$, programs $p \in E$, types $t \in T$, monomorphic types $t^{(m)} \in T^{(m)} \subset T$, input expressions $i \in E$, output expressions $o \in E$, parameters $a$;
+        % \State \textbf{calculate} the type $t_s$ \textbf{for each} symbol $s \in S$;
+        \State \textbf{calculate} expansion rules $r_s^{(1, \dots, n)}$ \textbf{from} $s \in S$ \textbf{by} unrolling our grammar symbols; % into (partially) applied symbol variants;
+        \State \textbf{generate} any possible program $p$ \textbf{given} expansion rules $\forall s : r_s^{(1, \dots, n)} \in R^n$ and a max number of holes;
+        % \State \textbf{calculate} the type $t_p$ \textbf{for each} task function $p \in E$;
+        \State \textbf{sample} monomorphic types $t^{(m)} \in T^{(m)}$ \textbf{up to} a max number and \textbf{within} a given nesting limit;
+        % \State \textbf{split} the task functions' parameter types of $t_p$ \textbf{into} functions vs other;
+        \State \textbf{generate} instances $t^{(m)}_{a_p^{(1, \dots, n)}}$ \textbf{for each} generic non-function parameter types $\forall p : t_{a_p^{(1, \dots, n)}}$ \textbf{given} sampled types $t^{(m)}$;
+        \State \textbf{sample} type instances $t^{(m)}_p$ \textbf{for each} function type $\forall p \in E: t_p$ \textbf{up to} a given number;
+        \State \textbf{generate} sample expressions $i_{t^{(m)}_{a_p^{(1, \dots, n)}}}^{(1, \dots, n)}$ \textbf{for each} non-function parameter type instance $t^{(m)}_{a_p^{(1, \dots, n)}}$, \textbf{up to} a maximum each and \textbf{within} given value bounds;
+        \State \textbf{calculate} a filtered map of generated programs $p^{(1, \dots, n)} \in E$ \textbf{for each} instantiated function parameter type combination $\forall a_p : t^{(m)}_{a_p^{(1, \dots, n)}}$ \textbf{by} matching its type to obtain samples $i_{t^{(m)}_{a_p^{(1, \dots, n)}}}^{(1, \dots, n)}$ for our function types;
+        % \State \textbf{recombine} our generated sample expressions \textbf{for each} type instance across functions and non-functions;
+        \State \textbf{calculate} outputs $o_{t^{(m)}_p}^{(1, \dots, n)}$ \textbf{for each} task function instance $t^{(m)}_p$ \textbf{given} a sample of generated inputs $i_{t^{(m)}}^{(1, \dots, n)}$;
+        \State \textbf{filter} out program type instances $t^{(m)}_p$ \textbf{without} i/o samples $(i,o)_{t^{(m)}_p}^{(1, \dots, n)}$;
+        % \State \textbf{combine} i/o lists across type instances;
+        \State \textbf{filter} out any functions instances $t^{(m)}_p$ \textbf{with} i/o behavior identical to others to prevent data leakage;
+        % \State \textbf{filter} out task function type instances \textbf{with} no i/o pairs;
         % \State take type instances of task functions as separate entries;
-        \State sample task function type instances $t^{(m)}_p$ from any remaining programs $p$;
-        \State calculate longest strings and character maps;
-        \State split our task function type instances $t^{(m)}_p$ over train, validation and test datasets.
+        \State \textbf{sample} task function type instances $t^{(m)}_p$ \textbf{from} any remaining programs $p$;
+        \State \textbf{calculate} longest strings and character maps;
+        \State \textbf{split} our task function type instances $t^{(m)}_p$ \textbf{over} train, validation and test datasets.
     \end{algorithmic} 
 \end{algorithm}
 
@@ -2215,7 +2275,7 @@ A brief overview of how to generate such a dataset to train our synthesizer on i
 % \end{itemize}
 
 % genBlockVariants
-We first off generate our expansion rules by \emph{unrolling} each operator in the dataset
+We first generate our expansion rules by \emph{unrolling} each operator in the dataset
 as described in Section \ref{sec:grammar},
 using a different number of holes corresponding to any applicable arity.
 % By our hyperparameter \emph{maxWildcardDepth} we allow imposing a maximum
@@ -2247,12 +2307,13 @@ based on a
 user-defined maximum,
 while still respecting the above complexity limits.
 We similarly use sampling for the generation of sample input-output pairs and,
-for instantiating our type variables, monomorphic types.
+for instantiating our type variables, monomorphic types,
+i.e. types not containing type variables.
 
 While we quickly mentioned type-checking programs to filter out bad ones,
 we had yet to expand on this practice:
 we presently use a Haskell interpreter to type-check our generated programs at run-time,
-filter out non-function programs (e.g. \emph{false}),
+filter out non-function programs (e.g. \verb|false|),
 and check if program types look \emph{sane}:
 to weed out some programs we deem less commonly useful,
 we filter out types \emph{containing} functions (e.g. list of functions),
@@ -2340,9 +2401,7 @@ At this point we:
     \item calculate the longest input-output examples in our dataset (as string), when considering types (as per our experiment) also taking into account the length of the string representations of such types of inputs and outputs;
     \item track any characters used in string representations of the expressions in our dataset
     (for our type experiment also those used in string representations of the types),
-    and assign them to indices for our \emph{one-hot} encodings of input-output examples (and their associated types),
-    i.e. for a vocabulary of `a', `b' and `c', encode `b' as $010$,
-    meaning the second option out of three.
+    and assign them to indices for our \emph{one-hot} encodings of input-output examples (and their associated types).
 \end{itemize}
 
 \subsubsection{Preventing data leakage}
@@ -2376,28 +2435,28 @@ as synthesizing one specific function implementation is not the goal of programm
 % }
 We avert this problem by ensuring no task function instances across different datasets share the same \emph{input-output pairs}.
 
-% Now, one would then presume that as long as we then ensure
-% that functions across different datasets
-% would not share the same \emph{input-output pairs},
-% this issue would be averted.
+Now, one would then presume that as long as we then ensure
+that functions across different datasets
+would not share the same \emph{input-output pairs},
+this issue would be averted.
 
-% However, the reality is slightly more complicated still:
-% presume we have an \emph{increment} function mapping input $0$ to $1$,
-% along with a \emph{successor} function mapping $0$ to $1$ and \emph{False} to \emph{True}.
+However, the reality is slightly more complicated still:
+presume we have an \verb|increment| function mapping input $0$ to $1$,
+along with a \verb|successor| function mapping $0$ to $1$ and \verb|False| to \verb|True|.
 
-% If we would simply deduplicate by identical input-output pairs,
-% we would conclude these functions to behave differently,
-% and would accept e.g. having the \emph{successor} function in our training set,
-% the \emph{increment} function in our test set.
+If we would simply deduplicate by identical input-output pairs,
+we would conclude these functions to behave differently,
+and would accept e.g. having the \verb|successor| function in our training set,
+the \verb|increment| function in our test set.
 
-% This again leads us to a similar same problem however:
-% our synthesizer could simply memorize how to synthesize our \emph{successor} function,
-% then during evaluation use this knowledge to pass our \emph{increment} synthesis test.
-% As such, the solution would be to ensure we cannot train on task functions exhibiting all of the behaviors of a function we would evaluate on.
+This again leads us to a similar same problem however:
+our synthesizer could simply memorize how to synthesize our \verb|successor| function,
+then during evaluation use this knowledge to pass our \verb|increment| synthesis test.
+As such, the solution would be to ensure we cannot train on task functions exhibiting all of the behaviors of a function we would evaluate on.
 
-% The way we tackle this in our implementation is to identify any such function pairs where either would fully subsume the behavior of the other.
-% For the sake of simplicity, we presently ensure that only one of any such semi-duplicate set is kept in our dataset,
-% rather than still allowing less general versions in our training set.
+The way we tackle this in our implementation is to identify any such function pairs where either would fully subsume the behavior of the other.
+For the sake of simplicity, we presently ensure that only one of any such semi-duplicate set is kept in our dataset,
+rather than still allowing less general versions in our training set.
 
 When deciding which task function instance of a similar pair to keep,
 we first look for the more general function (i.e. operating across more type intances as used in our dataset),
@@ -2414,11 +2473,9 @@ As such, we will need to build upon tree-based (or AST-based) rather than sequen
 we can apply types to an AST containing holes,
 which we cannot do for arbitrary sequences representing a partial program.
 
-As a benchmark algorithm we will therefore use the neuro-symbolic program synthesis method from \citet{nsps} introduced in Section \ref{sec:nsps},
+As a benchmark algorithm we will therefore use the neuro-symbolic program synthesis
+method from \citet{nsps} introduced in Section \ref{sec:nsps},
 a top-down neural synthesis method.
-% which like other neural methods is not presently making use of type-level information,
-% as it was originally designed for the \emph{FlashFill}~\citep{prose} domain.
-The reason we picked NSPS as our benchmark algorithm in particular is that there have been only few neural synthesizers out there based on abstract syntax trees (ASTs) rather than sequences.
 
 % % hole picking
 
@@ -2510,7 +2567,7 @@ potentially cover a hole multiple times if it initially remains unfilled.
 % a sequential approach will \emph{necessarily} go through just `a' in both cases.
 % As such, the model is trained with more experience on the state `a' than on the states `aa' and `ab'.
 
-% As a result, such intermediate smaller partial program states are sampled more than their larger `child' partial programs \emph{by definition}.
+% As a result, such intermediate smaller partial program states are sampled more than their larger `child' partial programs by definition.
 % Weighted sampling may help to alleviate this.
 % However, in our AST-based synthesis scenario,
 % the hole picking gives this problem an extra dimension,
@@ -2538,7 +2595,7 @@ potentially cover a hole multiple times if it initially remains unfilled.
 % in our program eventually filled with $b$ and $c$, respectively.
 
 % Therefore, it would be more ideal for a hole sampling method to inhibit
-% bias toward the more \emph{deeply-situated} holes in our program,
+% bias toward the more deeply-situated holes in our program,
 % such as to offset this inherent imbalance and better approximate
 % uniform exploration of our partial program state space.
 
@@ -2601,30 +2658,35 @@ we have had to make the following adjustments to their original algorithm:
 
 % \end{itemize}
 
-\subsubsection{Optimizations}
+% \subsubsection{Optimizations}
 
-% We have further made the following optimizations on top of \citet{nsps}'s approach:
-We further made an optimizations on top of \citet{nsps}'s approach.
+% % We have further made the following optimizations on top of \citet{nsps}'s approach:
+% We further made an optimizations on top of \citet{nsps}'s approach.
 
-% \begin{itemize}
-%     \item 
-    While they did not expand on this,
-    for the \emph{one-hot encoding} process in their encoder,
-    we initially included any characters in the ASCII character set,
-    which seemed to cover any character conceivably used in our serialization of input/output samples (or their types, for that matter).
-    However, as we realized this potentially gave our encoder an encoding space larger than necessary,
-    we instead started to track for our datasets which characters they would \emph{actually require} for serialization,
-    such that we could limit our one-hot encodings to the smallest space possible.
-    % \item While their \emph{R3NN} ends using a \emph{softmax} operation,
-    % calculating the actual estimated probability of any potential hole expansion,
-    % we \emph{delay} this until our \emph{cross-entropy} loss calculation to combine these for the purpose of the \emph{log-sum-exp} trick~\citep{eisele2016log},
-    % aiding numerical stability.
-% \end{itemize}
+% % \begin{itemize}
+% %     \item 
+%     While they did not expand on this,
+%     for the \emph{one-hot encoding} process in their encoder,
+%     we initially included any characters in the ASCII character set,
+%     which seemed to cover any character conceivably used in our serialization of input/output samples (or their types, for that matter).
+%     However, as we realized this potentially gave our encoder an encoding space larger than necessary,
+%     we instead started to track for our datasets which characters they would \emph{actually require} for serialization,
+%     such that we could limit our one-hot encodings to the smallest space possible.
+%     % \item While their \emph{R3NN} ends using a \emph{softmax} operation,
+%     % calculating the actual estimated probability of any potential hole expansion,
+%     % we \emph{delay} this until our \emph{cross-entropy} loss calculation to combine these for the purpose of the \emph{log-sum-exp} trick~\citep{eisele2016log},
+%     % aiding numerical stability.
+% % \end{itemize}
 
 \subsubsection{Types} \label{sec:typednsps}
 
-% why types? differences from NLP, CS way, not reflected in ASTs in e.g. variables
-% how to supervise with these? representation?
+We will now explain how we augment the NSPS model to incorporate type info.
+We also refer back to NSPS's hyperparameters $T$, $H$ and $M$ here,
+where $T$ indicates the maximum string length for any input or output string,
+$H$ controls the amount of features per one-hot encoded characters,
+$M$ indicates the number of features the \emph{R3NN} uses in its embeddings,
+$\omega(r)$ the production rule embeddings,
+and $\phi(s)$ the symbol embeddings.
 
 Consistent with how we embed expressions, we similarly serialize types to strings,
 then one-hot encode their characters as we do for input/output expressions.
@@ -2859,15 +2921,15 @@ For final evaluation, we provide a uniform random synthesizer as a reference bas
 We pick our own set of types and operators to generate a dataset as described in Section \ref{sec:datagen}.
 For this purpose we have picked a limited set of operators widely applicable over the types used.
 To this end, we focus on functions operating on \emph{typeclasses} based on categories taken from \emph{category theory}.
-% As our scalar types we pick \emph{Bool}, \emph{Int}, and \emph{Char}.
-% For data structures we use \emph{List}, \emph{Maybe}, \emph{Tuple2}, and \emph{HashMap}.
-% % , \emph{Set}
-% Typeclasses we will use with these types include \emph{Enum}, \emph{Ord}, \emph{Foldable}, \emph{Traversable}, \emph{Functor}, \emph{Monad}, \emph{Applicative},
-% % \emph{Alternative},
-% \emph{Monoid}, \emph{Semigroup}, and \emph{Show}.
-% % \emph{Bifunctor}, \emph{Bifoldable}, \emph{Bitraversable}
+% As our scalar types we pick \verb|Bool|, \verb|Int|, and \verb|Char|.
+% For data structures we use \verb|List|, \verb|Maybe|, \verb|Tuple2|, and \verb|HashMap|.
+% % , \verb|Set|
+% Typeclasses we will use with these types include \verb|Enum|, \verb|Ord|, \verb|Foldable|, \verb|Traversable|, \verb|Functor|, \verb|Monad|, \verb|Applicative|,
+% % \verb|Alternative|,
+% \verb|Monoid|, \verb|Semigroup|, and \verb|Show|.
+% % \verb|Bifunctor|, \verb|Bifoldable|, \verb|Bitraversable|
 % Membership of the used types to our used typeclasses may be found in Figure \ref{typeclasses}.
-Typed used and their membership to our used typeclasses may be found in Figure \ref{typeclasses}.
+Types used and their membership to our used typeclasses may be found in Figure \ref{typeclasses}.
 
 \begin{figure*}
     \begin{tabular}{|c|c|c|c|c|c|c|} \hline
@@ -2896,7 +2958,9 @@ we had to use a number of heuristics to filter down the operators (comprising ei
     % take/takeWhile
     \item avoiding \emph{infinite lists}, which are relatively circumstantial in their usage, as these would crash evaluation unless specifically converted back to finite lists;
     % take/!! taking an Int
-    \item functions that, in order to be useful, should take \emph{specific values} as inputs, such as an arbitrary integer, as our synthesizer in its present design has left this functionality out of scope for simplicity;
+    \item functions particularly circumstantial in their accepted input values,
+    % as our synthesizer has currently left this functionality out of scope for simplicity,
+    e.g. the list-indexing \verb|take| function requiring input integers that are valid index values of the given list;
     % `== 5` / `< 5`
     \item functions taking \emph{predicates}, i.e. functions returning \emph{boolean} values, as we have few predicate functions we can use to this end given the previous point, as many of these require concrete values as parameters;
     % foldl/forM
@@ -2906,7 +2970,8 @@ we had to use a number of heuristics to filter down the operators (comprising ei
     % id
     \item
     % ideally avoiding
-    functions otherwise likely to induce redundancy, such as the \emph{identity function}, as this clashes with strong supervision;
+    functions otherwise likely to induce redundancy, such as the \emph{identity function};
+    % , as this clashes with strong supervision;
     \item reducing \emph{redundancy}, i.e. preferably not including operators that can already be constructed from existing ones;
     \item preferably reducing the number of functions with \emph{similar type signatures};
     \item not necessarily aiming for full \emph{expressiveness} in terms of manipulation of the chosen types.
@@ -2914,81 +2979,81 @@ we had to use a number of heuristics to filter down the operators (comprising ei
 
 Inspired by this list of heuristics,
 we have picked the following set of operators for our chosen types:
-\emph{0}, % "zero"  -- did I need this in like foldr?
-\emph{zero}, % "0"  -- did I need this in like foldr?
+\verb|0|, % "zero"  -- did I need this in like foldr?
+\verb|zero|, % "0"  -- did I need this in like foldr?
 % Maybe
-\emph{Just}, % "just"
-% \emph{just}, % "Just"
-\emph{maybe}, % "maybe"
+\verb|Just|, % "just"
+% \verb|just|, % "Just"
+\verb|maybe|, % "maybe"
 % List
-\emph{(:)}, % "(:)"
-% \emph{null}, % "null"
-\emph{length}, % "length"
+\verb|(:)|, % "(:)"
+% \verb|null|, % "null"
+\verb|length|, % "length"
 % (,)
-\emph{(,)}, % "(,)"
-\emph{zip}, % "zip"
-\emph{unzip}, % "unzip"
+\verb|(,)|, % "(,)"
+\verb|zip|, % "zip"
+\verb|unzip|, % "unzip"
 % % Set
-% \emph{insertSet}, % "Set.insert"
+% \verb|insertSet|, % "Set.insert"
 % HashMap
-% \emph{insert}, % "HashMap.insert"
+% \verb|insert|, % "HashMap.insert"
 % Enum
-% \emph{succ}, % "succ"  -- modifies any of our scalars
-\emph{toEnum}, % "toEnum"  -- from Int to any of our scalars
-\emph{fromEnum}, % "fromEnum"  -- from any of our scalars to Int
+% \verb|succ|, % "succ"  -- modifies any of our scalars
+\verb|toEnum|, % "toEnum"  -- from Int to any of our scalars
+\verb|fromEnum|, % "fromEnum"  -- from any of our scalars to Int
 % Foldable
-\emph{foldMap}, % "foldMap"
-% \emph{foldr}%
-% ~\footnote{Prime candidates for \emph{foldr}'s aggregator parameter are the \emph{insert} functions for \emph{List} (\emph{(:)}), \emph{Set}, and \emph{HashMap}, enabling us to effectively convert between different data structures.}%
+\verb|foldMap|, % "foldMap"
+% \verb|foldr|%
+% ~\footnote{Prime candidates for \verb|foldr|'s aggregator parameter are the \verb|insert| functions for \verb|List| (\verb|(:)|), \verb|Set|, and \verb|HashMap|, enabling us to effectively convert between different data structures.}%
 % , % "foldr"
-% \emph{foldr1}%
-% ~\footnote{A prime candidate for \emph{foldr1}'s aggregator parameter is \emph{($<>$)}.}%
+% \verb|foldr1|%
+% ~\footnote{A prime candidate for \verb|foldr1|'s aggregator parameter is \verb|(<>)|.}%
 % , % "foldr1"
-\emph{elem}, % "elem"
+\verb|elem|, % "elem"
 % Traversable
-% \emph{traverse}, % "traverse"
-\emph{sequenceA}, % "sequenceA"
-% \emph{mapM}, % "mapM"
-\emph{sequence}, % "sequence"
+% \verb|traverse|, % "traverse"
+\verb|sequenceA|, % "sequenceA"
+% \verb|mapM|, % "mapM"
+\verb|sequence|, % "sequence"
 % Functor
-\emph{fmap}, % "fmap"
+\verb|fmap|, % "fmap"
 % Monad
-% \emph{($>>=$)}, % "(>>=)"
+% \verb|(>>=)|, % "(>>=)"
 % Applicative
-% \emph{pure}, % "pure"
-% \emph{($<*>$)}%
-% ~\footnote{A prime candidate for \emph{($<*>$)}'s \emph{Applicative} structure is the \emph{Maybe} type.}%
+% \verb|pure|, % "pure"
+% \verb|(<*>)|%
+% ~\footnote{A prime candidate for \verb|(<*>)|'s \verb|Applicative| structure is the \verb|Maybe| type.}%
 % , % "(<*>)"
 % % Alternative
-% \emph{empty}, % "empty"  -- may replace [], Nothing
+% \verb|empty|, % "empty"  -- may replace [], Nothing
 % Monoid
-\emph{mempty}, % "mempty"  -- may replace [], Nothing, HashMap.empty, Set.empty
+\verb|mempty|, % "mempty"  -- may replace [], Nothing, HashMap.empty, Set.empty
 % Semigroup
-\emph{($<>$)}, % "(<>)"
+\verb|(<>)|, % "(<>)"
 % Show
-% \emph{show}%
-% ~\footnote{The \emph{show} function may serve as the function argument to \emph{foldMap}, \emph{traverse}, and \emph{mapM}.}%
+% \verb|show|%
+% ~\footnote{The \verb|show| function may serve as the function argument to \verb|foldMap|, \verb|traverse|, and \verb|mapM|.}%
 % , % "show"
 % % Bifunctor
-% \emph{bimap}, % "bimap"
-% \emph{first}, % "first"
+% \verb|bimap|, % "bimap"
+% \verb|first|, % "first"
 % % Bifoldable
-% \emph{bifold}, % "bifold"
-% \emph{bifoldMap}, % "bifoldMap"
-% \emph{bifoldr}, % "bifoldr"
+% \verb|bifold|, % "bifold"
+% \verb|bifoldMap|, % "bifoldMap"
+% \verb|bifoldr|, % "bifoldr"
 % % Bitraversable
-% \emph{bitraverse}, % "bitraverse"
+% \verb|bitraverse|, % "bitraverse"
 % misc
-% \emph{const}% % "const"
+% \verb|const|% % "const"
 % ~\footnote{
 %     While we aim to avoid operators likely to induce redundancy,
-%     we have opted to include the \emph{const} function,
-%     since combined with \emph{foldr1} it helps to emulate \emph{head} and \emph{snd}.
+%     we have opted to include the \verb|const| function,
+%     since combined with \verb|foldr1| it helps to emulate \verb|head| and \verb|snd|.
 % }%
 % ,
-and \emph{(.)}%
+and \verb|(.)|%
 % ~\footnote{
-%     Functions resulting from the function composition combinator \emph{(.)} under our \emph{unrolled} grammar cannot be further \emph{curried}, though for our current purposes this limitation is acceptable.
+%     Functions resulting from the function composition combinator \verb|(.)| under our \emph{unrolled} grammar cannot be further \emph{curried}, though for our current purposes this limitation is acceptable.
 % }%
 . % "(.)"
 
@@ -3001,9 +3066,15 @@ Having added our type-level supervision during training, we expect synthesis suc
 compared to the baseline algorithm.
 This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
 
+Any results here are trained on our dataset spanning programs of up to 3 nodes,
+during training evaluated by sampling 100 programs from the synthesizer for any task function instance.
+
 \begin{figure*}[h]
     \includegraphics[scale=0.7]{figures/experiments.png}
-    \caption{Prediction accuracy over 100 samples across training epochs for our different model variants.}
+    \caption{
+        Prediction accuracy over 100 samples across training epochs for our different model variants,
+        trained on our dataset of programs of up to 3 nodes.
+    }
     \label{fig:accuracy}
 \end{figure*}
 
@@ -3016,12 +3087,14 @@ with accuracy for the baseline model increasing only somewhat beyond its initial
 Furthermore, most of the gains in accuracy for the baseline model are attained over the initial 10 epochs of training.
 We feel these issues may be explained largely from the limited size of our dataset.
 
-To our surprise however, an enlarged version of this baseline model,
+We additionally trained an enlarged version of this baseline model,
 doubling the sample encoder output dimension parameter $H$ from $32$ to $64$,
+giving it a similar amount of expressiveness as our typed model as a reference.
+To our surprise however, this model
 fared little better than the baseline, again likely stemming
 from generalization issues related to the size of our dataset.
 
-Our 'typed' NSPS model however,
+Our `typed' NSPS model however,
 keeping $H$ at $32$ but allotting that same amount for types,
 starts from sub-random accuracies, yet ends up able to learn more,
 after $20$ epochs out-performing both our baseline and enlarged models,
@@ -3042,13 +3115,13 @@ indicating it is in fact worthwhile to distribute features between input/output 
     for each selecting the best-performing epoch as per validation accuracy i.e. before overfit.
     Results are separated by evaluation on 20 vs. 100 samples,
     and metrics include mean accuracy, variance of accuracy,
-    as well as mean accuracy separated by programs of a given number of nodes.
+    as well as mean accuracy separated by programs of a given number of nodes. Bolded cells indicate the best accuracy in a given category.
 }
 \label{fig:finalacc}
 \end{figure*}
 
 We additionally attempted to look into whether we could find a correlation between this
-advantage gained by incorporating type information with the number of nodes in a program.
+advantage gained by incorporating type information (as seen in Figure \ref{fig:ttest}) with the number of nodes in a program.
 However, the data we managed to gather was insufficient to demonstrate such a correlation.
 
 % One question we aim to answer here is whether our approach can meaningfully scale to program sizes not explicitly trained on,
@@ -3097,8 +3170,6 @@ indicating the improvement in performance is statistically significant.
 
 \section{Discussion} % \label{sec:discussion}
 
-% TODO: put some conclusion somewhere with implications or w/e. also maybe like introduce sub-sections?
-
 \subsection{Dataset considerations}
 
 In Section \ref{sec:result} we mentioned dataset design as one of our concerns,
@@ -3114,7 +3185,8 @@ which meant that 95\% of training time was in fact spent on accuracy evaluations
 
 This put us in the undesirable position of having to choose
 between dataset sizes not conducive to strong generalization,
-versus increasing run-time and memory requirements.
+versus increasing run-time and memory requirements,
+as an increase in the maximum number of nodes brings a potentially exponential growth in the size of the dataset.
 Facing a compiler-induced memory leak through our interpreter library~\citep{hintleak},
 we felt compelled to err toward our current dataset of
 limited size to keep run-time requirements in check.
@@ -3141,14 +3213,14 @@ at our scale this might well still pose a barrier to learning.
 
     \item
     Also of note is that our present implementation has yet to be optimized for run-time performance:
-    our model can presently be run on CPU,
-    and has yet to implement batching over task functions.
+    we conducted our experiment on CPU,
+    as our implementation is still missing batching over task functions.
     % an implementation detail that had not been given any attention in \citet{nsps}.
 
     \item
     \citet{nsps} used a limit of 13 operations for their synthesized programs.
     In order to restrict ourselves to a finite subset of an otherwise potentially infinite search space,
-    we apply such a limit during task function generation as well.
+    we apply such a limit during task function generation as well, in our case using a maximum of 3.
     For the sake of simplicity, we have opted to share this limit,
     specified during dataset generation, with our synthesizer as well.
     This disregards any synthesized programs of
@@ -3161,7 +3233,8 @@ at our scale this might well still pose a barrier to learning.
     % but the limit has no effect on learning during training.
 
     \item
-    Our present implementation unfortunately still defers full type inference in favor of \emph{local types} based on our unrolled grammar.
+    Our present implementation unfortunately still defers full type inference in favor of \emph{local types} based on our unrolled grammar,
+    meaning it is unable to fill in further type variables based on information elsewhere in the program tree.
 
     \item
     The interpreter library we presently use for type inference may fail in the face of ambiguous type variables,
@@ -3196,7 +3269,8 @@ We will give an overview in this section of some of the questions raised during 
 % \begin{itemize}
     % compile RL
     % \item 
-    While we have focused on types as features and compilation for masking purposes here,
+    While we have focused on types as features here,
+    %  and compilation for masking purposes
     after each synthesis step,
     % in languages featuring \emph{typed holes},
     % a type of dummy variable for which the compiler can tell the appropriate type
@@ -3451,10 +3525,10 @@ we instead limit ours to a maximum of $3$,
 given that our current operator set is considerably bigger than those of their \emph{FlashFill} domain.
 
 % numMin, numMax
-\emph{Numbers} we generate, all of them integers,
+Numbers that we generate, all of them integers,
 we limit to the range from $-20$ to $20$.
 % charMin, charMax
-For \emph{characters} we stick to the range of digits, i.e. from `0' to `9',
+For characters we stick to the range of digits, i.e. from `0' to `9',
 a decision made with the intent to let their characters overlap
 with those of digits for the purpose of helping reduce characters used in the encoder,
 in turn reducing the size of its one-hot embedding.
@@ -3543,7 +3617,7 @@ We evaluate performance on our validation set once after every $5$ epochs of tra
 % % learningDecay
 % subsequently further decreased by a factor of $5$ whenever accuracy is found to decrease during evaluation.
 % checkWindow
-During evaluation we similarly check for \emph{convergence} based on the \emph{loss},
+During evaluation we similarly check for convergence based on the loss,
 averaging over windows of $2$ evaluations,
 i.e. stop training if the validation loss over the past two evaluations has increased from the two before.
 
@@ -3603,7 +3677,7 @@ We clip gradients to stay within a range from $-1$ to $1$.
 % used as the maximum number of \emph{generations} and as the number of \emph{best entities} to keep track of.
 
 % learningRate
-The \emph{learning rate} for our Adam optimizer we search over
+The learning rate for our Adam optimizer we search over
 by a grid search using our vanilla NSPS model, considering
 values of \num{1e-2}, \num{1e-3}, \num{1e-4}, and \num{1e-5}.
 Of these, we settle on a learning rate of \num{1e-2}.
@@ -3632,11 +3706,11 @@ We achieve this by simply masking the predicted scores of uncompiling programs i
 
 While we failed to obtain any significant improvement over the baseline model using this setup,
 this result may well have related to our implementation.
-We presently used the \emph{hint} Haskell library as our interpreter for type-checks,
+We presently used the \verb|hint| Haskell library as our interpreter for type-checks,
 which unfortunately yielded false positive compiler errors for types containing ambiguous type variables,
-such as \emph{show undefined}, which the Haskell compiler would resolve to type \emph{string},
-whereas the \emph{hint} library would complain that the \emph{undefined}
-argument would prevent resolving \emph{show}'s type variable.~\citep{hintambiguous}
+such as \verb|show undefined|, which the Haskell compiler would resolve to type \emph{string},
+whereas the \verb|hint| library would complain that the \verb|undefined|
+argument would prevent resolving \verb|show|'s type variable.~\citep{hintambiguous}
 
 As this counter-factual signal would prevent this synthesizer from correctly synthesizing the affected programs,
 the fact that it nevertheless performed on par with our baseline algorithm suggests this approach does in fact have potential.
