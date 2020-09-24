@@ -1,10 +1,16 @@
-\documentclass{article}
+
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2021_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+% \input{math_commands.tex}
+
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{graphicx, color}
 \usepackage[a4paper,margin=2cm]{geometry}
 \usepackage{hyperref}
-\usepackage[numbers]{natbib}
+% \usepackage[numbers]{natbib}
 \usepackage{subfiles}
 % \usepackage{refcheck}
 \usepackage{csquotes}
@@ -20,65 +26,102 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{mathtools}
+% \usepackage{url}
 
-% \setcounter{secnumdepth}{4}
 
-\titleformat{\paragraph}
-{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
-\titlespacing*{\paragraph}
-{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\title{Type-driven Neural Programming by Example}
 
-\begin{document}
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
 
-\subfile{title-page-ai.tex}
-
-\pagebreak
-
-\epigraph{
-    Truly solving program synthesis is the last programming problem mankind will have to solve.
-}{
-    \textit{\citet{nps}}
+\author{
+   Kiara Grouwstra
+   % \thanks{ Use footnote for providing further information about author (webpage, alternative address)}
+   \\
+   Instituut voor Informatica\\
+   University of Amsterdam\\
+   Amsterdam, the Netherlands \\
+   \texttt{tycho01@pm.me} \\
+   % \And
+   % Ji Q. Ren \& Yevgeny LeNet \\
+   % Department of Computational Neuroscience \\
+   % University of the Witwatersrand \\
+   % Joburg, South Africa \\
+   % \texttt{\{robot,net\}@wits.ac.za} \\
+   % \AND
+   % Coauthor \\
+   % Affiliation \\
+   % Address \\
+   % \texttt{email}
 }
 
-% \begin{displayquote}
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+% \subfile{title-page-ai.tex}
+
+% \pagebreak
+
+\maketitle
+
 % \epigraph{
-%     If \emph{artificial intelligence} is software 2.0~\citep{software20},
-%     then \emph{program synthesis} applies this to software development itself.
-% }{}
-% \end{displayquote}
+%     Truly solving program synthesis is the last programming problem mankind will have to solve.
+% }{
+%     \textit{\citet{nps}}
+% }
 
-\pagebreak
+% % \begin{displayquote}
+% % \epigraph{
+% %     If \emph{artificial intelligence} is software 2.0~\citep{software20},
+% %     then \emph{program synthesis} applies this to software development itself.
+% % }{}
+% % \end{displayquote}
 
-\tableofcontents
+% \pagebreak
 
-\pagebreak
+% \tableofcontents
+
+% \pagebreak
 
 \begin{abstract}
 
-    In this thesis we look into programming by example (PBE),
-    which is about finding a program mapping given inputs to given outputs.
-    PBE has traditionally seen a split between formal versus neural approaches,
-    where formal approaches typically involve deductive techniques such as SAT solvers and types,
-    while the neural approaches involve training on sample input-outputs with their corresponding program,
-    typically using sequence-based machine learning techniques such as LSTMs~\citep{lstm}.
-    As a result of this split, programming types had yet to be used in neural program synthesis techniques.
+   In this thesis we look into programming by example (PBE),
+   which is about finding a program mapping given inputs to given outputs.
+   PBE has traditionally seen a split between formal versus neural approaches,
+   where formal approaches typically involve deductive techniques such as SAT solvers and types,
+   while the neural approaches involve training on sample input-outputs with their corresponding program,
+   typically using sequence-based machine learning techniques such as LSTMs~\citep{lstm}.
+   As a result of this split, programming types had yet to be used in neural program synthesis techniques.
 
-    We propose a way to incorporate programming types into a neural program synthesis approach for PBE.
-    We introduce the Typed Neuro-Symbolic Program Synthesis (TNSPS) method based on this idea,
-    and test it in the functional programming context to empirically verify type information
-    may help improve generalization in neural synthesizers on limited-size datasets.
+   We propose a way to incorporate programming types into a neural program synthesis approach for PBE.
+   We introduce the Typed Neuro-Symbolic Program Synthesis (TNSPS) method based on this idea,
+   and test it in the functional programming context to empirically verify type information
+   may help improve generalization in neural synthesizers on limited-size datasets.
 
-    Our TNSPS model builds upon the existing Neuro-Symbolic Program Synthesis (NSPS)~\citep{nsps},
-    a tree-based neural synthesizer combining info from input-output examples plus the current program,
-    by further exposing information on types of those input-output examples,
-    of the grammar production rules, as well as of the hole that we wish to expand in the program.
+   Our TNSPS model builds upon the existing Neuro-Symbolic Program Synthesis (NSPS)~\citep{nsps},
+   a tree-based neural synthesizer combining info from input-output examples plus the current program,
+   by further exposing information on types of those input-output examples,
+   of the grammar production rules, as well as of the hole that we wish to expand in the program.
 
-    We further explain how we generated a dataset within our domain,
-    which uses a limited subset of Haskell as the synthesis language.
-    Finally we discuss several topics of interest that may help take these ideas further.
-    For reproducibility, we release our code publicly.~\citep{code}
+   We further explain how we generated a dataset within our domain,
+   which uses a limited subset of Haskell as the synthesis language.
+   Finally we discuss several topics of interest that may help take these ideas further.
+   For reproducibility, we release our code publicly.~\citep{code}
 
-\end{abstract}
+)\end{abstract}
 
 \section{Research Direction} % \label{sec:research-direction}
 
@@ -3468,9 +3511,9 @@ whom I never got to meet.
 
 \pagebreak
 
-\nocite{*}
 % \bibliographystyle{acm}
-\bibliographystyle{plainnat}  % fixes https://tex.stackexchange.com/questions/166840/why-do-i-get-author-when-i-use-citet-with-natbib
+% \bibliographystyle{plainnat}
+\bibliographystyle{iclr2021_conference}
 \bibliography{references}
 
 \pagebreak
