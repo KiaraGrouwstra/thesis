@@ -27,7 +27,7 @@
 \usepackage{algpseudocode}
 \usepackage{mathtools}
 % \usepackage{url}
-
+\usepackage{wrapfig}
 
 \title{Type-driven Neural Programming by Example}
 
@@ -98,13 +98,13 @@
 
 \begin{abstract}
 
-   In this thesis we look into programming by example (PBE),
-   which is about finding a program mapping given inputs to given outputs.
-   PBE has traditionally seen a split between formal versus neural approaches,
-   where formal approaches typically involve deductive techniques such as SAT solvers and types,
-   while the neural approaches involve training on sample input-outputs with their corresponding program,
-   typically using sequence-based machine learning techniques such as LSTMs~\citep{lstm}.
-   As a result of this split, programming types had yet to be used in neural program synthesis techniques.
+%    In this thesis we look into programming by example (PBE),
+%    % which is about finding a program mapping given inputs to given outputs.
+%    which has traditionally seen a split between formal versus neural approaches.
+% %    where formal approaches typically involve deductive techniques such as SAT solvers and types,
+% %    while the neural approaches involve training on sample input-outputs with their corresponding program,
+% %    typically using sequence-based machine learning techniques such as LSTMs~\citep{lstm}.
+%    As a result of this split, programming types had yet to be used in neural program synthesis techniques.
 
    We propose a way to incorporate programming types into a neural program synthesis approach for PBE.
    We introduce the Typed Neuro-Symbolic Program Synthesis (TNSPS) method based on this idea,
@@ -112,18 +112,18 @@
    may help improve generalization in neural synthesizers on limited-size datasets.
 
    Our TNSPS model builds upon the existing Neuro-Symbolic Program Synthesis (NSPS)~\citep{nsps},
-   a tree-based neural synthesizer combining info from input-output examples plus the current program,
-   by further exposing information on types of those input-output examples,
+   % a tree-based neural synthesizer combining info from input-output examples plus the current program,
+   incorporating information on types of those input-output examples,
    of the grammar production rules, as well as of the hole that we wish to expand in the program.
-
+   %
    We further explain how we generated a dataset within our domain,
    which uses a limited subset of Haskell as the synthesis language.
-   Finally we discuss several topics of interest that may help take these ideas further.
+   We then discuss a few topics of interest that may help take these ideas further.
    % For reproducibility, we release our code publicly.~\citep{code}
 
 \end{abstract}
 
-\section{Research Direction} % \label{sec:research-direction}
+% \section{Research Direction} % \label{sec:research-direction}
 
 % Formally speaking, program synthesis is the task of automatically constructing a program
 % that satisfies a given high-level specification,
@@ -148,7 +148,7 @@ there is no sense of learning across problem instances to further reduce the syn
 
 % \subsubsection{Challenges of neural programming by example} \label{sec:challengesnps}
 
-For neural methods in PBE, the original challenge of large search spaces means
+For neural programs synthesis (NPS) methods in PBE, the original challenge of large search spaces means
 it will not be viable to proportionally scale our training sets by program size.
 %
 Furthermore, whereas a program synthesizer may be programmed or taught to output programs adhering to a given grammar,
@@ -165,10 +165,10 @@ As such, it would be desirable to somehow better supervise the intermediate pred
 
 % \paragraph{Challenges of sequential-based neural programming by example}
 
-Most neural synthesis techniques, particular those using a \emph{sequence-to-sequence} approach,
-additionally face the issue of dissonance between their representation of complete programs and that of intermediate states.
+Especially sequence-based neural methods also face the issue
+of dissonance between their representation of complete programs and that of intermediate states.
 As such intermediate states do not in general constitute valid programs,
-these neural synthesizers have an additional task to solve:
+these models have an additional task to solve:
 compensating for their lack of an inherently meaningful incremental state.
 
 % \subsection{Research question}
@@ -176,23 +176,21 @@ compensating for their lack of an inherently meaningful incremental state.
 % \subsubsection{Complementary strengths}
 
 % Based on the previous section,
-Our key observation here is thus that input-output examples and types are
-quite complementary as specifications constraining our program behavior.
-Input-output examples are relatively expressive,
-but may only help us to evaluate the quality of complete programs.
-Types, on the other hand, are by themselves not usually descriptive enough of our task,
-but may help us to provide a less noisy summary of program behavior, hopefully aiding generalization,
-as well as to evaluate even incomplete programs still containing holes,
-and to inform further incremental synthesis steps.
+Input-output examples and types are quite complementary as specifications of program behavior:
+examples are expressive but may only evaluate complete programs;
+types are not usually descriptive enough,
+but may provide a less noisy summary of program behavior, hopefully aiding generalization.
+% as well as to evaluate even incomplete programs still containing holes,
+% and to inform further incremental synthesis steps.
 %
 This brings us to the question:
 can neural program synthesis methods benefit from using type information?
-
+%
 % \subsubsection{Hypothesis}
-
+%
 Based on the complementary strengths mentioned above,
-we therefore hypothesize that program synthesizers may capitalize on this synergy by utilizing both kinds of information,
-rather than settling for only one of the two, as most existing methods have done.%
+we therefore hypothesize that program synthesizers may capitalize on this synergy by using both kinds of information.
+% rather than settling for only one of the two, as most existing methods have done.%
 %
 % Specifically, we formulate the following hypothesis:
 \begin{displayquote} % \label{hyp:types}
@@ -203,11 +201,11 @@ rather than settling for only one of the two, as most existing methods have done
     }
 \end{displayquote}
 
-\section{Expected Contribution} % \label{sec:expected-contribution}
+% \section{Expected Contribution} % \label{sec:expected-contribution}
 
 The present work aims to be the first experiment to:
 \begin{itemize}
-    \item bring the type-based information traditionally used in functional program synthesis into the newer branch of neural program synthesis,
+    \item bring the type-based information traditionally used in functional program synthesis to neural methods,
     % \item \emph{bridge} the two fields, such as to find a best-of-both-worlds golden mean;
     better constraining the search space to improve the effectiveness of neural program synthesis methods;
     \item show that the neural synthesis of statically typable programs may benefit from techniques \emph{specific} to this domain, and therefore for the purpose of automatic programming merits further study in itself;
@@ -220,10 +218,10 @@ The present work aims to be the first experiment to:
 The \emph{neuro-symbolic} program synthesis (NSPS) model introduced in \citet{nsps}
 is the model we will build upon for our own experiment as needed a neural synthesizer
 based on abstract syntax trees (ASTs) rather than sequences.
-NSPS uses a tree-based neural architecture they call the
-\emph{recursive-reverse-recursive neural network} (R3NN).
 
-NSPS then aims to make predictions on credible rule expansions to fill holes
+NSPS uses a tree-based neural architecture they call the
+\emph{recursive-reverse-recursive neural network} (R3NN),
+which predics credible rule expansions to fill holes
 in \emph{partial program trees} (\emph{PPTs}) --- i.e. ASTs containing holes --- based on the program's content and structure.
 As usual in neural PBE NSPS also conditions on the (encoded) input/output examples, as seen in Figure \ref{nsps}.
 % These hole expansions are based on a \emph{context-free grammar} describing the domain-specific language (DSL) to be synthesized.
@@ -245,7 +243,7 @@ As usual in neural PBE NSPS also conditions on the (encoded) input/output exampl
     \label{nsps}
 \end{figure*}
 
-\citet{nsps} try out different example encoders,
+NSPS may use different example encoders,
 each embedding into a continuous space a one-hot representation of the input or output strings of their domain,
 although we have simply stuck with their simple LSTM baseline.
 % i.e. for a vocabulary of `a', `b' and `c', encode `b' as $010$,
@@ -321,7 +319,7 @@ this process is then repeated, until reaching leaf embeddings $\phi'(l)$.
 % Such leaf embeddings $\phi'(l)$ are now different for leaf nodes sharing the same symbol,
 % while before these two passes their original embeddings $\phi(l)$ would have been identical.
 
-\citet{nsps} define an \emph{expansion} $e \in E$ as a combination of a hole (non-terminal leaf node) $e.l$ and a grammar production rule $e.r$, together making up for a way we can expand our PPT.
+They define an \emph{expansion} $e \in E$ as a combination of a hole (non-terminal leaf node) $e.l$ and a grammar production rule $e.r$, together making up for a way we can expand our PPT.
 Expansion scores of an expansion $e$ they define as the dot product of their respective embeddings:
 $z_e = \phi'(e.l) \cdot \omega(e.r)$.
 
@@ -371,8 +369,22 @@ devoid of e.g. programs containing variable definitions that end up never being 
 This guarantees that, rather than just branching out,
 our search will focus on finding acceptable solutions.
 
-Our synthesis approach itself is agnostic to the set of operators used,
-allowing for relatively straight-forward experimentation with different sets of operators.
+\begin{wrapfigure}{r}{0.45\textwidth}
+    \vspace{-20pt}
+    \begin{verbatim}
+expr = "(and ", expr, " ", expr, ")";
+expr = "(and ", expr, ")";
+expr = "and";
+expr = "false";
+    \end{verbatim}
+    \vspace{-25pt}
+    \caption{Unrolled sample grammar.}
+    \label{fig:dsl}
+    \vspace{-15pt}
+\end{wrapfigure}
+
+Our synthesis approach itself is agnostic to the operators used,
+allowing for easy experimentation with different sets of operators.
 % Adding new operators simply involves generating a new dataset, then retraining the model.
 % We will further expand on our operator set in Section \ref{sec:experiment}.
 %
@@ -390,14 +402,7 @@ An example showing what different components of our dataset items might look lik
     \label{fig:datasample}
 \end{figure*}
 %
-We \emph{unroll} any function applications in our grammar, such that given a binary function operator \verb|and| and a an operator \verb|false| taking no arguments it might look as follows:
-
-\begin{verbatim}
-expr = "(and ", expr, " ", expr, ")";
-expr = "(and ", expr, ")";
-expr = "and";
-expr = "false";
-\end{verbatim}
+We \emph{unroll} any function applications in our grammar, such that given a binary function operator \verb|and| and a an operator \verb|false| taking no arguments it might look as shown in Figure \ref{fig:dsl}.
 
 \subsection{Typed Neuro-Symbolic Program Synthesis}
 
@@ -407,7 +412,7 @@ For conditioning programs we use a (bidirectional) LSTM.
 We also use \citet{nsps}'s bidirectional LSTM processing global leaf representations right before score calculation.
 As a place for input-output conditioning we use \emph{pre-conditioning}
 (adding embedded input-output examples before the recursive pass).
-As in the original paper, we sample 100 programs on evaluation.
+% As in the original paper, we sample 100 programs on evaluation.
 We aggregate losses over an epoch by taking their mean.
 
 % \subsubsection{Functional program domain} \label{sec:fp}
@@ -488,20 +493,19 @@ i.e. going from $z_e = \phi'(e.l) \cdot \omega(e.r)$ to $z_e = \phi''(e.l) \cdot
 To perform our experiment, we first find an appropriate learning rate on our vanilla implementation of NSPS,
 otherwise taking the hyperparameter values described in Section \ref{sec:hpar}.
 % 
-We will then evaluate on our task to evaluate a few different models;
+We will then evaluate a few different models on our task, using 4 seeds each;
+a uniform random synthesizer,
 our vanilla implementation of \citet{nsps}'s NSPS model,
 our type-based additions described in \ref{sec:typednsps},
 as well as an enlarged version of the vanilla model for fair comparison.
-To reduce variance, we run each model to convergence using $4$ different seeds.
-For final evaluation, we provide a uniform random synthesizer as a reference baseline as well.
 
 % \subsection{Benchmark task} \label{sec:task}
 
 We pick our own set of types and operators to generate a dataset as described in Section \ref{sec:datagen}.
-For this purpose we have picked a limited set of operators widely applicable over the types used.
+For this we have picked a limited set of operators widely applicable over the types used.
 Types used include \verb|Char|, \verb|Int|, \verb|Maybe|, \verb|List|, \verb|(,)|, and \verb|Either|.
 %
-We have picked the following set of operators for our chosen types:
+We have picked the following operators for our chosen types:
 \verb|0|, % "zero"  -- did I need this in like foldr?
 \verb|Just|, % "just"
 \verb|maybe|, % "maybe"
@@ -534,37 +538,54 @@ and \verb|(.)|.
 
 \section{Result} \label{sec:result}
 
-Having added our type-level supervision during training, we expect synthesis success rates to rise
-compared to the baseline algorithm.
-This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
-
-Any results here are trained on our dataset spanning programs of up to 3 nodes,
-during training evaluated by sampling 100 programs from the synthesizer for any task function instance.
-
-\begin{figure*}[h]
-    \includegraphics[scale=0.6]{figures/experiments.png}
+\begin{wrapfigure}{r}{0.45\textwidth}
+    \vspace{-20pt}
+    \includegraphics[scale=0.5]{figures/experiments.png}
+    \vspace{-20pt}
     \caption{
-        Prediction accuracy over 100 samples across training epochs for our different model variants,
-        trained on our dataset of programs of up to 3 nodes.
+        Prediction accuracy over 100 samples across training epochs for our different model variants
+        % , trained on our dataset of programs of up to 3 nodes.
     }
     \label{fig:accuracy}
-\end{figure*}
+    \vspace{-70pt}
+\end{wrapfigure}
+
+Having added our type-level supervision during training, we expect synthesis accuracy to rise compared to the baseline algorithm.
+% This demonstrates that the findings from traditional program synthesis methods are relevant also in the field of neural program synthesis.
+%
+Any results here are trained on our dataset of programs of up to 3 nodes,
+during training evaluated by sampling 100 programs from the synthesizer for any task function instance.
 
 Accuracy results over training on our validation set can be found in Figure \ref{fig:accuracy},
 while accuracy on the test set for the fully trained models may be found in Figure \ref{fig:finalacc}.
-We see that the simpler vanilla NSPS model is both more limited in variance while also learning to a more limited extent before converging.
 
+% \begin{wrapfigure}{r}{0.8\textwidth}
+    \begin{tabular}{|l|c|c|c|c|c|c|} \hline
+        \textbf{p-values}
+        & \textbf{vanilla} & \textbf{large} & \textbf{types} & \textbf{uniform} \\ \hline
+        \textbf{vanilla} & 1.000 & 0.859 & 0.010 & 0.013 \\ \hline
+        \textbf{large} & 0.859 & 1.000 & 0.024 & 0.065 \\ \hline
+        \textbf{types} & 0.010 & 0.024 & 1.000 & 0.001 \\ \hline
+        \textbf{uniform} & 0.013 & 0.065 & 0.001 & 1.000 \\ \hline
+    \end{tabular}
+    % \caption{
+    %     P-values between models under the independent two-sample t-test over accuracy evaluated on 100 samples
+    %     % per task function instance.
+    % }
+    % \label{fig:ttest}
+% \end{wrapfigure}
+
+We see that the simpler vanilla NSPS model is both more limited in variance while also learning to a more limited extent before converging.
 Our first observation here is that the task has turned out relatively challenging,
 with accuracy for the baseline model increasing only somewhat beyond its initial random accuracy.
 Furthermore, most of the gains in accuracy for the baseline model are attained over the initial 10 epochs of training.
-We feel these issues may be explained largely from the limited size of our dataset.
+These issues may be largely due to the limited size of our dataset.
 
-We additionally trained an enlarged version of this baseline model,
+We also trained an enlarged version of this baseline model,
 doubling the sample encoder output dimension parameter $H$ from $32$ to $64$,
 giving it a similar amount of expressiveness as our typed model as a reference.
-To our surprise however, this model
-fared little better than the baseline, again likely stemming
-from generalization issues related to the size of our dataset.
+To our surprise though, this model fared little better than the baseline,
+again likely due to generalization issues related to the size of our dataset.
 
 Our `typed' NSPS model however,
 keeping $H$ at $32$ but allotting that same amount for types,
@@ -572,8 +593,9 @@ starts from sub-random accuracies, yet ends up able to learn more,
 after $20$ epochs out-performing both our baseline and enlarged models,
 indicating it is in fact worthwhile to distribute features between input/output pairs and types.
 
-\begin{figure*}
-    \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|} \hline
+\begin{figure*}[h]
+% \begin{wrapfigure}{r}{0.8\textwidth}
+        \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|} \hline
         & \multicolumn{5}{|c|}{ \textbf{evaluated @ 20 samples} } & \multicolumn{5}{|c|}{ \textbf{evaluated @ 100 samples} } \\ \hline
         & \multicolumn{2}{|c|}{ \textbf{accuracy} } & \multicolumn{3}{|c|}{ \textbf{acc mean @ x nodes} } & \multicolumn{2}{|c|}{ \textbf{accuracy} } & \multicolumn{3}{|c|}{ \textbf{acc mean @ x nodes} } \\ \hline
         \textbf{experiment} & \textbf{mean} & \textbf{var} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{mean} & \textbf{var} & \textbf{1} & \textbf{2} & \textbf{3} \\ \hline
@@ -585,54 +607,40 @@ indicating it is in fact worthwhile to distribute features between input/output 
 \caption{
     Summary of final prediction accuracy on our test set over different models after training (4 seeds each),
     for each selecting the best-performing epoch as per validation accuracy i.e. before overfit.
-    Results are separated by evaluation on 20 vs. 100 samples,
-    and metrics include mean accuracy, variance of accuracy,
-    as well as mean accuracy separated by programs of a given number of nodes. Bolded cells indicate the best accuracy in a given category.
+    % Results are separated by evaluation on 20 vs. 100 samples,
+    % and metrics include mean accuracy, variance of accuracy,
+    % as well as mean accuracy separated by programs of a given number of nodes. Bolded cells indicate the best accuracy in a given category.
 }
 \label{fig:finalacc}
+% \end{wrapfigure}
 \end{figure*}
 
-We additionally attempted to look into whether we could find a correlation between this
-advantage gained by incorporating type information (as seen in Figure \ref{fig:ttest}) with the number of nodes in a program.
-However, the data we managed to gather was insufficient to demonstrate such a correlation.
+% We additionally attempted to look into whether we could find a correlation between this
+% advantage gained by incorporating type information (as seen in Figure \ref{fig:ttest}) with the number of nodes in a program.
+% However, the data we managed to gather was insufficient to demonstrate such a correlation.
 
-Specifically, our task turned out hard,
-with none of the models significantly out-performing a random synthesizer
-on the task functions of 3 nodes.
-On the 1-node task functions at 100 samples,
-similarly none of the models outperformed the random synthesizer's 84\% accuracy,
-although at 20 samples the typed model out-performed it at 55\% vs. 43\%.
-This means that most of the learning success for these models has been on the 2-node task functions,
-particularly for the typed model, achieving over double the random accuracy for either 20 or 100 samples.
+% Specifically, our task turned out hard,
+% with none of the models significantly out-performing a random synthesizer
+% on the task functions of 3 nodes.
+% On the 1-node task functions at 100 samples,
+% similarly none of the models outperformed the random synthesizer's 84\% accuracy,
+% although at 20 samples the typed model out-performed it at 55\% vs. 43\%.
+% This means that most of the learning success for these models has been on the 2-node task functions,
+% particularly for the typed model, achieving over double the random accuracy for either 20 or 100 samples.
 
-Unfortunately for our purposes, performing best on the 2-node programs
-means we cannot presently distinguish any clear correlation between
+As the 3-node programs turned out fairly hard,
+we cannot yet distinguish a clear correlation between
 task function node size and advantage from type information.
-As such, we would love to see similar experiments scaled up to larger datasets including higher node sizes.
-
-In order to verify the statistical significance of our proposed model variant,
-we have performed an independent two-sample t-test comparing the accuracy across our models
-(as evaluated on 20 samples per task function instance),
-results for which may be found in Figure \ref{fig:ttest}.
-
-Whereas we similarly compared such differences for accuracy as evaluated on 100 samples,
-we found the outcome for 20 samples to more clearly demonstrate the difference between models.
-Under 4 seeds each our typed model turns out to have only p=1.0\%
-to stem from the same distribution as our baseline model,
-indicating the improvement in performance is statistically significant.
-
-\begin{figure*}
-    \begin{tabular}{|l|c|c|c|c|c|c|} \hline
-        \textbf{p-values}
-        & \textbf{vanilla} & \textbf{large} & \textbf{types} & \textbf{uniform} \\ \hline
-        \textbf{vanilla} & 1.000 & 0.859 & 0.010 & 0.013 \\ \hline
-        \textbf{large} & 0.859 & 1.000 & 0.024 & 0.065 \\ \hline
-        \textbf{types} & 0.010 & 0.024 & 1.000 & 0.001 \\ \hline
-        \textbf{uniform} & 0.013 & 0.065 & 0.001 & 1.000 \\ \hline
-    \end{tabular}
-    \caption{P-values for different model combinations under the independent two-sample t-test comparing accuracy as evaluated on 100 samples per task function instance.}
-    \label{fig:ttest}
-\end{figure*}
+Scaling the experiment up to larger datasets with higher node sizes could address this.
+%
+To verify the statistical significance of our model,
+we compare the accuracy across our models by an independent two-sample t-test,
+see Figure \ref{fig:ttest}.
+% Whereas we similarly compared such differences for accuracy as evaluated on 100 samples,
+% we found the outcome for 20 samples to more clearly demonstrate the difference between models.
+Under 4 seeds each our typed model only had p=1.0\%
+to stem from the same distribution as the baseline,
+showing the improvement is statistically significant.
 
 % \pagebreak
 
@@ -640,18 +648,18 @@ indicating the improvement in performance is statistically significant.
 
 \subsection{Design limitations}
 
-\begin{itemize}
-    \item
+% \begin{itemize}
+    % \item
     We settled for \citet{nsps}'s \emph{baseline LSTM encoder} rather than its more complex \emph{cross-correlation} encoders.
-
-    \item
-    We disregard any programs exceeding a limit of 3 nodes, both on dataset generation as well as on synthesis.
-
-    \item
-    Our present implementation unfortunately still defers full type inference in favor of \emph{local types} based on our unrolled grammar,
+    %
+    % \item
+    We further disregard any programs exceeding a limit of 3 nodes, both on dataset generation as well as on synthesis.
+    %
+    % \item
+    Finally, our present implementation unfortunately still defers full type inference in favor of \emph{local types} based on our unrolled grammar,
     so it cannot fill in further type variables based on information elsewhere in the program tree.
-
-\end{itemize}
+    %
+% \end{itemize}
 
 \subsection{Topics for future research}
 
@@ -673,19 +681,19 @@ we have had to leave some questions unanswered.
     we might also \emph{pre-compile} even partial programs such as to provide the synthesizer with immediate feedback on whether a program type-checks;
     as with types, we similarly hypothesize neural program synthesis methods can benefit from using compilation checks as additional features.
     %
-    However, this would require a \emph{weakly supervised} neural synthesizer,
+    This would require a \emph{weakly supervised} neural synthesizer,
     i.e. using \emph{reinforcement learning},
-    whereas our present synthesizer is based on the simpler \emph{strongly supervised} setup.
-    As such, this was unfortunately out of scope for our current paper.
+    % whereas our present synthesizer is based on the simpler \emph{strongly supervised} setup.
+    % As such, this was unfortunately out of scope for our current paper.
 
     % operators and type advantage
     % \item 
     While we have looked into the added value of types as features,
     this gives rise to an additional question:
     what kind of operators are most conducive to benefiting from type info?
-    While we have briefly conjectured this to involve having few yet generically applicable operators,
-    this question has fallen out of scope for our paper,
-    and remains a question for future research.
+    % While we have briefly conjectured this to involve having few yet generically applicable operators,
+    % this question has fallen out of scope for our paper,
+    % and remains a question for future research.
 
     % % unrolling
     % % \item 
@@ -707,10 +715,10 @@ Finally, we suggest a number of topics of interest for future research in type-d
 
 % \pagebreak
 
-% % \bibliographystyle{acm}
-% % \bibliographystyle{plainnat}
-% \bibliographystyle{iclr2021_conference}
-% \bibliography{references}
+% \bibliographystyle{acm}
+% \bibliographystyle{plainnat}
+\bibliographystyle{iclr2021_conference}
+\bibliography{references}
 
 % \pagebreak
 
