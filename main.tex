@@ -193,13 +193,13 @@ we therefore hypothesize that program synthesizers may capitalize on this synerg
 % rather than settling for only one of the two, as most existing methods have done.%
 %
 % Specifically, we formulate the following hypothesis:
-\begin{displayquote} % \label{hyp:types}
-    \emph{
-        Hypothesis:
-        the effectiveness of neural PBE may be improved by
-        adding type information as features.
-    }
-\end{displayquote}
+% \begin{displayquote} % \label{hyp:types}
+%     \emph{
+%         Hypothesis:
+%         the effectiveness of neural PBE may be improved by
+%         adding type information as features.
+%     }
+% \end{displayquote}
 
 % \section{Expected Contribution} % \label{sec:expected-contribution}
 
@@ -213,7 +213,9 @@ The present work aims to be the first experiment to:
     \item generate a dataset for neural synthesis of functional programs, and lay out how to do this, including an open-source implementation, addressing the current reliance on hand-crafted curricula~\citep{nps}.
 \end{itemize}
 
+\vspace{-10pt}
 \section{Neuro-symbolic program synthesis} \label{sec:nsps}
+\vspace{-10pt}
 
 The \emph{neuro-symbolic} program synthesis (NSPS) model introduced in \citet{nsps}
 is the model we will build upon for our own experiment as needed a neural synthesizer
@@ -227,6 +229,7 @@ As usual in neural PBE NSPS also conditions on the (encoded) input/output exampl
 % These hole expansions are based on a \emph{context-free grammar} describing the domain-specific language (DSL) to be synthesized.
 % Such a grammar consists of sets of expansions rules from left-hand symbols to productions in the grammar (which may include further left-hand symbols).
 
+\vspace{-10pt}
 \begin{figure*}[h]
     \begin{tabular}{c|c}
         \begin{minipage}{0.5\linewidth}
@@ -241,7 +244,9 @@ As usual in neural PBE NSPS also conditions on the (encoded) input/output exampl
     \end{tabular}
     \caption{overview of the Neuro-Symbolic Program Synthesis model, taken from \citep{nsps}}
     \label{nsps}
+    \vspace{-10pt}
 \end{figure*}
+% \vspace{-10pt}
 
 NSPS may use different example encoders,
 each embedding into a continuous space a one-hot representation of the input or output strings of their domain,
@@ -267,6 +272,7 @@ of features we would like per one-hot encoded characters.
 It then concatenates the encoding vectors across all I/O pairs
 to get a vector representation of the entire I/O set.~\citep{nsps}
 
+\vspace{-10pt}
 \begin{figure*}[h]
     \begin{tabular}{cc}
         \begin{minipage}{0.45\linewidth}
@@ -281,7 +287,9 @@ to get a vector representation of the entire I/O set.~\citep{nsps}
     \end{tabular}
     \caption{(a) The initial recursive pass of the R3NN. (b) The reverse-recursive pass of the R3NN where the input is the output of the previous recursive pass. Illustrations taken from \citep{nsps}.}
     \label{r3nn}
+    \vspace{-10pt}
 \end{figure*}
+\vspace{-10pt}
 
 The workings of the R3NN are illustrated in Figure \ref{r3nn}.
 The R3NN utilizes two parallel sets of neural networks, $f_r$ and $g_r$,
@@ -342,7 +350,9 @@ versus the golden `probabilities' $\mathbf{P}^{(task)}_{PPT}$ as per the task fu
 % Note that the $PPT$ we start from in a prediction step is carried over to inform our next rule expansion.
 % Informing our current prediction using previous predictions in such a way makes the model \emph{autoregressive}~\citep{kendall1944autoregressive}.
 
+\vspace{-10pt}
 \section{Methodology} % \label{sec:methodology}
+\vspace{-10pt}
 
 In this section we will briefly discuss our synthesis DSL, then explain our PBE model,
 which applies type information to improve synthesis quality in programming by example,
@@ -391,6 +401,7 @@ allowing for easy experimentation with different sets of operators.
 An example showing what different components of our dataset items might look like may be found in Figure \ref{fig:datasample}.
 %
 \begin{figure*}
+    \vspace{-25pt}
     \begin{tabular}{|l|l|} \hline
         \textbf{task function} & \verb|let just = Just; compose = (.) in compose just unzip| \\ \hline
         \textbf{type instance parameter input types} & \verb|[(Int, Char)]| \\ \hline
@@ -398,13 +409,17 @@ An example showing what different components of our dataset items might look lik
         \textbf{input expression} & \verb|([((17), '0'), ((20), '2')])| \\ \hline
         \textbf{output expression} & \verb|Right (Just ([17, 20], "02"))| \\ \hline
     \end{tabular}
+    \vspace{-10pt}
     \caption{A task function instance from our dataset with a corresponding sample input/output pair.}
     \label{fig:datasample}
+    \vspace{-15pt}
 \end{figure*}
 %
 We \emph{unroll} any function applications in our grammar, such that given a binary function operator \verb|and| and a an operator \verb|false| taking no arguments it might look as shown in Figure \ref{fig:dsl}.
 
+\vspace{-5pt}
 \subsection{Typed Neuro-Symbolic Program Synthesis}
+\vspace{-5pt}
 
 % \subsubsection{Our adaptation of neuro-symbolic program synthesis} \label{sec:ournsps}
 
@@ -488,7 +503,9 @@ i.e. going from $z_e = \phi'(e.l) \cdot \omega(e.r)$ to $z_e = \phi''(e.l) \cdot
 
 % \pagebreak
 
+\vspace{-10pt}
 \section{Experiment} \label{sec:experiment}
+\vspace{-10pt}
 
 To perform our experiment, we first find an appropriate learning rate on our vanilla implementation of NSPS,
 otherwise taking the hyperparameter values described in Section \ref{sec:hpar}.
@@ -536,7 +553,9 @@ and \verb|(.)|.
 
 % \pagebreak
 
+\vspace{-10pt}
 \section{Result} \label{sec:result}
+\vspace{-10pt}
 
 \begin{wrapfigure}{r}{0.45\textwidth}
     \vspace{-20pt}
@@ -572,7 +591,7 @@ while accuracy on the test set for the fully trained models may be found in Figu
     %     P-values between models under the independent two-sample t-test over accuracy evaluated on 100 samples
     %     % per task function instance.
     % }
-    % \label{fig:ttest}
+    \label{fig:ttest}
 % \end{wrapfigure}
 
 We see that the simpler vanilla NSPS model is both more limited in variance while also learning to a more limited extent before converging.
@@ -644,9 +663,13 @@ showing the improvement is statistically significant.
 
 % \pagebreak
 
+\vspace{-10pt}
 \section{Discussion} % \label{sec:discussion}
+\vspace{-10pt}
 
+% \vspace{-5pt}
 \subsection{Design limitations}
+\vspace{-5pt}
 
 % \begin{itemize}
     % \item
@@ -661,7 +684,9 @@ showing the improvement is statistically significant.
     %
 % \end{itemize}
 
+\vspace{-10pt}
 \subsection{Topics for future research}
+\vspace{-5pt}
 
 As neural synthesis methods aimed at programming by example in the functional
 programming domain is a broad topic encompassing a variety of design decisions,
@@ -704,7 +729,9 @@ we have had to leave some questions unanswered.
 
 % \end{itemize}
 
+\vspace{-10pt}
 \subsection{Conclusion}
+\vspace{-10pt}
 
 % Programming by example has traditionally seen a split between formal versus neural approaches,
 % meaning programming types had yet to be used in neural program synthesis.
